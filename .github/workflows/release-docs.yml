@@ -4,7 +4,8 @@ on:
   release:
     types: [published, edited]
 
-
+permissions:
+  contents: write
 
 jobs:
   bundle-and-publish:
