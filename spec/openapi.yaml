@@ -14,7 +14,10 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
-  contact: {}
+  contact:
+    name: UltraDNS
+    url: https://dns.ultraproducts.support
+    email: ultradnssupport@digicert.com
 servers:
 - url: https://api.ultradns.com
   description: Primary UltraDNS API
