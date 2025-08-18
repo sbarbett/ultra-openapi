@@ -1,0 +1,22 @@
+type: object
+properties:
+  ownerName:
+    type: string
+    description: The owner name (record label) of the RRSet
+    example: domain.com.
+  rdata:
+    type: array
+    items:
+      type: string
+    description: Array of record data values in BIND presentation format
+    example:
+      - pdns1.ultradns.net.
+      - pdns2.ultradns.net.
+  rrtype:
+    type: string
+    description: DNS record type with numeric value
+    example: NS (2)
+  ttl:
+    type: integer
+    description: Time to live in seconds
+    example: 86400

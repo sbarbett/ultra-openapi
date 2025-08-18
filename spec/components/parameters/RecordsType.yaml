@@ -1,0 +1,6 @@
+name: records_type
+in: path
+required: true
+schema:
+  type: string
+description: The DNS record type (e.g., A, CNAME, MX, TXT)

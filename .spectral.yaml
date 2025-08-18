@@ -1,0 +1,8 @@
+extends:
+  - spectral:oas
+
+rules:
+  # Basic OpenAPI 3.0 validation
+  oas3-api-servers: warn
+  oas3-valid-schema-example: warn
+  oas3-valid-media-example: warn

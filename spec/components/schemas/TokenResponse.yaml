@@ -1,0 +1,37 @@
+type: object
+properties:
+  accessToken:
+    type: string
+    description: OAuth 2.0 access token (camelCase variant)
+  access_token:
+    type: string
+    description: OAuth 2.0 access token (snake_case variant)
+  expiresIn:
+    type: string
+    description: Token expiration time in seconds (camelCase variant)
+  expires_in:
+    type: string
+    description: Token expiration time in seconds (snake_case variant)
+  refreshToken:
+    type: string
+    description: OAuth 2.0 refresh token (camelCase variant)
+  refresh_token:
+    type: string
+    description: OAuth 2.0 refresh token (snake_case variant)
+  refreshTokenExpiresIn:
+    type: string
+    description: Refresh token expiration time in seconds (camelCase variant)
+  refresh_token_expires_in:
+    type: string
+    description: Refresh token expiration time in seconds (snake_case variant)
+  tokenType:
+    type: string
+    example: Bearer
+    description: Token type (camelCase variant)
+  token_type:
+    type: string
+    example: Bearer
+    description: Token type (snake_case variant)
+  username:
+    type: string
+    description: Username associated with the token

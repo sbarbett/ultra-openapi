@@ -1,0 +1,16 @@
+{
+  "name": "ultra-openapi",
+  "version": "0.1.0",
+  "description": "UltraDNS OpenAPI Specification",
+  "scripts": {
+    "bundle": "redocly bundle spec/openapi.yaml --output docs/openapi.yaml",
+    "lint": "redocly lint spec/openapi.yaml",
+    "preview": "redocly preview-docs spec/openapi.yaml"
+  },
+  "devDependencies": {
+    "@redocly/cli": "^2.0.5"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

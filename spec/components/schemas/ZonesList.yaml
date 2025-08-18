@@ -1,0 +1,12 @@
+type: object
+allOf:
+  - $ref: './PageCursorEnvelope.yaml'
+  - type: object
+    properties:
+      zones:
+        type: array
+        items:
+          type: object
+          properties:
+            properties:
+              $ref: './Zone.yaml'

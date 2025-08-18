@@ -1,0 +1,55 @@
+get:
+  tags:
+    - Platform
+  summary: Get Version
+  description: "The version call provides the version of the REST API currently in production.\n\nThis call does not require
+    an Authorization header to be specified, which allows it to be used to verify that there are no networking issues
+    between a client and the REST API server."
+  operationId: getVersion
+  responses:
+    '200':
+      description: Get Version
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              version:
+                type: string
+                example: 3.108.0-20250804151109.a1bbd8c
+          examples:
+            Get Version:
+              value:
+                version: 3.108.0-20250804151109.a1bbd8c
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+  security:
+    - {}
+
+status:
+  get:
+    tags:
+      - Platform
+    summary: Get Status
+    description: "The status call provides a simple way to determine if the REST API  \nis running, and to make sure you
+      are connecting to the UltraDNS Portal  \nwith proper authorization."
+    operationId: getStatus
+    responses:
+      '200':
+        description: Get Status
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Good
+            examples:
+              Get Status:
+                value:
+                  message: Good
+      '5XX':
+        $ref: '../components/responses/Error5xx.yaml'
+    security:
+      - {}

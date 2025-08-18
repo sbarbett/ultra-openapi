@@ -1,0 +1,122 @@
+list:
+  get:
+    tags:
+      - Zones
+    summary: List Zones
+    description: Retrieves all DNS zones in your account. The response returns an array of zone objects, each 
+      including details such as zone name, status, default TTL, and name servers.
+    operationId: listZones
+    parameters:
+      - $ref: '../components/parameters/Limit.yaml'
+      - $ref: '../components/parameters/Sort.yaml'
+      - $ref: '../components/parameters/Reverse.yaml'
+    responses:
+      '200':
+        description: List Zones
+        content:
+          application/json:
+            schema:
+              $ref: '../components/schemas/ZonesList.yaml'
+            examples:
+              List Zones:
+                value:
+                  cursorInfo: {}
+                  queryInfo:
+                    limit: 100
+                    q: ''
+                    reverse: false
+                    sort: name
+                  zones:
+                  - properties:
+                      accountName: postman-example
+                      dnssecStatus: UNSIGNED
+                      lastModifiedDateTime: "2025-06-17T23:48:00Z"
+                      name: domain.com.
+                      owner: postman-example
+                      resourceRecordCount: 7
+                      status: ACTIVE
+                      type: PRIMARY
+                      ultra2: false
+                  - properties:
+                      accountName: postman-example
+                      dnssecStatus: UNSIGNED
+                      lastModifiedDateTime: "2025-06-17T23:43:00Z"
+                      name: postman-example.xyz.
+                      owner: postman-example
+                      resourceRecordCount: 7
+                      status: ACTIVE
+                      type: PRIMARY
+                      ultra2: false
+      '401':
+        $ref: '../components/responses/Error401.yaml'
+      '5XX':
+        $ref: '../components/responses/Error5xx.yaml'
+
+get:
+  get:
+    tags:
+      - Zones
+    summary: List Zone Properties
+    description: Retrieves metadata for a specific DNS zone, including record count, name servers, status, type, and 
+      other zone‑level properties. Requires the `zones_zoneName` path variable.
+    operationId: listZoneProperties
+    parameters:
+      - $ref: '../components/parameters/ZoneName.yaml'
+    responses:
+      '200':
+        description: List Zone Properties
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                inherit:
+                  type: string
+                  example: ALL
+                properties:
+                  $ref: '../components/schemas/Zone.yaml'
+                registrarInfo:
+                  type: object
+                  properties:
+                    nameServers:
+                      type: object
+                      properties:
+                        missing:
+                          type: array
+                          items:
+                            type: string
+                          example:
+                          - pdns1.ultradns.net.
+                          - pdns2.ultradns.net.
+                          - pdns3.ultradns.org.
+                          - pdns4.ultradns.org.
+                          - pdns5.ultradns.info.
+                          - pdns6.ultradns.co.uk.
+            examples:
+              List Zone Properties:
+                value:
+                  inherit: ALL
+                  properties:
+                    accountName: postman-example
+                    dnssecStatus: UNSIGNED
+                    lastModifiedDateTime: "2025-06-17T23:48:00Z"
+                    name: domain.com.
+                    owner: postman-example
+                    resourceRecordCount: 7
+                    status: ACTIVE
+                    type: PRIMARY
+                  registrarInfo:
+                    nameServers:
+                      missing:
+                      - pdns1.ultradns.net.
+                      - pdns2.ultradns.net.
+                      - pdns3.ultradns.org.
+                      - pdns4.ultradns.org.
+                      - pdns5.ultradns.info.
+                      - pdns6.ultradns.co.uk.
+      '401':
+        $ref: '../components/responses/Error401.yaml'
+      '404':
+        $ref: '../components/responses/Error404.yaml'
+      '5XX':
+        $ref: '../components/responses/Error5xx.yaml'

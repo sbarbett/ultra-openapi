@@ -1,0 +1,88 @@
+check:
+  get:
+    tags:
+      - Tasks
+    summary: Check Task
+    description: Checks the status of a background task. Requires the `currentTask` variable, which the collection 
+      automatically populates from the x-task-id header of previous async operations.
+    operationId: checkTask
+    parameters:
+      - name: currentTask
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Task ID from x-task-id header
+    responses:
+      '200':
+        description: Check Task
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: COMPLETE
+                hasData:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: domain.com. export completed.
+                resultUri:
+                  type: string
+                  example: /tasks/605b23e4-edb9-4f23-ae2d-33fe24d6033f/result
+                taskId:
+                  type: string
+                  example: 605b23e4-edb9-4f23-ae2d-33fe24d6033f
+            examples:
+              Check Task:
+                value:
+                  code: COMPLETE
+                  hasData: true
+                  message: domain.com. export completed.
+                  resultUri: /tasks/605b23e4-edb9-4f23-ae2d-33fe24d6033f/result
+                  taskId: 605b23e4-edb9-4f23-ae2d-33fe24d6033f
+      '401':
+        $ref: '../components/responses/Error401.yaml'
+      '404':
+        $ref: '../components/responses/Error404.yaml'
+      '5XX':
+        $ref: '../components/responses/Error5xx.yaml'
+
+result:
+  get:
+    tags:
+      - Tasks
+    summary: Task Result
+    description: Retrieves the final result of a completed background task. Requires the `currentTask` variable, which
+      the collection automatically populates from the x-task-id header of prior async requests. Returns the task's 
+      result payload when finished.
+    operationId: taskResult
+    parameters:
+      - name: currentTask
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Task ID from x-task-id header
+    responses:
+      '200':
+        description: Task Result
+        content:
+          text/plain:
+            examples:
+              Task Result:
+                value: ";File created: 06/17/2025 23:57\r\n;Record count: 8\r\n$ORIGIN domain.com.\r\n@\t86400\tIN\tSOA
+                  pdns1.ultradns.net. shane\\.barbetta.digicert.com. (\r\n\t\t\t2025061707\t;Serial\r\n\t\t\t86400\t\t;Refresh\r\
+                  \n\t\t\t86400\t\t;Retry\r\n\t\t\t86400\t\t;Expire\r\n\t\t\t86400\t\t;Minimum\r\n\t\t)\r\n@\t86400\tIN\t\
+                  NS\tpdns1.ultradns.net.\r\n@\t86400\tIN\tNS\tpdns2.ultradns.net.\r\n@\t86400\tIN\tNS\tpdns3.ultradns.org.\r\
+                  \n@\t86400\tIN\tNS\tpdns4.ultradns.org.\r\n@\t86400\tIN\tNS\tpdns5.ultradns.info.\r\n@\t86400\tIN\tNS\t\
+                  pdns6.ultradns.co.uk.\r\nwww\t300\tIN\tA\t204.74.99.100\r\n"
+      '401':
+        $ref: '../components/responses/Error401.yaml'
+      '404':
+        $ref: '../components/responses/Error404.yaml'
+      '5XX':
+        $ref: '../components/responses/Error5xx.yaml'

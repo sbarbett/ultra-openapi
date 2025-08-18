@@ -1,0 +1,49 @@
+name: Validate OpenAPI Specification
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'spec/**'
+      - '.spectral.yaml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'spec/**'
+      - '.spectral.yaml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install Spectral CLI
+      run: npm install -g @stoplight/spectral-cli
+      
+    - name: Validate OpenAPI specification
+      run: |
+        echo "🔍 Running Spectral validation..."
+        spectral lint spec/openapi.yaml --ruleset .spectral.yaml --fail-severity=error
+        
+    - name: Generate validation report
+      if: always()
+      run: |
+        echo "📊 Generating validation report..."
+        spectral lint spec/openapi.yaml --ruleset .spectral.yaml --format json > validation-report.json
+        
+    - name: Upload validation report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: spectral-validation-report
+        path: validation-report.json
+        retention-days: 30

@@ -1,0 +1,19 @@
+type: object
+properties:
+  defaultForwardType:
+    type: string
+    description: The type of redirect/forward
+    example: HTTP_301_REDIRECT
+    enum: [HTTP_301_REDIRECT, HTTP_302_REDIRECT]
+  defaultRedirectTo:
+    type: string
+    description: The target URL for the redirect
+    example: https://www.example.com
+  guid:
+    type: string
+    description: Unique identifier for the web forward rule
+    example: 9034F201636B98D9
+  requestTo:
+    type: string
+    description: The hostname being forwarded
+    example: www.domain.com

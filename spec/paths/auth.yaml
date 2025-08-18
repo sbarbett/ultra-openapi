@@ -1,0 +1,80 @@
+post:
+  tags:
+    - Authorization
+  summary: Manage Auth Token
+  description: "Obtain or refresh an UltraDNS API access token using a single endpoint. This request supports two flows:\n\
+    \n- **Initial authentication:** exchange a valid username and password (password grant) for an access token.\n   \
+    \ \n- **Session continuation:** exchange a valid refresh token (refresh grant) for a new access token without re-supplying
+    credentials.\n    \n\nUse the returned access token to authorize subsequent API calls until it expires."
+  operationId: manageAuthToken
+  requestBody:
+    content:
+      application/x-www-form-urlencoded:
+        schema:
+          type: object
+          properties:
+            expire_in:
+              type: string
+              example: '86400'
+            grant_type:
+              type: string
+              example: password
+            password:
+              type: string
+              example: '{{password}}'
+            refresh_token:
+              type: string
+              example: '{{refreshToken}}'
+            username:
+              type: string
+              example: '{{username}}'
+        examples:
+          Manage Auth Token:
+            value:
+              expire_in: '86400'
+              grant_type: password
+              password: '{{password}}'
+              refresh_token: '{{refreshToken}}'
+              username: '{{username}}'
+  responses:
+    '200':
+      description: Refresh Token / Generate Auth Token
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/TokenResponse.yaml'
+          examples:
+            Generate Auth Token:
+              value:
+                accessToken: 
+                  eolraOeTINu6WHeS.zUc4sS1vUKjzmKe9QyJecMeG1XN1TqwI3eXGC0sRbco.3VjD74_dMLWk2ec3vUXPUcIb4zH3K4fS
+                access_token: 
+                  eolraOeTINu6WHeS.zUc4sS1vUKjzmKe9QyJecMeG1XN1TqwI3eXGC0sRbco.3VjD74_dMLWk2ec3vUXPUcIb4zH3K4fS
+                expiresIn: '3600'
+                expires_in: '3600'
+                refreshToken: 2b217543b15fdedffe95387ff0a383d47ab37615d7
+                refresh_token: 2b217543b15fdedffe95387ff0a383d47ab37615d7
+                tokenType: Bearer
+                token_type: Bearer
+                username: postman-example
+            Refresh Token:
+              value:
+                accessToken: 
+                  q3hpnHtaHHfLzTq_.HFBMZ45a99dt5H_jOh0tLqrmDVhyCvE7EHlOe7DZ2F8.YvogkldtGkb9fNJ_vihT2ORGQpM_kRU7
+                access_token: 
+                  q3hpnHtaHHfLzTq_.HFBMZ45a99dt5H_jOh0tLqrmDVhyCvE7EHlOe7DZ2F8.YvogkldtGkb9fNJ_vihT2ORGQpM_kRU7
+                expiresIn: '3600'
+                expires_in: '3600'
+                refreshToken: 729dd9ba9ddaeab58fcdb9615f50f5dadd715f4d72
+                refreshTokenExpiresIn: '86400'
+                refresh_token: 729dd9ba9ddaeab58fcdb9615f50f5dadd715f4d72
+                refresh_token_expires_in: '86400'
+                tokenType: Bearer
+                token_type: Bearer
+                username: postman-example
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+  security:
+    - {}

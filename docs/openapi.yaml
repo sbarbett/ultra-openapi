@@ -1,0 +1,829 @@
+openapi: 3.0.3
+info:
+  title: API Documentation v1.1.1
+  description: |-
+    This API specification provides an organized interface to the UltraDNS (UDNS) REST API. Endpoints are grouped by resource domain to support a logical, discoverable structure:
+
+    - **Zones**: Manage DNS zones and resource records (create, read, update, delete)
+        
+    - **Reports**: Retrieve analytics, usage, and query volume data
+        
+    - **Other Resources**: Additional endpoints are grouped into relevant folders or sections based on functional area
+        
+
+    ## Authentication
+
+    This API uses OAuth 2.0 (Password Credentials Grant) for authentication. To authenticate:
+
+    1. Obtain an access token by exchanging your username and password at the token endpoint.
+        
+    2. Include the token in the `Authorization` header of each request as a Bearer token.
+        
+
+    ``` http
+    Authorization: Bearer <access_token>
+
+     ```
+
+    ## Usage
+
+    Each resource group contains a set of RESTful endpoints, designed to be self-contained and independently testable. When interacting with this API refer to resource-specific sections for details on supported operations
+  version: 0.1.0
+  contact: {}
+servers:
+  - url: https://api.ultradns.com
+    description: Primary UltraDNS API
+security:
+  - bearerAuth: []
+tags:
+  - name: Authorization
+    description: |-
+      This folder contains endpoints for obtaining and refreshing authentication tokens for the UltraDNS REST API using the Resource Owner Password Credentials (ROPC) grant, a legacy subset of OAuth 2.0. These requests require a valid UltraDNS API username and password.
+
+      Failed login attempts may lock the account for a period of time; if this occurs, wait until the lockout expires or contact Customer Support. Users with "API Only Access" cannot log into the UltraDNS Portal but can authenticate to the API.
+  - name: Platform
+    description: |-
+      This folder contains endpoints that provide information about the UltraDNS API platform itself.
+
+      - Check API operational status and health
+          
+      - Retrieve current API version information
+          
+      - Validate connectivity to the service
+          
+
+      These endpoints are intended for integration health checks, monitoring, and ensuring compatibility with the current API version.
+  - name: Zones
+    description: |-
+      This endpoint contains all operations for managing the lifecycle and metadata of your DNS zones.
+
+      - **Create** new zones
+          
+      - **Retrieve** zone details and metadata
+          
+      - **Update** zone configuration
+          
+      - **Delete** existing zones
+          
+      - **Export** zone files
+          
+      - **Capture** zone snapshots
+          
+
+      Everything here is focused on DNS zone management and its associated metadata.
+  - name: Records
+    description: |-
+      Endpoints for managing resource record sets (RRSets) within a DNS zone. Each RRSet groups records sharing the same owner name, type, and class (always IN). Record data is handled via the `rdata` array, which follows the BIND presentation format.
+
+      - **List** all RRSets in a zone
+          
+      - **Retrieve** a specific RRSet by owner name and type
+          
+      - **Create/Update** RRSets by supplying `rdata` entries and TTL
+          
+      - **Delete** RRSets
+  - name: Tasks
+    description: |-
+      Endpoints for monitoring asynchronous background tasks (e.g., zone snapshots or exports):
+
+      - When you invoke an operation that returns **202 Accepted**, the response headers include an `x-task-id`.
+          
+      - Use these endpoints to:
+          
+          - **Check status** of the task referenced by `{{currentTask}}`
+              
+          - **Retrieve results** once the task completes
+paths:
+  /authorization/token:
+    post:
+      tags:
+        - Authorization
+      summary: Manage Auth Token
+      description: |-
+        Obtain or refresh an UltraDNS API access token using a single endpoint. This request supports two flows:
+
+        - **Initial authentication:** exchange a valid username and password (password grant) for an access token.
+            
+        - **Session continuation:** exchange a valid refresh token (refresh grant) for a new access token without re-supplying credentials.
+            
+
+        Use the returned access token to authorize subsequent API calls until it expires.
+      operationId: manageAuthToken
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                expire_in:
+                  type: string
+                  example: '86400'
+                grant_type:
+                  type: string
+                  example: password
+                password:
+                  type: string
+                  example: '{{password}}'
+                refresh_token:
+                  type: string
+                  example: '{{refreshToken}}'
+                username:
+                  type: string
+                  example: '{{username}}'
+            examples:
+              Manage Auth Token:
+                value:
+                  expire_in: '86400'
+                  grant_type: password
+                  password: '{{password}}'
+                  refresh_token: '{{refreshToken}}'
+                  username: '{{username}}'
+      responses:
+        '200':
+          description: Refresh Token / Generate Auth Token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+              examples:
+                Generate Auth Token:
+                  value:
+                    accessToken: eolraOeTINu6WHeS.zUc4sS1vUKjzmKe9QyJecMeG1XN1TqwI3eXGC0sRbco.3VjD74_dMLWk2ec3vUXPUcIb4zH3K4fS
+                    access_token: eolraOeTINu6WHeS.zUc4sS1vUKjzmKe9QyJecMeG1XN1TqwI3eXGC0sRbco.3VjD74_dMLWk2ec3vUXPUcIb4zH3K4fS
+                    expiresIn: '3600'
+                    expires_in: '3600'
+                    refreshToken: 2b217543b15fdedffe95387ff0a383d47ab37615d7
+                    refresh_token: 2b217543b15fdedffe95387ff0a383d47ab37615d7
+                    tokenType: Bearer
+                    token_type: Bearer
+                    username: postman-example
+                Refresh Token:
+                  value:
+                    accessToken: q3hpnHtaHHfLzTq_.HFBMZ45a99dt5H_jOh0tLqrmDVhyCvE7EHlOe7DZ2F8.YvogkldtGkb9fNJ_vihT2ORGQpM_kRU7
+                    access_token: q3hpnHtaHHfLzTq_.HFBMZ45a99dt5H_jOh0tLqrmDVhyCvE7EHlOe7DZ2F8.YvogkldtGkb9fNJ_vihT2ORGQpM_kRU7
+                    expiresIn: '3600'
+                    expires_in: '3600'
+                    refreshToken: 729dd9ba9ddaeab58fcdb9615f50f5dadd715f4d72
+                    refreshTokenExpiresIn: '86400'
+                    refresh_token: 729dd9ba9ddaeab58fcdb9615f50f5dadd715f4d72
+                    refresh_token_expires_in: '86400'
+                    tokenType: Bearer
+                    token_type: Bearer
+                    username: postman-example
+        '401':
+          $ref: '#/components/responses/Error401'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+      security:
+        - {}
+  /version:
+    tags:
+      - Platform
+    summary: Get Version
+    description: |-
+      The version call provides the version of the REST API currently in production.
+
+      This call does not require an Authorization header to be specified, which allows it to be used to verify that there are no networking issues between a client and the REST API server.
+    operationId: getVersion
+    responses:
+      '200':
+        description: Get Version
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                version:
+                  type: string
+                  example: 3.108.0-20250804151109.a1bbd8c
+            examples:
+              Get Version:
+                value:
+                  version: 3.108.0-20250804151109.a1bbd8c
+      5XX:
+        $ref: ../components/responses/Error5xx.yaml
+    security:
+      - {}
+  /status:
+    get:
+      tags:
+        - Platform
+      summary: Get Status
+      description: |-
+        The status call provides a simple way to determine if the REST API  
+        is running, and to make sure you are connecting to the UltraDNS Portal  
+        with proper authorization.
+      operationId: getStatus
+      responses:
+        '200':
+          description: Get Status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Good
+              examples:
+                Get Status:
+                  value:
+                    message: Good
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+      security:
+        - {}
+  /v3/zones:
+    get:
+      tags:
+        - Zones
+      summary: List Zones
+      description: Retrieves all DNS zones in your account. The response returns an array of zone objects, each including details such as zone name, status, default TTL, and name servers.
+      operationId: listZones
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Reverse'
+      responses:
+        '200':
+          description: List Zones
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ZonesList'
+              examples:
+                List Zones:
+                  value:
+                    cursorInfo: {}
+                    queryInfo:
+                      limit: 100
+                      q: ''
+                      reverse: false
+                      sort: name
+                    zones:
+                      - properties:
+                          accountName: postman-example
+                          dnssecStatus: UNSIGNED
+                          lastModifiedDateTime: '2025-06-17T23:48:00Z'
+                          name: domain.com.
+                          owner: postman-example
+                          resourceRecordCount: 7
+                          status: ACTIVE
+                          type: PRIMARY
+                          ultra2: false
+                      - properties:
+                          accountName: postman-example
+                          dnssecStatus: UNSIGNED
+                          lastModifiedDateTime: '2025-06-17T23:43:00Z'
+                          name: postman-example.xyz.
+                          owner: postman-example
+                          resourceRecordCount: 7
+                          status: ACTIVE
+                          type: PRIMARY
+                          ultra2: false
+        '401':
+          $ref: '#/components/responses/Error401'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+  /v3/zones/{zones_zoneName}:
+    get:
+      tags:
+        - Zones
+      summary: List Zone Properties
+      description: Retrieves metadata for a specific DNS zone, including record count, name servers, status, type, and other zone‑level properties. Requires the `zones_zoneName` path variable.
+      operationId: listZoneProperties
+      parameters:
+        - $ref: '#/components/parameters/ZoneName'
+      responses:
+        '200':
+          description: List Zone Properties
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  inherit:
+                    type: string
+                    example: ALL
+                  properties:
+                    $ref: '#/components/schemas/Zone'
+                  registrarInfo:
+                    type: object
+                    properties:
+                      nameServers:
+                        type: object
+                        properties:
+                          missing:
+                            type: array
+                            items:
+                              type: string
+                            example:
+                              - pdns1.ultradns.net.
+                              - pdns2.ultradns.net.
+                              - pdns3.ultradns.org.
+                              - pdns4.ultradns.org.
+                              - pdns5.ultradns.info.
+                              - pdns6.ultradns.co.uk.
+              examples:
+                List Zone Properties:
+                  value:
+                    inherit: ALL
+                    properties:
+                      accountName: postman-example
+                      dnssecStatus: UNSIGNED
+                      lastModifiedDateTime: '2025-06-17T23:48:00Z'
+                      name: domain.com.
+                      owner: postman-example
+                      resourceRecordCount: 7
+                      status: ACTIVE
+                      type: PRIMARY
+                    registrarInfo:
+                      nameServers:
+                        missing:
+                          - pdns1.ultradns.net.
+                          - pdns2.ultradns.net.
+                          - pdns3.ultradns.org.
+                          - pdns4.ultradns.org.
+                          - pdns5.ultradns.info.
+                          - pdns6.ultradns.co.uk.
+        '401':
+          $ref: '#/components/responses/Error401'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+  /zones/{records_zoneName}/rrsets:
+    get:
+      tags:
+        - Records
+      summary: List RRsets
+      description: |-
+        Retrieves all resource record sets (RRSets) in the specified DNS zone. Requires the `records_zoneName` environment variable.
+
+        Supports optional query parameters to filter results (for example, by record type, ownerName, TTL) or paginate the list.
+      operationId: listRrsets
+      parameters:
+        - $ref: '#/components/parameters/RecordsZoneName'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Reverse'
+      responses:
+        '200':
+          description: List RRsets
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RRSetsList'
+              examples:
+                List RRsets:
+                  value:
+                    queryInfo:
+                      limit: 100
+                      reverse: false
+                      sort: OWNER
+                    resultInfo:
+                      offset: 0
+                      returnedCount: 3
+                      totalCount: 3
+                    rrSets:
+                      - ownerName: domain.com.
+                        rdata:
+                          - pdns1.ultradns.net.
+                          - pdns2.ultradns.net.
+                          - pdns3.ultradns.org.
+                          - pdns4.ultradns.org.
+                          - pdns5.ultradns.info.
+                          - pdns6.ultradns.co.uk.
+                        rrtype: NS (2)
+                        ttl: 86400
+                      - ownerName: domain.com.
+                        rdata:
+                          - pdns1.ultradns.net. shane\.barbetta.digicert.com. 2025061702 86400 86400 86400 86400
+                        rrtype: SOA (6)
+                        ttl: 86400
+                      - ownerName: www.domain.com.
+                        rdata:
+                          - 204.74.99.100
+                        rrtype: A (1)
+                        ttl: 300
+                    zoneName: domain.com
+        '401':
+          $ref: '#/components/responses/Error401'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+  /zones/{records_zoneName}/rrsets/{records_type}:
+    get:
+      tags:
+        - Records
+      summary: List Records by Type
+      description: Retrieves all resource record sets (RRSets) of a specific type within the specified DNS zone. Requires the `records_zoneName` and `records_type` environment variables. Set `records_type` to the desired record type (e.g., A, CNAME, TXT) to filter the results. The response returns an array of matching RRSet objects.
+      operationId: listRecordsByType
+      parameters:
+        - $ref: '#/components/parameters/RecordsZoneName'
+        - $ref: '#/components/parameters/RecordsType'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Reverse'
+      responses:
+        '200':
+          description: List Records by Type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RRSetsList'
+              examples:
+                List Records by Type:
+                  value:
+                    queryInfo:
+                      limit: 100
+                      reverse: false
+                      sort: OWNER
+                    resultInfo:
+                      offset: 0
+                      returnedCount: 1
+                      totalCount: 1
+                    rrSets:
+                      - ownerName: www.domain.com.
+                        rdata:
+                          - 204.74.99.100
+                        rrtype: A (1)
+                        ttl: 300
+                    zoneName: domain.com
+        '401':
+          $ref: '#/components/responses/Error401'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+  /tasks/{currentTask}:
+    get:
+      tags:
+        - Tasks
+      summary: Check Task
+      description: Checks the status of a background task. Requires the `currentTask` variable, which the collection automatically populates from the x-task-id header of previous async operations.
+      operationId: checkTask
+      parameters:
+        - name: currentTask
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Task ID from x-task-id header
+      responses:
+        '200':
+          description: Check Task
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: COMPLETE
+                  hasData:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: domain.com. export completed.
+                  resultUri:
+                    type: string
+                    example: /tasks/605b23e4-edb9-4f23-ae2d-33fe24d6033f/result
+                  taskId:
+                    type: string
+                    example: 605b23e4-edb9-4f23-ae2d-33fe24d6033f
+              examples:
+                Check Task:
+                  value:
+                    code: COMPLETE
+                    hasData: true
+                    message: domain.com. export completed.
+                    resultUri: /tasks/605b23e4-edb9-4f23-ae2d-33fe24d6033f/result
+                    taskId: 605b23e4-edb9-4f23-ae2d-33fe24d6033f
+        '401':
+          $ref: '#/components/responses/Error401'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+  /tasks/{currentTask}/result:
+    get:
+      tags:
+        - Tasks
+      summary: Task Result
+      description: Retrieves the final result of a completed background task. Requires the `currentTask` variable, which the collection automatically populates from the x-task-id header of prior async requests. Returns the task's result payload when finished.
+      operationId: taskResult
+      parameters:
+        - name: currentTask
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Task ID from x-task-id header
+      responses:
+        '200':
+          description: Task Result
+          content:
+            text/plain:
+              examples:
+                Task Result:
+                  value: ";File created: 06/17/2025 23:57\r\n;Record count: 8\r\n$ORIGIN domain.com.\r\n@\t86400\tIN\tSOA pdns1.ultradns.net. shane\\.barbetta.digicert.com. (\r\n\t\t\t2025061707\t;Serial\r\n\t\t\t86400\t\t;Refresh\r\n\t\t\t86400\t\t;Retry\r\n\t\t\t86400\t\t;Expire\r\n\t\t\t86400\t\t;Minimum\r\n\t\t)\r\n@\t86400\tIN\tNS\tpdns1.ultradns.net.\r\n@\t86400\tIN\tNS\tpdns2.ultradns.net.\r\n@\t86400\tIN\tNS\tpdns3.ultradns.org.\r\n@\t86400\tIN\tNS\tpdns4.ultradns.org.\r\n@\t86400\tIN\tNS\tpdns5.ultradns.info.\r\n@\t86400\tIN\tNS\tpdns6.ultradns.co.uk.\r\nwww\t300\tIN\tA\t204.74.99.100\r\n"
+        '401':
+          $ref: '#/components/responses/Error401'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: OAuth 2.0 Bearer token authentication
+  schemas:
+    TokenResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: OAuth 2.0 access token (camelCase variant)
+        access_token:
+          type: string
+          description: OAuth 2.0 access token (snake_case variant)
+        expiresIn:
+          type: string
+          description: Token expiration time in seconds (camelCase variant)
+        expires_in:
+          type: string
+          description: Token expiration time in seconds (snake_case variant)
+        refreshToken:
+          type: string
+          description: OAuth 2.0 refresh token (camelCase variant)
+        refresh_token:
+          type: string
+          description: OAuth 2.0 refresh token (snake_case variant)
+        refreshTokenExpiresIn:
+          type: string
+          description: Refresh token expiration time in seconds (camelCase variant)
+        refresh_token_expires_in:
+          type: string
+          description: Refresh token expiration time in seconds (snake_case variant)
+        tokenType:
+          type: string
+          example: Bearer
+          description: Token type (camelCase variant)
+        token_type:
+          type: string
+          example: Bearer
+          description: Token type (snake_case variant)
+        username:
+          type: string
+          description: Username associated with the token
+    ErrorGeneric:
+      type: object
+      required:
+        - message
+      properties:
+        code:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          additionalProperties: true
+          description: Additional error details
+        requestId:
+          type: string
+          description: Request identifier for tracking
+    PageCursorEnvelope:
+      type: object
+      properties:
+        cursorInfo:
+          type: object
+          description: Cursor information for pagination
+          additionalProperties: true
+        queryInfo:
+          type: object
+          properties:
+            limit:
+              type: integer
+              minimum: 1
+              description: Maximum number of items returned
+            q:
+              type: string
+              description: Query filter string
+            reverse:
+              type: boolean
+              description: Whether results are in reverse order
+            sort:
+              type: string
+              description: Field used for sorting
+          required:
+            - limit
+            - reverse
+            - sort
+    Zone:
+      type: object
+      properties:
+        accountName:
+          type: string
+          description: The account name that owns the zone
+          example: postman-example
+        dnssecStatus:
+          type: string
+          description: DNSSEC signing status of the zone
+          example: UNSIGNED
+          enum:
+            - UNSIGNED
+            - SIGNED
+        lastModifiedDateTime:
+          type: string
+          format: date-time
+          description: Last modification timestamp
+          example: '2025-06-17T23:48:00Z'
+        name:
+          type: string
+          description: The zone name (fully qualified domain name)
+          example: domain.com.
+        owner:
+          type: string
+          description: The owner of the zone
+          example: postman-example
+        resourceRecordCount:
+          type: integer
+          description: Number of resource records in the zone
+          example: 7
+        status:
+          type: string
+          description: Current status of the zone
+          example: ACTIVE
+          enum:
+            - ACTIVE
+            - INACTIVE
+        type:
+          type: string
+          description: Zone type
+          example: PRIMARY
+          enum:
+            - PRIMARY
+            - SECONDARY
+        ultra2:
+          type: boolean
+          description: Whether this is an Ultra2 zone
+          example: false
+    ZonesList:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/PageCursorEnvelope'
+        - type: object
+          properties:
+            zones:
+              type: array
+              items:
+                type: object
+                properties:
+                  properties:
+                    $ref: '#/components/schemas/Zone'
+    PageOffsetEnvelope:
+      type: object
+      properties:
+        queryInfo:
+          type: object
+          properties:
+            limit:
+              type: integer
+              minimum: 1
+              description: Maximum number of items returned
+            reverse:
+              type: boolean
+              description: Whether results are in reverse order
+            sort:
+              type: string
+              description: Field used for sorting
+          required:
+            - limit
+            - reverse
+            - sort
+        resultInfo:
+          type: object
+          properties:
+            offset:
+              type: integer
+              minimum: 0
+              description: Zero-based offset for pagination
+            returnedCount:
+              type: integer
+              minimum: 0
+              description: Number of items returned in this response
+            totalCount:
+              type: integer
+              minimum: 0
+              description: Total number of items available
+          required:
+            - offset
+            - returnedCount
+            - totalCount
+    RRSet:
+      type: object
+      properties:
+        ownerName:
+          type: string
+          description: The owner name (record label) of the RRSet
+          example: domain.com.
+        rdata:
+          type: array
+          items:
+            type: string
+          description: Array of record data values in BIND presentation format
+          example:
+            - pdns1.ultradns.net.
+            - pdns2.ultradns.net.
+        rrtype:
+          type: string
+          description: DNS record type with numeric value
+          example: NS (2)
+        ttl:
+          type: integer
+          description: Time to live in seconds
+          example: 86400
+    RRSetsList:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/PageOffsetEnvelope'
+        - type: object
+          properties:
+            rrSets:
+              type: array
+              items:
+                $ref: '#/components/schemas/RRSet'
+            zoneName:
+              type: string
+              description: The zone name
+              example: domain.com
+  responses:
+    Error401:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorGeneric'
+    Error5xx:
+      description: Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorGeneric'
+    Error404:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorGeneric'
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 1000
+        default: 100
+      description: Maximum number of items to return per page
+    Sort:
+      name: sort
+      in: query
+      schema:
+        type: string
+      description: Field to sort results by
+    Reverse:
+      name: reverse
+      in: query
+      schema:
+        type: boolean
+        default: false
+      description: Whether to reverse the sort order
+    ZoneName:
+      name: zones_zoneName
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The name of the DNS zone
+    RecordsZoneName:
+      name: records_zoneName
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The name of the DNS zone containing the records
+    RecordsType:
+      name: records_type
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The DNS record type (e.g., A, CNAME, MX, TXT)

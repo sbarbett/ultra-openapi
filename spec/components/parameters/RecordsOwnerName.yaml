@@ -1,0 +1,6 @@
+name: records_ownerName
+in: path
+required: true
+schema:
+  type: string
+description: The owner name (record label) of the RRSet

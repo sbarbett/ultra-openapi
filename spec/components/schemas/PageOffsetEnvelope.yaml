@@ -1,0 +1,38 @@
+type: object
+properties:
+  queryInfo:
+    type: object
+    properties:
+      limit:
+        type: integer
+        minimum: 1
+        description: Maximum number of items returned
+      reverse:
+        type: boolean
+        description: Whether results are in reverse order
+      sort:
+        type: string
+        description: Field used for sorting
+    required:
+      - limit
+      - reverse
+      - sort
+  resultInfo:
+    type: object
+    properties:
+      offset:
+        type: integer
+        minimum: 0
+        description: Zero-based offset for pagination
+      returnedCount:
+        type: integer
+        minimum: 0
+        description: Number of items returned in this response
+      totalCount:
+        type: integer
+        minimum: 0
+        description: Total number of items available
+    required:
+      - offset
+      - returnedCount
+      - totalCount

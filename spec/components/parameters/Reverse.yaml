@@ -1,0 +1,6 @@
+name: reverse
+in: query
+schema:
+  type: boolean
+  default: false
+description: Whether to reverse the sort order

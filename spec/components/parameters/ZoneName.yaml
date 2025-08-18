@@ -1,0 +1,6 @@
+name: zones_zoneName
+in: path
+required: true
+schema:
+  type: string
+description: The name of the DNS zone

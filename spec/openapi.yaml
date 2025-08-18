@@ -1,0 +1,88 @@
+openapi: 3.0.3
+info:
+  title: API Documentation v1.1.1
+  description: "This API specification provides an organized interface to the UltraDNS (UDNS) REST API. Endpoints are grouped
+    by resource domain to support a logical, discoverable structure:\n\n- **Zones**: Manage DNS zones and resource records
+    (create, read, update, delete)\n    \n- **Reports**: Retrieve analytics, usage, and query volume data\n    \n- **Other
+    Resources**: Additional endpoints are grouped into relevant folders or sections based on functional area\n    \n\n## Authentication\n\
+    \nThis API uses OAuth 2.0 (Password Credentials Grant) for authentication. To authenticate:\n\n1. Obtain an access token
+    by exchanging your username and password at the token endpoint.\n    \n2. Include the token in the `Authorization` header
+    of each request as a Bearer token.\n    \n\n``` http\nAuthorization: Bearer <access_token>\n\n ```\n\n## Usage\n\nEach
+    resource group contains a set of RESTful endpoints, designed to be self-contained and independently testable. When interacting
+    with this API refer to resource-specific sections for details on supported operations"
+  version: 0.1.0
+  contact: {}
+servers:
+- url: https://api.ultradns.com
+  description: Primary UltraDNS API
+
+# Import path files
+paths:
+  # Authorization endpoints
+  /authorization/token:
+    $ref: './paths/auth.yaml'
+  
+  # Platform endpoints
+  /version:
+    $ref: './paths/platform.yaml#/get'
+  /status:
+    $ref: './paths/platform.yaml#/status'
+  
+  # Zone endpoints
+  /v3/zones:
+    $ref: './paths/zones.yaml#/list'
+  /v3/zones/{zones_zoneName}:
+    $ref: './paths/zones.yaml#/get'
+  
+  # Record endpoints
+  /zones/{records_zoneName}/rrsets:
+    $ref: './paths/records.yaml#/list'
+  /zones/{records_zoneName}/rrsets/{records_type}:
+    $ref: './paths/records.yaml#/listByType'
+  
+  # Task endpoints
+  /tasks/{currentTask}:
+    $ref: './paths/tasks.yaml#/check'
+  /tasks/{currentTask}/result:
+    $ref: './paths/tasks.yaml#/result'
+
+# Security schemes
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: OAuth 2.0 Bearer token authentication
+
+# Tags
+tags:
+- name: Authorization
+  description: "This folder contains endpoints for obtaining and refreshing authentication tokens for the UltraDNS REST API
+    using the Resource Owner Password Credentials (ROPC) grant, a legacy subset of OAuth 2.0. These requests require a valid
+    UltraDNS API username and password.\n\nFailed login attempts may lock the account for a period of time; if this occurs,
+    wait until the lockout expires or contact Customer Support. Users with \"API Only Access\" cannot log into the UltraDNS
+    Portal but can authenticate to the API."
+- name: Platform
+  description: "This folder contains endpoints that provide information about the UltraDNS API platform itself.\n\n- Check
+    API operational status and health\n    \n- Retrieve current API version information\n    \n- Validate connectivity to
+    the service\n    \n\nThese endpoints are intended for integration health checks, monitoring, and ensuring compatibility
+    with the current API version."
+- name: Zones
+  description: "This endpoint contains all operations for managing the lifecycle and metadata of your DNS zones.\n\n- **Create**
+    new zones\n    \n- **Retrieve** zone details and metadata\n    \n- **Update** zone configuration\n    \n- **Delete** existing
+    zones\n    \n- **Export** zone files\n    \n- **Capture** zone snapshots\n    \n\nEverything here is focused on DNS zone
+    management and its associated metadata."
+- name: Records
+  description: "Endpoints for managing resource record sets (RRSets) within a DNS zone. Each RRSet groups records sharing
+    the same owner name, type, and class (always IN). Record data is handled via the `rdata` array, which follows the BIND
+    presentation format.\n\n- **List** all RRSets in a zone\n    \n- **Retrieve** a specific RRSet by owner name and type\n\
+    \    \n- **Create/Update** RRSets by supplying `rdata` entries and TTL\n    \n- **Delete** RRSets"
+- name: Tasks
+  description: "Endpoints for monitoring asynchronous background tasks (e.g., zone snapshots or exports):\n\n- When you invoke
+    an operation that returns **202 Accepted**, the response headers include an `x-task-id`.\n    \n- Use these endpoints
+    to:\n    \n    - **Check status** of the task referenced by `{{currentTask}}`\n        \n    - **Retrieve results** once
+    the task completes"
+
+# Global security
+security:
+- bearerAuth: []
