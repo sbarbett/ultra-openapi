@@ -18,6 +18,7 @@ info:
     name: UltraDNS
     url: https://dns.ultraproducts.support
     email: ultradnssupport@digicert.com
+  termsOfService: https://www.digicert.com/security-terms
 servers:
 - url: https://api.ultradns.com
   description: Primary UltraDNS API
@@ -55,10 +56,12 @@ paths:
 # Security schemes
 components:
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      description: OAuth 2.0 Bearer token authentication
+    oauth2:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: https://api.ultradns.com/authorization/token
+          scopes: {}
 
 # Tags
 tags:
@@ -91,4 +94,4 @@ tags:
 
 # Global security
 security:
-- bearerAuth: []
+- oauth2: []

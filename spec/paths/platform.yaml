@@ -49,7 +49,7 @@ status:
               Get Status:
                 value:
                   message: Good
+      '401':
+        $ref: '../components/responses/Error401.yaml'
       '5XX':
         $ref: '../components/responses/Error5xx.yaml'
-    security:
-      - {}
