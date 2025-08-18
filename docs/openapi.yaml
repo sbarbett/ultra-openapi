@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: API Documentation v1.1.1
+  title: UltraDNS API Documentation
   description: |-
     This API specification provides an organized interface to the UltraDNS (UDNS) REST API. Endpoints are grouped by resource domain to support a logical, discoverable structure:
 
@@ -29,12 +29,19 @@ info:
 
     Each resource group contains a set of RESTful endpoints, designed to be self-contained and independently testable. When interacting with this API refer to resource-specific sections for details on supported operations
   version: 0.1.0
-  contact: {}
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  contact:
+    name: UltraDNS
+    url: https://dns.ultraproducts.support
+    email: ultradnssupport@digicert.com
+  termsOfService: https://www.digicert.com/security-terms
 servers:
   - url: https://api.ultradns.com
     description: Primary UltraDNS API
 security:
-  - bearerAuth: []
+  - oauth2: []
 tags:
   - name: Authorization
     description: |-
@@ -229,10 +236,10 @@ paths:
                 Get Status:
                   value:
                     message: Good
+        '401':
+          $ref: '#/components/responses/Error401'
         5XX:
           $ref: '#/components/responses/Error5xx'
-      security:
-        - {}
   /v3/zones:
     get:
       tags:
@@ -538,10 +545,12 @@ paths:
           $ref: '#/components/responses/Error5xx'
 components:
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      description: OAuth 2.0 Bearer token authentication
+    oauth2:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: https://api.ultradns.com/authorization/token
+          scopes: {}
   schemas:
     TokenResponse:
       type: object
