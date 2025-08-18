@@ -4,6 +4,8 @@ on:
   release:
     types: [published, edited]
 
+
+
 jobs:
   bundle-and-publish:
     runs-on: ubuntu-latest
@@ -11,6 +13,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: main
         
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -24,10 +28,13 @@ jobs:
       - name: Bundle OpenAPI specification
         run: npm run bundle
         
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          
       - name: Commit and push bundled spec
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
           git add docs/openapi.yaml
           git commit -m "chore: update bundled OpenAPI spec for release ${{ github.event.release.tag_name }}" || exit 0
-          git push origin HEAD:main
+          git push
