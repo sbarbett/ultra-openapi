@@ -27,23 +27,35 @@ jobs:
         cache: 'npm'
         
     - name: Install Spectral CLI
-      run: npm install -g @stoplight/spectral-cli
+      run: npm install -g @stoplight/spectral-cli@latest
       
-    - name: Validate OpenAPI specification
+    - name: Install Redocly CLI
+      run: npm install -g @redocly/cli@latest
+      
+    - name: Validate OpenAPI specification with Spectral
       run: |
         echo "🔍 Running Spectral validation..."
         spectral lint spec/openapi.yaml --ruleset .spectral.yaml --fail-severity=error
         
-    - name: Generate validation report
+    - name: Validate OpenAPI specification with Redocly
+      run: |
+        echo "🔍 Running Redocly validation..."
+        redocly lint spec/openapi.yaml
+        
+    - name: Generate validation reports
       if: always()
       run: |
-        echo "📊 Generating validation report..."
-        spectral lint spec/openapi.yaml --ruleset .spectral.yaml --format json > validation-report.json
+        echo "📊 Generating Spectral validation report..."
+        spectral lint spec/openapi.yaml --ruleset .spectral.yaml --format json > spectral-validation-report.json
+        echo "📊 Generating Redocly validation report..."
+        redocly lint spec/openapi.yaml --format json > redocly-validation-report.json
         
-    - name: Upload validation report
+    - name: Upload validation reports
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: spectral-validation-report
-        path: validation-report.json
+        name: validation-reports
+        path: |
+          spectral-validation-report.json
+          redocly-validation-report.json
         retention-days: 30
