@@ -30,4 +30,4 @@ jobs:
           git config --local user.name "GitHub Action"
           git add docs/openapi.yaml
           git commit -m "chore: update bundled OpenAPI spec for release ${{ github.event.release.tag_name }}" || exit 0
-          git push
+          git push origin HEAD:main
