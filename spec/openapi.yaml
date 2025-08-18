@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: API Documentation v1.1.1
+  title: UltraDNS API Documentation
   description: "This API specification provides an organized interface to the UltraDNS (UDNS) REST API. Endpoints are grouped
     by resource domain to support a logical, discoverable structure:\n\n- **Zones**: Manage DNS zones and resource records
     (create, read, update, delete)\n    \n- **Reports**: Retrieve analytics, usage, and query volume data\n    \n- **Other

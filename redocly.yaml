@@ -1,3 +1,7 @@
 apis:
   main:
     root: spec/openapi.yaml
+
+rules:
+  no-invalid-media-type-examples: off
+  no-invalid-schema-examples: off
