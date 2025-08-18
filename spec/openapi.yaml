@@ -11,6 +11,9 @@ info:
     resource group contains a set of RESTful endpoints, designed to be self-contained and independently testable. When interacting
     with this API refer to resource-specific sections for details on supported operations"
   version: 0.1.0
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
   contact: {}
 servers:
 - url: https://api.ultradns.com
