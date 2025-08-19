@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.1.1
 info:
   title: UltraDNS API Documentation
   description: |-
@@ -184,33 +184,34 @@ paths:
       security:
         - {}
   /version:
-    tags:
-      - Platform
-    summary: Get Version
-    description: |-
-      The version call provides the version of the REST API currently in production.
+    get:
+      tags:
+        - Platform
+      summary: Get Version
+      description: |-
+        The version call provides the version of the REST API currently in production.
 
-      This call does not require an Authorization header to be specified, which allows it to be used to verify that there are no networking issues between a client and the REST API server.
-    operationId: getVersion
-    responses:
-      '200':
-        description: Get Version
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                version:
-                  type: string
-                  example: 3.108.0-20250804151109.a1bbd8c
-            examples:
-              Get Version:
-                value:
-                  version: 3.108.0-20250804151109.a1bbd8c
-      5XX:
-        $ref: ../components/responses/Error5xx.yaml
-    security:
-      - {}
+        This call does not require an Authorization header to be specified, which allows it to be used to verify that there are no networking issues between a client and the REST API server.
+      operationId: getVersion
+      responses:
+        '200':
+          description: Get Version
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+                    example: 3.108.0-20250804151109.a1bbd8c
+              examples:
+                Get Version:
+                  value:
+                    version: 3.108.0-20250804151109.a1bbd8c
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+      security:
+        - {}
   /status:
     get:
       tags:
