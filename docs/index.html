@@ -63,6 +63,42 @@
                 responseInterceptor: function(response) {
                     // Add any response interceptors here if needed
                     return response;
+                },
+                onComplete: function() {
+                    // Set up mutation observer to watch for authorization dialog
+                    const observer = new MutationObserver(function(mutations) {
+                        mutations.forEach(function(mutation) {
+                            if (mutation.type === 'childList') {
+                                mutation.addedNodes.forEach(function(node) {
+                                    if (node.nodeType === 1) { // Element node
+                                        const authContainer = node.querySelector('.auth-container') || 
+                                                           (node.classList && node.classList.contains('auth-container') ? node : null);
+                                        if (authContainer) {
+                                            // Hide client credential fields immediately
+                                            const labels = authContainer.querySelectorAll('label');
+                                            labels.forEach(function(label) {
+                                                const text = label.textContent || label.innerText;
+                                                if (text.includes('client_id') || 
+                                                    text.includes('client_secret') || 
+                                                    text.includes('Client credentials location')) {
+                                                    const parent = label.parentElement;
+                                                    if (parent) {
+                                                        parent.style.display = 'none';
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    });
+                    
+                    // Start observing
+                    observer.observe(document.body, {
+                        childList: true,
+                        subtree: true
+                    });
                 }
             });
         };

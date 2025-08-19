@@ -22,18 +22,3 @@ The specification is automatically validated by Spectral on pull requests and pu
 ```bash
 spectral lint spec/openapi.yaml --ruleset .spectral.yaml
 ```
-
-## Local Development
-
-To work with the documentation locally:
-
-```bash
-# Install dependencies
-npm install
-
-# Bundle the OpenAPI spec
-npm run bundle
-
-# Preview documentation
-npm run preview
-```

@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.1.1
 info:
   title: UltraDNS API Documentation
   description: "This API specification provides an organized interface to the UltraDNS (UDNS) REST API. Endpoints are grouped
