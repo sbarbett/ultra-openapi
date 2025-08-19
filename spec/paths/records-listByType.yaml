@@ -1,0 +1,46 @@
+get:
+  tags:
+    - Records
+  summary: List Records by Type
+  description: Retrieves all resource record sets (RRSets) of a specific type within the specified DNS zone. 
+    Requires the `records_zoneName` and `records_type` environment variables. Set `records_type` to the desired 
+    record type (e.g., A, CNAME, TXT) to filter the results. The response returns an array of matching RRSet 
+    objects.
+  operationId: listRecordsByType
+  parameters:
+    - $ref: '../components/parameters/RecordsZoneName.yaml'
+    - $ref: '../components/parameters/RecordsType.yaml'
+    - $ref: '../components/parameters/Limit.yaml'
+    - $ref: '../components/parameters/Sort.yaml'
+    - $ref: '../components/parameters/Reverse.yaml'
+  responses:
+    '200':
+      description: List Records by Type
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/RRSetsList.yaml'
+          examples:
+            List Records by Type:
+              value:
+                queryInfo:
+                  limit: 100
+                  reverse: false
+                  sort: OWNER
+                resultInfo:
+                  offset: 0
+                  returnedCount: 1
+                  totalCount: 1
+                rrSets:
+                - ownerName: www.domain.com.
+                  rdata:
+                  - 204.74.99.100
+                  rrtype: A (1)
+                  ttl: 300
+                zoneName: domain.com
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

@@ -1,0 +1,59 @@
+get:
+  tags:
+    - Records
+  summary: List RRsets
+  description: "Retrieves all resource record sets (RRSets) in the specified DNS zone. Requires the `records_zoneName`
+    environment variable.\n\nSupports optional query parameters to filter results (for example, by record type, ownerName,
+    TTL) or paginate the list."
+  operationId: listRrsets
+  parameters:
+    - $ref: '../components/parameters/RecordsZoneName.yaml'
+    - $ref: '../components/parameters/Limit.yaml'
+    - $ref: '../components/parameters/Sort.yaml'
+    - $ref: '../components/parameters/Reverse.yaml'
+  responses:
+    '200':
+      description: List RRsets
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/RRSetsList.yaml'
+          examples:
+            List RRsets:
+              value:
+                queryInfo:
+                  limit: 100
+                  reverse: false
+                  sort: OWNER
+                resultInfo:
+                  offset: 0
+                  returnedCount: 3
+                  totalCount: 3
+                rrSets:
+                - ownerName: domain.com.
+                  rdata:
+                  - pdns1.ultradns.net.
+                  - pdns2.ultradns.net.
+                  - pdns3.ultradns.org.
+                  - pdns4.ultradns.org.
+                  - pdns5.ultradns.info.
+                  - pdns6.ultradns.co.uk.
+                  rrtype: NS (2)
+                  ttl: 86400
+                - ownerName: domain.com.
+                  rdata:
+                  - pdns1.ultradns.net. shane\.barbetta.digicert.com. 2025061702 86400 86400 86400 86400
+                  rrtype: SOA (6)
+                  ttl: 86400
+                - ownerName: www.domain.com.
+                  rdata:
+                  - 204.74.99.100
+                  rrtype: A (1)
+                  ttl: 300
+                zoneName: domain.com
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

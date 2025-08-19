@@ -7,7 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.0] - 2025-08-28
+## [0.1.1] - 2025-08-19
+
+### Changed
+- Upgraded OpenAPI specification from 3.0.3 to 3.1.1
+- Restructured path files for better organization and OpenAPI 3.1 compliance
+- Fixed Spectral validation configuration to handle OpenAPI 3.1 schema validation
+- Updated GitHub Actions workflow to use `npx` prefix for Redocly commands
+
+### Fixed
+- Resolved validation errors caused by incorrect path item structures
+- Fixed false positive schema validation issues in Spectral for OpenAPI 3.1
+- Corrected file naming: `platform.yaml` → `version.yaml` for clarity
+
+## [0.1.0] - 2025-08-18
 
 ### Added
 - OpenAPI 3.0.3 spec organized by resource: Authorization, Platform, Zones, Records, Tasks

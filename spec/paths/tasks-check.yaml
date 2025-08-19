@@ -1,0 +1,51 @@
+get:
+  tags:
+    - Tasks
+  summary: Check Task
+  description: Checks the status of a background task. Requires the `currentTask` variable, which the collection 
+    automatically populates from the x-task-id header of previous async operations.
+  operationId: checkTask
+  parameters:
+    - name: currentTask
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Task ID from x-task-id header
+  responses:
+    '200':
+      description: Check Task
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+                example: COMPLETE
+              hasData:
+                type: boolean
+                example: true
+              message:
+                type: string
+                example: domain.com. export completed.
+              resultUri:
+                type: string
+                example: /tasks/605b23e4-edb9-4f23-ae2d-33fe24d6033f/result
+              taskId:
+                type: string
+                example: 605b23e4-edb9-4f23-ae2d-33fe24d6033f
+          examples:
+            Check Task:
+              value:
+                code: COMPLETE
+                hasData: true
+                message: domain.com. export completed.
+                resultUri: /tasks/605b23e4-edb9-4f23-ae2d-33fe24d6033f/result
+                taskId: 605b23e4-edb9-4f23-ae2d-33fe24d6033f
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

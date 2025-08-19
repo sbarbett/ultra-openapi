@@ -40,7 +40,7 @@ jobs:
     - name: Validate OpenAPI specification with Redocly
       run: |
         echo "🔍 Running Redocly validation..."
-        redocly lint spec/openapi.yaml
+        npx redocly lint spec/openapi.yaml
         
     - name: Generate validation reports
       if: always()
@@ -48,7 +48,7 @@ jobs:
         echo "📊 Generating Spectral validation report..."
         spectral lint spec/openapi.yaml --ruleset .spectral.yaml --format json > spectral-validation-report.json
         echo "📊 Generating Redocly validation report..."
-        redocly lint spec/openapi.yaml --format json > redocly-validation-report.json
+        npx redocly lint spec/openapi.yaml --format json > redocly-validation-report.json
         
     - name: Upload validation reports
       if: always()
