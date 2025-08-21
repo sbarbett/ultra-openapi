@@ -30,6 +30,79 @@
         .swagger-ui .info .title {
             color: #2c3e50;
         }
+        
+        /* GitHub-style badges */
+        .info-badges-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .info-badge {
+            display: inline-flex;
+            background: #555;
+            color: #fff;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            margin: 0 2px;
+            vertical-align: baseline;
+            overflow: hidden;
+        }
+        
+        .info-badge:hover {
+            opacity: 0.8;
+        }
+        
+        .info-badge::before {
+            content: attr(data-label);
+            background: #555;
+            padding: 2px 6px;
+            color: #fff;
+        }
+        
+        .info-badge::after {
+            content: attr(data-value);
+            padding: 2px 6px;
+            color: #fff;
+        }
+        
+        .info-badge.terms::after {
+            background: #e4b400;
+        }
+        
+        .info-badge.contact::after {
+            background: #007ec6;
+        }
+        
+        .info-badge.contact.email::after {
+            background: #d97706;
+        }
+        
+        .info-badge.license::after {
+            background: #28a745;
+        }
+        
+        /* Make info containers display badges side-by-side */
+        .swagger-ui .info .info__tos,
+        .swagger-ui .info .info__license {
+            display: inline-block !important;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        
+        /* Make contact container display its children side-by-side */
+        .swagger-ui .info .info__contact {
+            display: inline-flex !important;
+            flex-direction: row !important;
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 <body>
@@ -65,6 +138,54 @@
                     return response;
                 },
                 onComplete: function() {
+                    // Transform existing info links to badges
+                    function transformLinksToBadges() {
+                        const infoContainer = document.querySelector('.swagger-ui .info');
+                        if (!infoContainer) {
+                            console.log('Info container not found');
+                            return;
+                        }
+                        
+                        // Transform Terms of Service link
+                        const tosLink = infoContainer.querySelector('.info__tos a');
+                        if (tosLink && !tosLink.classList.contains('info-badge')) {
+                            tosLink.className = 'info-badge terms';
+                            tosLink.setAttribute('data-label', 'terms');
+                            tosLink.setAttribute('data-value', 'service');
+                            tosLink.textContent = '';
+                            console.log('Transformed TOS link');
+                        }
+                        
+                        // Transform Contact links (both website and email)
+                        const contactLinks = infoContainer.querySelectorAll('.info__contact a');
+                        contactLinks.forEach((contactLink, index) => {
+                            if (contactLink && !contactLink.classList.contains('info-badge')) {
+                                if (contactLink.href.startsWith('mailto:')) {
+                                    contactLink.className = 'info-badge contact email';
+                                    contactLink.setAttribute('data-label', 'contact');
+                                    contactLink.setAttribute('data-value', 'email');
+                                    contactLink.textContent = '';
+                                } else {
+                                    contactLink.className = 'info-badge contact';
+                                    contactLink.setAttribute('data-label', 'contact');
+                                    contactLink.setAttribute('data-value', 'website');
+                                    contactLink.textContent = '';
+                                }
+                                console.log('Transformed Contact link', index);
+                            }
+                        });
+                        
+                        // Transform License link
+                        const licenseLink = infoContainer.querySelector('.info__license a');
+                        if (licenseLink && !licenseLink.classList.contains('info-badge')) {
+                            licenseLink.className = 'info-badge license';
+                            licenseLink.setAttribute('data-label', 'license');
+                            licenseLink.setAttribute('data-value', 'apache');
+                            licenseLink.textContent = '';
+                            console.log('Transformed License link');
+                        }
+                    }
+                    
                     // Set up mutation observer to watch for authorization dialog
                     const observer = new MutationObserver(function(mutations) {
                         mutations.forEach(function(mutation) {
@@ -92,6 +213,9 @@
                                 });
                             }
                         });
+                        
+                        // Try to transform links after any DOM changes
+                        transformLinksToBadges();
                     });
                     
                     // Start observing
@@ -99,6 +223,12 @@
                         childList: true,
                         subtree: true
                     });
+                    
+                    // Multiple attempts to transform links with increasing delays
+                    setTimeout(transformLinksToBadges, 100);
+                    setTimeout(transformLinksToBadges, 500);
+                    setTimeout(transformLinksToBadges, 1000);
+                    setTimeout(transformLinksToBadges, 2000);
                 }
             });
         };

@@ -1,16 +1,114 @@
-openapi: 3.1.1
+openapi: 3.0.3
 info:
   title: UltraDNS API Documentation
-  description: "This API specification provides an organized interface to the UltraDNS (UDNS) REST API. Endpoints are grouped
-    by resource domain to support a logical, discoverable structure:\n\n- **Zones**: Manage DNS zones and resource records
-    (create, read, update, delete)\n    \n- **Reports**: Retrieve analytics, usage, and query volume data\n    \n- **Other
-    Resources**: Additional endpoints are grouped into relevant folders or sections based on functional area\n    \n\n## Authentication\n\
-    \nThis API uses OAuth 2.0 (Password Credentials Grant) for authentication. To authenticate:\n\n1. Obtain an access token
-    by exchanging your username and password at the token endpoint.\n    \n2. Include the token in the `Authorization` header
-    of each request as a Bearer token.\n    \n\n``` http\nAuthorization: Bearer <access_token>\n\n ```\n\n## Usage\n\nEach
-    resource group contains a set of RESTful endpoints, designed to be self-contained and independently testable. When interacting
-    with this API refer to resource-specific sections for details on supported operations"
-  version: 0.1.0
+  description: |
+    # Introduction
+
+    The UltraDNS REST API lets you manage DNS resources programmatically and test changes in a non-production environment.
+
+    ## What you can do
+    - Create and test API calls in a controlled test environment that mimics production.
+    - Manage UltraDNS objects using REST requests.
+    - Use the API as an alternative to the UltraDNS Managed Services Portal.
+
+    ## Base URLs
+
+    Environment | Base URL | Purpose
+    ---|---|---
+    Customer test | `https://test-api.ultradns.com` | Configuration and change testing
+    Production | `https://api.ultradns.com` | Configuration and changes
+
+    All URI examples use the production URL. You may test calls against the customer test environment. The test environment has limitations; contact customer support for details.
+
+    ## Request and response formats
+
+    The API accepts and returns XML or JSON. JSON is preferred and is the default response format (even if the request is XML).
+
+    Header | Values | Purpose
+    ---|---|---
+    `Content-Type` | `application/json` or `application/xml` | Request body format
+    `Accept` | `application/json` or `application/xml` | Desired response format
+
+    JSON Patch is supported for updates. Use `PATCH` with `Content-Type: application/json-patch+json`.
+
+    ## API versioning
+
+    To target a particular API version, include it it in the request path (i.e. `/v1/`, `/v2/` or `/v3`). When omitted, the most recent production version is used.
+
+    Some calls differ by version:
+
+    API area | Behavior
+    ---|---
+    Directional update | Updating a Directional Pool record-level TTL is not supported with `/v1/`.
+    Deprecated ISO codes | Directional API calls using `/v1/` return different Geo-ISO details than `/v2` (default).
+    Batch API | Batch API calls work **only** with `/v1/`.
+    Batch Query API | Batch Query API calls work **only** with `/v1/`.
+    Reporting APIs | Reporting APIs no longer require a separate "Authentication" token; use the standard REST API authorization token.
+    Reporting APIs (link headers) | Response Link Headers for additional report results work **only** with `/v1/`.
+
+    ## Data Transfer Objects (DTOs)
+
+    A Data Transfer Object (DTO) is the structured data sent or returned by an API call. Fields may be simple types, comma-separated lists (where allowed), or nested DTOs.
+
+    Example (Primary Zone creation): the Zone Create DTO includes:
+    - `properties` — Zone API properties.
+    - `primaryCreateInfo` — Primary Zone settings.
+
+    Nested DTOs can include structures such as Restrict IP or Notify Address.
+
+    ## Responses
+
+    All operations return an HTTP status code.
+
+    HTTP | Meaning | Typical use | Notes
+    ---|---|---
+    200 | OK | `GET`, `PUT`, `PATCH` | Returns the requested or updated DTO when applicable.
+    201 | Created | `POST` | Resource created.
+    202 | Accepted | Async operations | Includes `X-Task-ID` header; work is pending.
+    204 | No Content | `DELETE` | Deletion succeeded; no body.
+
+    Errors return `4xx` or `5xx` with an UltraDNS error payload:
+
+    ```json
+    [
+      {
+        "errorCode": 1801,
+        "errorMessage": "Zone does not exist in the system."
+      }
+    ]
+    ```
+
+    System-level database errors may return code `9999` with a system error message.
+
+    ## 429 Too Many Requests
+
+    Returned when too many requests come from the same customer or IP address in a short period, to protect service reliability and security.
+
+    Tips to avoid 429 responses:
+
+    * Reuse your authorization token instead of creating a new token for every call (tokens are reusable for up to 1 hour).
+    * Add a short delay (0.5–1.0 seconds) between consecutive requests when necessary.
+
+    ## Supported record types
+
+    | Record Type                                 | ID  |
+    | ------------------------------------------- | --- |
+    | A — IPv4 Address                            | 1   |
+    | NS — Name Server                            | 2   |
+    | CNAME — Canonical Name                      | 5   |
+    | SOA — Start of Authority                    | 6   |
+    | PTR — Pointer                               | 12  |
+    | MX — Mail Exchange                          | 15  |
+    | TXT — Text                                  | 16  |
+    | RP — Responsible Person                     | 17  |
+    | AAAA — IPv6 Address                         | 28  |
+    | LOC — Location                              | 29  |
+    | SRV — Service Locator                       | 33  |
+    | NAPTR — Naming Authority Pointer            | 35  |
+    | SSHFP — SSH Fingerprint                     | 44  |
+    | SPF — Sender Policy Framework               | 99  |
+    | CAA — Certification Authority Authorization | 257 |
+  version: 0.1.2
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
@@ -22,6 +120,8 @@ info:
 servers:
 - url: https://api.ultradns.com
   description: Primary UltraDNS API
+- url: https://test-api.ultradns.com
+  description: Test UltraDNS API
 
 # Import path files
 paths:
@@ -65,32 +165,28 @@ components:
 
 # Tags
 tags:
-- name: Authorization
-  description: "This folder contains endpoints for obtaining and refreshing authentication tokens for the UltraDNS REST API
-    using the Resource Owner Password Credentials (ROPC) grant, a legacy subset of OAuth 2.0. These requests require a valid
-    UltraDNS API username and password.\n\nFailed login attempts may lock the account for a period of time; if this occurs,
-    wait until the lockout expires or contact Customer Support. Users with \"API Only Access\" cannot log into the UltraDNS
-    Portal but can authenticate to the API."
-- name: Platform
-  description: "This folder contains endpoints that provide information about the UltraDNS API platform itself.\n\n- Check
-    API operational status and health\n    \n- Retrieve current API version information\n    \n- Validate connectivity to
-    the service\n    \n\nThese endpoints are intended for integration health checks, monitoring, and ensuring compatibility
-    with the current API version."
-- name: Zones
-  description: "This endpoint contains all operations for managing the lifecycle and metadata of your DNS zones.\n\n- **Create**
-    new zones\n    \n- **Retrieve** zone details and metadata\n    \n- **Update** zone configuration\n    \n- **Delete** existing
-    zones\n    \n- **Export** zone files\n    \n- **Capture** zone snapshots\n    \n\nEverything here is focused on DNS zone
-    management and its associated metadata."
-- name: Records
-  description: "Endpoints for managing resource record sets (RRSets) within a DNS zone. Each RRSet groups records sharing
-    the same owner name, type, and class (always IN). Record data is handled via the `rdata` array, which follows the BIND
-    presentation format.\n\n- **List** all RRSets in a zone\n    \n- **Retrieve** a specific RRSet by owner name and type\n\
-    \    \n- **Create/Update** RRSets by supplying `rdata` entries and TTL\n    \n- **Delete** RRSets"
-- name: Tasks
-  description: "Endpoints for monitoring asynchronous background tasks (e.g., zone snapshots or exports):\n\n- When you invoke
-    an operation that returns **202 Accepted**, the response headers include an `x-task-id`.\n    \n- Use these endpoints
-    to:\n    \n    - **Check status** of the task referenced by `{{currentTask}}`\n        \n    - **Retrieve results** once
-    the task completes"
+  - name: Authorization
+    description: >
+      Obtain and refresh auth tokens via the OAuth 2.0 Resource Owner Password Credentials (ROPC) grant.
+      Requires an UltraDNS API username and password. Repeated failures may trigger temporary lockout.
+
+  - name: Tasks
+    description: >
+      Track asynchronous operations (e.g., exports, snapshots). 202 responses include an `X-Task-ID` header;
+      use it to check status and retrieve results.
+
+  - name: Platform
+    description: >
+      Health, version, and connectivity checks for monitoring and compatibility.
+
+  - name: Zones
+    description: >
+      Manage DNS zones: create, read, update, delete; export zone files; capture snapshots.
+
+  - name: Records
+    description: >
+      Manage resource record sets (RRSets) within a zone (list, read, upsert via `rdata` and TTL, delete).
+      `rdata` uses the BIND presentation format.
 
 # Global security
 security:
