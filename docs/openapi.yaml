@@ -146,37 +146,56 @@ paths:
       tags:
         - Authorization
       summary: Manage Auth Token
-      description: |-
-        Obtain or refresh an UltraDNS API access token using a single endpoint. This request supports two flows:
+      description: |
+        Issue or refresh an UltraDNS API access token.
 
-        - **Initial authentication:** exchange a valid username and password (password grant) for an access token.
-            
-        - **Session continuation:** exchange a valid refresh token (refresh grant) for a new access token without re-supplying credentials.
-            
-
-        Use the returned access token to authorize subsequent API calls until it expires.
+        **Notes**
+        - Repeated failed logins may trigger temporary lockout.
+        - Only one refresh token is valid at a time; obtaining new credentials invalidates the previous refresh token.
+        - Users with “API Only Access” can authenticate to the API but cannot sign in to the Portal.
       operationId: manageAuthToken
       requestBody:
         content:
           application/x-www-form-urlencoded:
             schema:
-              type: object
-              properties:
-                expire_in:
-                  type: string
-                  example: '86400'
-                grant_type:
-                  type: string
-                  example: password
-                password:
-                  type: string
-                  example: '{{password}}'
-                refresh_token:
-                  type: string
-                  example: '{{refreshToken}}'
-                username:
-                  type: string
-                  example: '{{username}}'
+              oneOf:
+                - type: object
+                  required:
+                    - grant_type
+                    - username
+                    - password
+                  properties:
+                    grant_type:
+                      type: string
+                      enum:
+                        - password
+                      example: password
+                      description: The method a client application uses to get an access token. For password grant, grant_type = password
+                    username:
+                      type: string
+                      description: The username for your account.
+                    password:
+                      type: string
+                      description: The password for your account.
+                - type: object
+                  required:
+                    - grant_type
+                    - refresh_token
+                  properties:
+                    grant_type:
+                      type: string
+                      enum:
+                        - refresh_token
+                      example: refresh_token
+                      description: The method a client application uses to get. For refresh token grant, grant_type = refresh_token
+                    refresh_token:
+                      type: string
+                      description: The Refresh Value token taken from the Authorization API call.
+                    expire_in:
+                      type: integer
+                      example: 86400
+                      default: 604800
+                      description: Set the duration, in seconds, in which the Refresh Token will expire. This is an optional field with. Default value = 604800 (7 days). Allowed Value = 1 - 604800
             examples:
               Manage Auth Token:
                 value:
@@ -634,21 +653,23 @@ components:
     ErrorGeneric:
       type: object
       required:
-        - message
+        - errorCode
+        - errorMessage
+        - error
+        - error_description
       properties:
-        code:
-          type: string
-          description: Error code
-        message:
+        errorCode:
+          type: integer
+          description: Numeric error code
+        errorMessage:
           type: string
           description: Human-readable error message
-        details:
-          type: object
-          additionalProperties: true
-          description: Additional error details
-        requestId:
+        error:
           type: string
-          description: Request identifier for tracking
+          description: OAuth2 error type
+        error_description:
+          type: string
+          description: Detailed error description with error code
     PageCursorEnvelope:
       type: object
       properties:

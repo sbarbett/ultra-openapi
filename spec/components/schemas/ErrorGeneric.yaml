@@ -1,17 +1,19 @@
 type: object
 required:
-  - message
+  - errorCode
+  - errorMessage
+  - error
+  - error_description
 properties:
-  code:
-    type: string
-    description: Error code
-  message:
+  errorCode:
+    type: integer
+    description: Numeric error code
+  errorMessage:
     type: string
     description: Human-readable error message
-  details:
-    type: object
-    additionalProperties: true
-    description: Additional error details
-  requestId:
+  error:
     type: string
-    description: Request identifier for tracking
+    description: OAuth2 error type
+  error_description:
+    type: string
+    description: Detailed error description with error code
