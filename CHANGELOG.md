@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reverted back to 3.0.3 due to tooling compatibility
 - Updated description, moved to a separate Markdown file
 - Updated various params and filenames for clarity
+- Separated `QueryInfo` into its owns schema
+- Changed cursor and offset envelopes into `CursorInfo` and `ResultInfo` schemas
+- Added `ZoneQuery` and `Cursor` parameters
 
 ### Removed
 - Collapsed the `RecordsZoneName` parameter into `ZoneName`

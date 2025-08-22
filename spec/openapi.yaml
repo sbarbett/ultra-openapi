@@ -13,10 +13,10 @@ info:
 
     ## Base URLs
 
-    Environment | Base URL | Purpose
-    ---|---|---
-    Customer test | `https://test-api.ultradns.com` | Configuration and change testing
-    Production | `https://api.ultradns.com` | Configuration and changes
+    | Environment | Base URL | Purpose |
+    |-------------|----------|---------|
+    | Customer test | `https://test-api.ultradns.com` | Configuration and change testing |
+    | Production | `https://api.ultradns.com` | Configuration and changes |
 
     All URI examples use the production URL. You may test calls against the customer test environment. The test environment has limitations; contact customer support for details.
 
@@ -24,10 +24,10 @@ info:
 
     The API accepts and returns XML or JSON. JSON is preferred and is the default response format (even if the request is XML).
 
-    Header | Values | Purpose
-    ---|---|---
-    `Content-Type` | `application/json` or `application/xml` | Request body format
-    `Accept` | `application/json` or `application/xml` | Desired response format
+    | Header | Values | Purpose |
+    |--------|--------|---------|
+    | `Content-Type` | `application/json` or `application/xml` | Request body format |
+    | `Accept` | `application/json` or `application/xml` | Desired response format |
 
     JSON Patch is supported for updates. Use `PATCH` with `Content-Type: application/json-patch+json`.
 
@@ -37,14 +37,14 @@ info:
 
     Some calls differ by version:
 
-    API area | Behavior
-    ---|---
-    Directional update | Updating a Directional Pool record-level TTL is not supported with `/v1/`.
-    Deprecated ISO codes | Directional API calls using `/v1/` return different Geo-ISO details than `/v2` (default).
-    Batch API | Batch API calls work **only** with `/v1/`.
-    Batch Query API | Batch Query API calls work **only** with `/v1/`.
-    Reporting APIs | Reporting APIs no longer require a separate "Authentication" token; use the standard REST API authorization token.
-    Reporting APIs (link headers) | Response Link Headers for additional report results work **only** with `/v1/`.
+    | API area | Behavior |
+    |----------|----------|
+    | Directional update | Updating a Directional Pool record-level TTL is not supported with `/v1/`. |
+    | Deprecated ISO codes | Directional API calls using `/v1/` return different Geo-ISO details than `/v2` (default). |
+    | Batch API | Batch API calls work **only** with `/v1/`. |
+    | Batch Query API | Batch Query API calls work **only** with `/v1/`. |
+    | Reporting APIs | Reporting APIs no longer require a separate "Authentication" token; use the standard REST API authorization token. |
+    | Reporting APIs (link headers) | Response Link Headers for additional report results work **only** with `/v1/`. |
 
     ## Data Transfer Objects (DTOs)
 
@@ -60,12 +60,12 @@ info:
 
     All operations return an HTTP status code.
 
-    HTTP | Meaning | Typical use | Notes
-    ---|---|---
-    200 | OK | `GET`, `PUT`, `PATCH` | Returns the requested or updated DTO when applicable.
-    201 | Created | `POST` | Resource created.
-    202 | Accepted | Async operations | Includes `X-Task-ID` header; work is pending.
-    204 | No Content | `DELETE` | Deletion succeeded; no body.
+    | HTTP | Meaning | Typical use | Notes |
+    |------|---------|-------------|-------|
+    | 200 | OK | `GET`, `PUT`, `PATCH` | Returns the requested or updated DTO when applicable. |
+    | 201 | Created | `POST` | Resource created. |
+    | 202 | Accepted | Async operations | Includes `X-Task-ID` header; work is pending. |
+    | 204 | No Content | `DELETE` | Deletion succeeded; no body. |
 
     Errors return `4xx` or `5xx` with an UltraDNS error payload:
 
@@ -162,6 +162,25 @@ components:
         password:
           tokenUrl: https://api.ultradns.com/authorization/token
           scopes: {}
+  schemas:
+    QueryInfo:
+      $ref: './components/schemas/QueryInfo.yaml'
+    CursorInfo:
+      $ref: './components/schemas/CursorInfo.yaml'
+    ResultInfo:
+      $ref: './components/schemas/ResultInfo.yaml'
+    Zone:
+      $ref: './components/schemas/Zone.yaml'
+    ZonesList:
+      $ref: './components/schemas/ZonesList.yaml'
+    RRSet:
+      $ref: './components/schemas/RRSet.yaml'
+    RRSetsList:
+      $ref: './components/schemas/RRSetsList.yaml'
+    TokenResponse:
+      $ref: './components/schemas/TokenResponse.yaml'
+    ErrorGeneric:
+      $ref: './components/schemas/ErrorGeneric.yaml'
 
 # Tags
 tags:

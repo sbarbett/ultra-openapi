@@ -1,13 +1,14 @@
 type: object
-allOf:
-  - $ref: './PageOffsetEnvelope.yaml'
-  - type: object
-    properties:
-      rrSets:
-        type: array
-        items:
-          $ref: './RRSet.yaml'
-      zoneName:
-        type: string
-        description: The zone name
-        example: domain.com
+properties:
+  resultInfo:
+    $ref: './ResultInfo.yaml'
+  rrSets:
+    type: array
+    items:
+      $ref: './RRSet.yaml'
+  zoneName:
+    type: string
+    description: The zone name
+    example: domain.com
+required:
+  - rrSets

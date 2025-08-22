@@ -1,0 +1,25 @@
+type: object
+properties:
+  q:
+    type: string
+    description: The query used to construct the list
+    example: "zone_status:ALL+network:ultra2"
+  limit:
+    type: integer
+    minimum: 1
+    maximum: 1000
+    default: 100
+    description: The maximum number of rows requested. Default is 100, maximum is 1,000
+    example: 50
+  reverse:
+    type: boolean
+    description: Whether the list is ascending (false) or descending (true)
+    example: false
+  sort:
+    type: string
+    description: The sort column used to order the list
+    example: "name"
+required:
+  - limit
+  - reverse
+  - sort

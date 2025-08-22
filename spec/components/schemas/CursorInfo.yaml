@@ -1,0 +1,17 @@
+type: object
+description: Cursor information for pagination with next, previous, first and last values
+properties:
+  next:
+    type: string
+    description: Cursor for the next page of results
+    example: "c3ViLnVsdHJhZG5zMnRlc3QuY29tLjpORVhU"
+  previous:
+    type: string
+    description: Cursor for the previous page of results
+  first:
+    type: string
+    description: Cursor for the first page of results
+  last:
+    type: string
+    description: Cursor for the last page of results
+    example: "fjpMQVNU"

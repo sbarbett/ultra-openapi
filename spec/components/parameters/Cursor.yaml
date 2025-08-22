@@ -1,0 +1,7 @@
+name: cursor
+in: query
+required: false
+schema:
+  type: string
+description: |
+  Cursor for pagination. Can be provided after the initial request to fetch the next, previous, first or last page(s) of results.

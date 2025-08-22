@@ -1,12 +1,13 @@
 type: object
-allOf:
-  - $ref: './PageCursorEnvelope.yaml'
-  - type: object
-    properties:
-      zones:
-        type: array
-        items:
-          type: object
-          properties:
-            properties:
-              $ref: './Zone.yaml'
+properties:
+  queryInfo:
+    $ref: './QueryInfo.yaml'
+  cursorInfo:
+    $ref: './CursorInfo.yaml'
+  zones:
+    type: array
+    items:
+      $ref: './Zone.yaml'
+    description: List of the returned zones. Each item in the list matches the zone DTO described above.
+required:
+  - zones

@@ -13,10 +13,10 @@ info:
 
     ## Base URLs
 
-    Environment | Base URL | Purpose
-    ---|---|---
-    Customer test | `https://test-api.ultradns.com` | Configuration and change testing
-    Production | `https://api.ultradns.com` | Configuration and changes
+    | Environment | Base URL | Purpose |
+    |-------------|----------|---------|
+    | Customer test | `https://test-api.ultradns.com` | Configuration and change testing |
+    | Production | `https://api.ultradns.com` | Configuration and changes |
 
     All URI examples use the production URL. You may test calls against the customer test environment. The test environment has limitations; contact customer support for details.
 
@@ -24,10 +24,10 @@ info:
 
     The API accepts and returns XML or JSON. JSON is preferred and is the default response format (even if the request is XML).
 
-    Header | Values | Purpose
-    ---|---|---
-    `Content-Type` | `application/json` or `application/xml` | Request body format
-    `Accept` | `application/json` or `application/xml` | Desired response format
+    | Header | Values | Purpose |
+    |--------|--------|---------|
+    | `Content-Type` | `application/json` or `application/xml` | Request body format |
+    | `Accept` | `application/json` or `application/xml` | Desired response format |
 
     JSON Patch is supported for updates. Use `PATCH` with `Content-Type: application/json-patch+json`.
 
@@ -37,14 +37,14 @@ info:
 
     Some calls differ by version:
 
-    API area | Behavior
-    ---|---
-    Directional update | Updating a Directional Pool record-level TTL is not supported with `/v1/`.
-    Deprecated ISO codes | Directional API calls using `/v1/` return different Geo-ISO details than `/v2` (default).
-    Batch API | Batch API calls work **only** with `/v1/`.
-    Batch Query API | Batch Query API calls work **only** with `/v1/`.
-    Reporting APIs | Reporting APIs no longer require a separate "Authentication" token; use the standard REST API authorization token.
-    Reporting APIs (link headers) | Response Link Headers for additional report results work **only** with `/v1/`.
+    | API area | Behavior |
+    |----------|----------|
+    | Directional update | Updating a Directional Pool record-level TTL is not supported with `/v1/`. |
+    | Deprecated ISO codes | Directional API calls using `/v1/` return different Geo-ISO details than `/v2` (default). |
+    | Batch API | Batch API calls work **only** with `/v1/`. |
+    | Batch Query API | Batch Query API calls work **only** with `/v1/`. |
+    | Reporting APIs | Reporting APIs no longer require a separate "Authentication" token; use the standard REST API authorization token. |
+    | Reporting APIs (link headers) | Response Link Headers for additional report results work **only** with `/v1/`. |
 
     ## Data Transfer Objects (DTOs)
 
@@ -60,12 +60,12 @@ info:
 
     All operations return an HTTP status code.
 
-    HTTP | Meaning | Typical use | Notes
-    ---|---|---
-    200 | OK | `GET`, `PUT`, `PATCH` | Returns the requested or updated DTO when applicable.
-    201 | Created | `POST` | Resource created.
-    202 | Accepted | Async operations | Includes `X-Task-ID` header; work is pending.
-    204 | No Content | `DELETE` | Deletion succeeded; no body.
+    | HTTP | Meaning | Typical use | Notes |
+    |------|---------|-------------|-------|
+    | 200 | OK | `GET`, `PUT`, `PATCH` | Returns the requested or updated DTO when applicable. |
+    | 201 | Created | `POST` | Resource created. |
+    | 202 | Accepted | Async operations | Includes `X-Task-ID` header; work is pending. |
+    | 204 | No Content | `DELETE` | Deletion succeeded; no body. |
 
     Errors return `4xx` or `5xx` with an UltraDNS error payload:
 
@@ -295,6 +295,8 @@ paths:
       description: Retrieves all DNS zones in your account. The response returns an array of zone objects, each including details such as zone name, status, default TTL, and name servers.
       operationId: listZones
       parameters:
+        - $ref: '#/components/parameters/ZoneQuery'
+        - $ref: '#/components/parameters/Cursor'
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Sort'
         - $ref: '#/components/parameters/Reverse'
@@ -308,33 +310,37 @@ paths:
               examples:
                 List Zones:
                   value:
-                    cursorInfo: {}
                     queryInfo:
-                      limit: 100
-                      q: ''
-                      reverse: false
+                      q: zone_status:ALL network:ultra2
                       sort: name
+                      reverse: false
+                      limit: 50
+                    cursorInfo:
+                      next: c3ViLnVsdHJhZG5zMnRlc3QuY29tLjpORVhU
+                      last: fjpMQVNU
                     zones:
                       - properties:
-                          accountName: postman-example
-                          dnssecStatus: UNSIGNED
-                          lastModifiedDateTime: '2025-06-17T23:48:00Z'
-                          name: domain.com.
-                          owner: postman-example
-                          resourceRecordCount: 7
-                          status: ACTIVE
+                          name: testzone1.com.
+                          accountName: testaccount1
                           type: PRIMARY
-                          ultra2: false
+                          dnssecStatus: SIGNED
+                          status: ACTIVE
+                          owner: testuser1
+                          resourceRecordCount: 4826
+                          lastModifiedDateTime: '2025-08-22T13:12:00Z'
+                          ultra2: true
                       - properties:
-                          accountName: postman-example
-                          dnssecStatus: UNSIGNED
-                          lastModifiedDateTime: '2025-06-17T23:43:00Z'
-                          name: postman-example.xyz.
-                          owner: postman-example
-                          resourceRecordCount: 7
-                          status: ACTIVE
+                          name: testzone2.com.
+                          accountName: testaccount2
                           type: PRIMARY
-                          ultra2: false
+                          dnssecStatus: UNSIGNED
+                          status: ACTIVE
+                          owner: testuser2
+                          resourceRecordCount: 9
+                          lastModifiedDateTime: '2025-08-21T13:26:00Z'
+                          ultra2: true
+        '400':
+          $ref: '#/components/responses/Error400'
         '401':
           $ref: '#/components/responses/Error401'
         5XX:
@@ -603,6 +609,182 @@ components:
           tokenUrl: https://api.ultradns.com/authorization/token
           scopes: {}
   schemas:
+    QueryInfo:
+      type: object
+      properties:
+        q:
+          type: string
+          description: The query used to construct the list
+          example: zone_status:ALL+network:ultra2
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          default: 100
+          description: The maximum number of rows requested. Default is 100, maximum is 1,000
+          example: 50
+        reverse:
+          type: boolean
+          description: Whether the list is ascending (false) or descending (true)
+          example: false
+        sort:
+          type: string
+          description: The sort column used to order the list
+          example: name
+      required:
+        - limit
+        - reverse
+        - sort
+    CursorInfo:
+      type: object
+      description: Cursor information for pagination with next, previous, first and last values
+      properties:
+        next:
+          type: string
+          description: Cursor for the next page of results
+          example: c3ViLnVsdHJhZG5zMnRlc3QuY29tLjpORVhU
+        previous:
+          type: string
+          description: Cursor for the previous page of results
+        first:
+          type: string
+          description: Cursor for the first page of results
+        last:
+          type: string
+          description: Cursor for the last page of results
+          example: fjpMQVNU
+    ResultInfo:
+      type: object
+      properties:
+        totalCount:
+          type: integer
+          minimum: 0
+          description: Total number of items available
+        offset:
+          type: integer
+          minimum: 0
+          description: Zero-based offset for pagination
+        returnedCount:
+          type: integer
+          minimum: 0
+          description: Number of items returned in this response
+      required:
+        - totalCount
+        - offset
+        - returnedCount
+    Zone:
+      type: object
+      properties:
+        properties:
+          type: object
+          properties:
+            accountName:
+              type: string
+              description: The account name that owns the zone
+              example: testaccount
+            dnssecStatus:
+              type: string
+              description: DNSSEC signing status of the zone
+              example: UNSIGNED
+              enum:
+                - UNSIGNED
+                - SIGNED
+            certcentralEnabled:
+              type: boolean
+              description: Whether CertCentral integration is enabled for this zone
+              example: true
+            lastModifiedDateTime:
+              type: string
+              format: date-time
+              description: Last modification timestamp
+              example: '2025-02-20T08:40:00Z'
+            name:
+              type: string
+              description: The zone name (fully qualified domain name)
+              example: 0-0-0-0-0sample.com.
+            owner:
+              type: string
+              description: The owner of the zone
+              example: team
+            resourceRecordCount:
+              type: integer
+              description: Number of resource records in the zone
+              example: 15
+            status:
+              type: string
+              description: Current status of the zone
+              example: ACTIVE
+              enum:
+                - ACTIVE
+                - SUSPENDED
+            type:
+              type: string
+              description: Zone type
+              example: PRIMARY
+              enum:
+                - ALIAS
+                - PRIMARY
+                - SECONDARY
+            ultra2:
+              type: boolean
+              description: Whether this is an Ultra2 zone
+              example: true
+            originalZoneName:
+              type: string
+              description: The original zone name for ALIAS zones
+              example: testalias.com.
+    ZonesList:
+      type: object
+      properties:
+        queryInfo:
+          $ref: '#/components/schemas/QueryInfo'
+        cursorInfo:
+          $ref: '#/components/schemas/CursorInfo'
+        zones:
+          type: array
+          items:
+            $ref: '#/components/schemas/Zone'
+          description: List of the returned zones. Each item in the list matches the zone DTO described above.
+      required:
+        - zones
+    RRSet:
+      type: object
+      properties:
+        ownerName:
+          type: string
+          description: The owner name (record label) of the RRSet
+          example: domain.com.
+        rdata:
+          type: array
+          items:
+            type: string
+          description: Array of record data values in BIND presentation format
+          example:
+            - pdns1.ultradns.net.
+            - pdns2.ultradns.net.
+        rrtype:
+          type: string
+          description: DNS record type with numeric value
+          example: NS (2)
+        ttl:
+          type: integer
+          description: Time to live in seconds
+          example: 86400
+    RRSetsList:
+      type: object
+      properties:
+        resultInfo:
+          $ref: '#/components/schemas/ResultInfo'
+        rrSets:
+          type: array
+          items:
+            $ref: '#/components/schemas/RRSet'
+        zoneName:
+          type: string
+          description: The zone name
+          example: domain.com
+      required:
+        - rrSets
     TokenResponse:
       type: object
       properties:
@@ -659,171 +841,6 @@ components:
         error_description:
           type: string
           description: Detailed error description with error code
-    PageCursorEnvelope:
-      type: object
-      properties:
-        cursorInfo:
-          type: object
-          description: Cursor information for pagination
-          additionalProperties: true
-        queryInfo:
-          type: object
-          properties:
-            limit:
-              type: integer
-              minimum: 1
-              description: Maximum number of items returned
-            q:
-              type: string
-              description: Query filter string
-            reverse:
-              type: boolean
-              description: Whether results are in reverse order
-            sort:
-              type: string
-              description: Field used for sorting
-          required:
-            - limit
-            - reverse
-            - sort
-    Zone:
-      type: object
-      properties:
-        accountName:
-          type: string
-          description: The account name that owns the zone
-          example: postman-example
-        dnssecStatus:
-          type: string
-          description: DNSSEC signing status of the zone
-          example: UNSIGNED
-          enum:
-            - UNSIGNED
-            - SIGNED
-        lastModifiedDateTime:
-          type: string
-          format: date-time
-          description: Last modification timestamp
-          example: '2025-06-17T23:48:00Z'
-        name:
-          type: string
-          description: The zone name (fully qualified domain name)
-          example: domain.com.
-        owner:
-          type: string
-          description: The owner of the zone
-          example: postman-example
-        resourceRecordCount:
-          type: integer
-          description: Number of resource records in the zone
-          example: 7
-        status:
-          type: string
-          description: Current status of the zone
-          example: ACTIVE
-          enum:
-            - ACTIVE
-            - INACTIVE
-        type:
-          type: string
-          description: Zone type
-          example: PRIMARY
-          enum:
-            - PRIMARY
-            - SECONDARY
-        ultra2:
-          type: boolean
-          description: Whether this is an Ultra2 zone
-          example: false
-    ZonesList:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/PageCursorEnvelope'
-        - type: object
-          properties:
-            zones:
-              type: array
-              items:
-                type: object
-                properties:
-                  properties:
-                    $ref: '#/components/schemas/Zone'
-    PageOffsetEnvelope:
-      type: object
-      properties:
-        queryInfo:
-          type: object
-          properties:
-            limit:
-              type: integer
-              minimum: 1
-              description: Maximum number of items returned
-            reverse:
-              type: boolean
-              description: Whether results are in reverse order
-            sort:
-              type: string
-              description: Field used for sorting
-          required:
-            - limit
-            - reverse
-            - sort
-        resultInfo:
-          type: object
-          properties:
-            offset:
-              type: integer
-              minimum: 0
-              description: Zero-based offset for pagination
-            returnedCount:
-              type: integer
-              minimum: 0
-              description: Number of items returned in this response
-            totalCount:
-              type: integer
-              minimum: 0
-              description: Total number of items available
-          required:
-            - offset
-            - returnedCount
-            - totalCount
-    RRSet:
-      type: object
-      properties:
-        ownerName:
-          type: string
-          description: The owner name (record label) of the RRSet
-          example: domain.com.
-        rdata:
-          type: array
-          items:
-            type: string
-          description: Array of record data values in BIND presentation format
-          example:
-            - pdns1.ultradns.net.
-            - pdns2.ultradns.net.
-        rrtype:
-          type: string
-          description: DNS record type with numeric value
-          example: NS (2)
-        ttl:
-          type: integer
-          description: Time to live in seconds
-          example: 86400
-    RRSetsList:
-      type: object
-      allOf:
-        - $ref: '#/components/schemas/PageOffsetEnvelope'
-        - type: object
-          properties:
-            rrSets:
-              type: array
-              items:
-                $ref: '#/components/schemas/RRSet'
-            zoneName:
-              type: string
-              description: The zone name
-              example: domain.com
   responses:
     Error401:
       description: Unauthorized
@@ -856,6 +873,40 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorGeneric'
   parameters:
+    ZoneQuery:
+      name: q
+      in: query
+      required: false
+      schema:
+        type: string
+      description: |
+        The query used to construct the list. Format: `query_param:value+query_param_2:value`
+
+        Example: `zone_status:ALL+network:ultra2`
+
+        Query operators are:
+
+        - **name** - Name of the zone (allowing for partial string matches).
+        - **zone_type** - Returns zones of an identified type. If not specified, all zone types are returned. Valid values are:
+          - ALIAS
+          - PRIMARY
+          - SECONDARY
+        - **zone_status** - Returns zones with the identified status. Active zones are returned if not specified. Valid values are:
+          - ACTIVE
+          - SUSPENDED
+          - ALL
+        - **account_name** - Returns zones based upon the account. If not specified, zones of all of the accounts that the user has access to will be returned.
+        - **network** - Only applicable for those accounts with the UltraDNS2 feature enabled. Returns zones that are either on the UltraDNS (standard) network or are part of the UltraDNS2 service network. Valid values are:
+          - ultra1 (standard UltraDNS)
+          - ultra2
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      schema:
+        type: string
+      description: |
+        Cursor for pagination. Can be provided after the initial request to fetch the next, previous, first or last page(s) of results.
     Limit:
       name: limit
       in: query

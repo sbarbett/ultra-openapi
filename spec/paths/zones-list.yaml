@@ -6,6 +6,8 @@ get:
     including details such as zone name, status, default TTL, and name servers.
   operationId: listZones
   parameters:
+    - $ref: '../components/parameters/ZoneQuery.yaml'
+    - $ref: '../components/parameters/Cursor.yaml'
     - $ref: '../components/parameters/Limit.yaml'
     - $ref: '../components/parameters/Sort.yaml'
     - $ref: '../components/parameters/Reverse.yaml'
@@ -19,33 +21,37 @@ get:
           examples:
             List Zones:
               value:
-                cursorInfo: {}
                 queryInfo:
-                  limit: 100
-                  q: ''
+                  q: "zone_status:ALL network:ultra2"
+                  sort: "name"
                   reverse: false
-                  sort: name
+                  limit: 50
+                cursorInfo:
+                  next: "c3ViLnVsdHJhZG5zMnRlc3QuY29tLjpORVhU"
+                  last: "fjpMQVNU"
                 zones:
                 - properties:
-                    accountName: postman-example
-                    dnssecStatus: UNSIGNED
-                    lastModifiedDateTime: "2025-06-17T23:48:00Z"
-                    name: domain.com.
-                    owner: postman-example
-                    resourceRecordCount: 7
-                    status: ACTIVE
-                    type: PRIMARY
-                    ultra2: false
+                    name: "testzone1.com."
+                    accountName: "testaccount1"
+                    type: "PRIMARY"
+                    dnssecStatus: "SIGNED"
+                    status: "ACTIVE"
+                    owner: "testuser1"
+                    resourceRecordCount: 4826
+                    lastModifiedDateTime: "2025-08-22T13:12:00Z"
+                    ultra2: true
                 - properties:
-                    accountName: postman-example
-                    dnssecStatus: UNSIGNED
-                    lastModifiedDateTime: "2025-06-17T23:43:00Z"
-                    name: postman-example.xyz.
-                    owner: postman-example
-                    resourceRecordCount: 7
-                    status: ACTIVE
-                    type: PRIMARY
-                    ultra2: false
+                    name: "testzone2.com."
+                    accountName: "testaccount2"
+                    type: "PRIMARY"
+                    dnssecStatus: "UNSIGNED"
+                    status: "ACTIVE"
+                    owner: "testuser2"
+                    resourceRecordCount: 9
+                    lastModifiedDateTime: "2025-08-21T13:26:00Z"
+                    ultra2: true
+    '400':
+      $ref: '../components/responses/Error400.yaml'
     '401':
       $ref: '../components/responses/Error401.yaml'
     '5XX':
