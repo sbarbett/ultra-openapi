@@ -7,7 +7,7 @@ get:
     TTL) or paginate the list."
   operationId: listRrsets
   parameters:
-    - $ref: '../components/parameters/RecordsZoneName.yaml'
+    - $ref: '../components/parameters/ZoneName.yaml'
     - $ref: '../components/parameters/Limit.yaml'
     - $ref: '../components/parameters/Sort.yaml'
     - $ref: '../components/parameters/Reverse.yaml'

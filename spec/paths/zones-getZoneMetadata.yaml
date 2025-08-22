@@ -2,8 +2,7 @@ get:
   tags:
     - Zones
   summary: List Zone Properties
-  description: Retrieves metadata for a specific DNS zone, including record count, name servers, status, type, and 
-    other zone‑level properties. Requires the `zones_zoneName` path variable.
+  description: Retrieves metadata for a specific DNS zone, including record count, name servers, status, type, and other zone-level properties. Requires the `zones_zoneName` path variable.
   operationId: listZoneProperties
   parameters:
     - $ref: '../components/parameters/ZoneName.yaml'
@@ -59,8 +58,12 @@ get:
                     - pdns4.ultradns.org.
                     - pdns5.ultradns.info.
                     - pdns6.ultradns.co.uk.
+    '400':
+      $ref: '../components/responses/Error400.yaml'
     '401':
       $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
     '404':
       $ref: '../components/responses/Error404.yaml'
     '5XX':

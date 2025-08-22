@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Some missing error schemas
+  - 400
+  - 403
+
+### Changed
+- Reverted back to 3.0.3 due to tooling compatibility
+- Updated description, moved to a separate Markdown file
+- Updated various params and filenames for clarity
+
+### Removed
+- Collapsed the `RecordsZoneName` parameter into `ZoneName`
+  - This was redundant and an artifact of how our Postman collection is structured
+
 ## [0.1.1] - 2025-08-19
 
 ### Changed

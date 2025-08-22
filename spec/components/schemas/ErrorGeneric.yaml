@@ -2,8 +2,6 @@ type: object
 required:
   - errorCode
   - errorMessage
-  - error
-  - error_description
 properties:
   errorCode:
     type: integer

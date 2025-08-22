@@ -1,4 +1,4 @@
-name: zones_zoneName
+name: zoneName
 in: path
 required: true
 schema:

@@ -138,13 +138,13 @@ paths:
   # Zone endpoints
   /v3/zones:
     $ref: './paths/zones-list.yaml'
-  /v3/zones/{zones_zoneName}:
-    $ref: './paths/zones-get.yaml'
+  /v3/zones/{zoneName}:
+    $ref: './paths/zones-getZoneMetadata.yaml'
   
   # Record endpoints
-  /zones/{records_zoneName}/rrsets:
+  /zones/{zoneName}/rrsets:
     $ref: './paths/records-list.yaml'
-  /zones/{records_zoneName}/rrsets/{records_type}:
+  /zones/{zoneName}/rrsets/{records_type}:
     $ref: './paths/records-listByType.yaml'
   
   # Task endpoints

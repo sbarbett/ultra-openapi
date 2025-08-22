@@ -8,7 +8,7 @@ get:
     objects.
   operationId: listRecordsByType
   parameters:
-    - $ref: '../components/parameters/RecordsZoneName.yaml'
+    - $ref: '../components/parameters/ZoneName.yaml'
     - $ref: '../components/parameters/RecordsType.yaml'
     - $ref: '../components/parameters/Limit.yaml'
     - $ref: '../components/parameters/Sort.yaml'

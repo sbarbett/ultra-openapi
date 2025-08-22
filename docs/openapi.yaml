@@ -266,10 +266,7 @@ paths:
       tags:
         - Platform
       summary: Get Status
-      description: |-
-        The status call provides a simple way to determine if the REST API  
-        is running, and to make sure you are connecting to the UltraDNS Portal  
-        with proper authorization.
+      description: The status call provides a simple way to determine if the REST API is running, and to make sure you are connecting to the UltraDNS Portal with proper authorization.
       operationId: getStatus
       responses:
         '200':
@@ -342,12 +339,12 @@ paths:
           $ref: '#/components/responses/Error401'
         5XX:
           $ref: '#/components/responses/Error5xx'
-  /v3/zones/{zones_zoneName}:
+  /v3/zones/{zoneName}:
     get:
       tags:
         - Zones
       summary: List Zone Properties
-      description: Retrieves metadata for a specific DNS zone, including record count, name servers, status, type, and other zone‑level properties. Requires the `zones_zoneName` path variable.
+      description: Retrieves metadata for a specific DNS zone, including record count, name servers, status, type, and other zone-level properties. Requires the `zones_zoneName` path variable.
       operationId: listZoneProperties
       parameters:
         - $ref: '#/components/parameters/ZoneName'
@@ -403,13 +400,17 @@ paths:
                           - pdns4.ultradns.org.
                           - pdns5.ultradns.info.
                           - pdns6.ultradns.co.uk.
+        '400':
+          $ref: '#/components/responses/Error400'
         '401':
           $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
         '404':
           $ref: '#/components/responses/Error404'
         5XX:
           $ref: '#/components/responses/Error5xx'
-  /zones/{records_zoneName}/rrsets:
+  /zones/{zoneName}/rrsets:
     get:
       tags:
         - Records
@@ -420,7 +421,7 @@ paths:
         Supports optional query parameters to filter results (for example, by record type, ownerName, TTL) or paginate the list.
       operationId: listRrsets
       parameters:
-        - $ref: '#/components/parameters/RecordsZoneName'
+        - $ref: '#/components/parameters/ZoneName'
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Sort'
         - $ref: '#/components/parameters/Reverse'
@@ -470,7 +471,7 @@ paths:
           $ref: '#/components/responses/Error404'
         5XX:
           $ref: '#/components/responses/Error5xx'
-  /zones/{records_zoneName}/rrsets/{records_type}:
+  /zones/{zoneName}/rrsets/{records_type}:
     get:
       tags:
         - Records
@@ -478,7 +479,7 @@ paths:
       description: Retrieves all resource record sets (RRSets) of a specific type within the specified DNS zone. Requires the `records_zoneName` and `records_type` environment variables. Set `records_type` to the desired record type (e.g., A, CNAME, TXT) to filter the results. The response returns an array of matching RRSet objects.
       operationId: listRecordsByType
       parameters:
-        - $ref: '#/components/parameters/RecordsZoneName'
+        - $ref: '#/components/parameters/ZoneName'
         - $ref: '#/components/parameters/RecordsType'
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Sort'
@@ -645,8 +646,6 @@ components:
       required:
         - errorCode
         - errorMessage
-        - error
-        - error_description
       properties:
         errorCode:
           type: integer
@@ -838,6 +837,18 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorGeneric'
+    Error400:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorGeneric'
+    Error403:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorGeneric'
     Error404:
       description: Not Found
       content:
@@ -868,19 +879,12 @@ components:
         default: false
       description: Whether to reverse the sort order
     ZoneName:
-      name: zones_zoneName
+      name: zoneName
       in: path
       required: true
       schema:
         type: string
       description: The name of the DNS zone
-    RecordsZoneName:
-      name: records_zoneName
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The name of the DNS zone containing the records
     RecordsType:
       name: records_type
       in: path
