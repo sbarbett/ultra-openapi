@@ -1,0 +1,22 @@
+type: object
+description: The Transfer Status Details contains the Zone Transfer Status Details
+properties:
+  lastRefresh:
+    type: string
+    format: date-time
+    description: Displays when the last transfer attempt or refresh was. Date/Time formatted in ISO 8601 format, UTC offset based on customer-specified time zone
+    example: "2025-02-20T08:40:00Z"
+  nextRefresh:
+    type: string
+    format: date-time
+    description: Displays when the next transfer attempt or refresh is. Date/Time formatted in ISO 8601 format, UTC offset based on customer-specified time zone
+    example: "2025-02-20T09:40:00Z"
+  lastRefreshStatus:
+    type: string
+    description: Displays the status of the last transfer that was attempted
+    enum: [IN_PROGRESS, FAILED, SUCCESSFUL]
+    example: "SUCCESSFUL"
+  lastRefreshStatusMessage:
+    type: string
+    description: Displays the last transfer's status message. This is currently shown as failure reason.
+    example: "Transfer completed successfully"

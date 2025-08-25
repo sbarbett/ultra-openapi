@@ -18,24 +18,9 @@ get:
                 type: string
                 example: ALL
               properties:
-                $ref: '../components/schemas/Zone.yaml'
+                $ref: '../components/schemas/ZoneProperties.yaml'
               registrarInfo:
-                type: object
-                properties:
-                  nameServers:
-                    type: object
-                    properties:
-                      missing:
-                        type: array
-                        items:
-                          type: string
-                        example:
-                        - pdns1.ultradns.net.
-                        - pdns2.ultradns.net.
-                        - pdns3.ultradns.org.
-                        - pdns4.ultradns.org.
-                        - pdns5.ultradns.info.
-                        - pdns6.ultradns.co.uk.
+                $ref: '../components/schemas/RegistrarInfo.yaml'
           examples:
             List Zone Properties:
               value:

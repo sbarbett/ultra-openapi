@@ -1,0 +1,24 @@
+type: object
+description: The TSIG DTO holds TSIG information for the Primary Zone
+properties:
+  tsigKeyName:
+    type: string
+    description: The name of the TSIG key for the zone. REQUIRED.
+    example: "zone-tsig-key"
+  tsigKeyValue:
+    type: string
+    description: The value of the TSIG key for the zone. REQUIRED.
+    example: "base64-encoded-tsig-secret"
+  description:
+    type: string
+    description: A description of this key. Optional.
+    example: "TSIG key for zone transfers"
+  tsigAlgorithm:
+    type: string
+    description: The hash algorithm used to generate the TSIG key. REQUIRED.
+    enum: [hmac-md5, hmac-sha1, hmac-sha224, hmac-sha256, hmac-sha384, hmac-sha512]
+    example: "hmac-sha256"
+required:
+  - tsigKeyName
+  - tsigKeyValue
+  - tsigAlgorithm

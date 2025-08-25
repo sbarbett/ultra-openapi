@@ -1,0 +1,42 @@
+type: object
+description: The Zone Properties DTO holds the common metadata across all types of zones
+properties:
+  name:
+    type: string
+    description: Name of the zone, with trailing periods (....). Must be a valid domain name. Required for zone creation. Ignored if present on update.
+    example: "0-0-0-0-0sample.com."
+  accountName:
+    type: string
+    description: Name of the account. Required for zone creation. Ignored if present on update.
+    example: testaccount
+  type:
+    type: string
+    description: Type of zone. Valid values are PRIMARY, SECONDARY or ALIAS. Required for zone creation. Ignored if present on update.
+    enum: [PRIMARY, SECONDARY, ALIAS]
+    example: PRIMARY
+  dnssecStatus:
+    type: string
+    description: Whether or not the zone is signed with DNSSEC. Valid values are SIGNED or UNSIGNED. Returned in GET responses for zone information. Ignored if present on create or update.
+    enum: [SIGNED, UNSIGNED]
+    example: UNSIGNED
+  digicertEnabled:
+    type: boolean
+    description: Indicates whether the zone is visible to DigiCert CertCentral, allowing them to automatically manage Domain Validations. True = enabled, False = disabled (default). Not available for Alias, Secondary, or Suspended zones. This field will only be displayed if the digicert_enabled feature is enabled and active.
+    example: true
+  owner:
+    type: string
+    description: Name of the user that created the zone. Returned in GET responses for zone information. Ignored if present on create or update.
+    example: team
+  recordCount:
+    type: integer
+    description: Number of records in the zone. Returned in GET responses for zone information. Ignored if present on create or update.
+    example: 15
+  lastModifiedDateTime:
+    type: string
+    format: date-time
+    description: The last date and time the zone was modified, represented in ISO8601 format. Returned in GET responses for zone information. Ignored if present on create or update.
+    example: "2025-02-20T08:40:00Z"
+  ultra2:
+    type: boolean
+    description: Only applicable to accounts that have enabled the UltraDNS2 service. Indicates if the zone has UltraDNS2 enabled or not. Valid values are false and true. Returned in GET responses for zone information.
+    example: true

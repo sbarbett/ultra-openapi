@@ -1,0 +1,36 @@
+type: object
+description: Each Restrict IP DTO holds the IP addresses that are allowed to transfer Primary Zones out using the Zone Transfer protocol (AXFR/IXFR). Only one format should be specified in the DTO at a time (range, CIDR or single IP).
+properties:
+  startIP:
+    type: string
+    description: The start of the IP range that is allowed to transfer this primary zone out using zone transfer protocol. IPv4 or IPv6 address.
+    format: ipv4
+    example: "192.168.1.1"
+  endIP:
+    type: string
+    description: The end of the IP range that is allowed to transfer this primary zone out using zone transfer protocol. IPv4 or IPv6 address.
+    format: ipv4
+    example: "192.168.1.254"
+  cidr:
+    type: string
+    description: The IP ranges specified in CIDR (e.g. 1.1.1.1/30, ::10/126)
+    pattern: '^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$|^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}(\/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))$'
+    example: "192.168.1.0/24"
+  singleIP:
+    type: string
+    description: The IP that is allowed to transfer this primary zone out using zone transfer protocol. IPv4 or IPv6 address.
+    format: ipv4
+    example: "192.168.1.100"
+  comment:
+    type: string
+    description: A description of this range of IP addresses. Optional.
+    example: "Office network range"
+anyOf:
+  - required: [startIP, endIP]
+  - required: [cidr]
+  - required: [singleIP]
+not:
+  allOf:
+    - required: [startIP, endIP]
+    - required: [cidr]
+    - required: [singleIP]

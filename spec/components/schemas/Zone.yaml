@@ -1,53 +1,41 @@
 type: object
+description: The Zone DTO is the data structure returned for the Zone DTOs call
 properties:
   properties:
-    type: object
-    properties:
-      accountName:
-        type: string
-        description: The account name that owns the zone
-        example: testaccount
-      dnssecStatus:
-        type: string
-        description: DNSSEC signing status of the zone
-        example: UNSIGNED
-        enum: [UNSIGNED, SIGNED]
-      certcentralEnabled:
-        type: boolean
-        description: Whether CertCentral integration is enabled for this zone
-        example: true
-      lastModifiedDateTime:
-        type: string
-        format: date-time
-        description: Last modification timestamp
-        example: "2025-02-20T08:40:00Z"
-      name:
-        type: string
-        description: The zone name (fully qualified domain name)
-        example: "0-0-0-0-0sample.com."
-      owner:
-        type: string
-        description: The owner of the zone
-        example: team
-      resourceRecordCount:
-        type: integer
-        description: Number of resource records in the zone
-        example: 15
-      status:
-        type: string
-        description: Current status of the zone
-        example: ACTIVE
-        enum: [ACTIVE, SUSPENDED]
-      type:
-        type: string
-        description: Zone type
-        example: PRIMARY
-        enum: [ALIAS, PRIMARY, SECONDARY]
-      ultra2:
-        type: boolean
-        description: Whether this is an Ultra2 zone
-        example: true
-      originalZoneName:
-        type: string
-        description: The original zone name for ALIAS zones
-        example: "testalias.com."
+    $ref: './ZoneProperties.yaml'
+  restrictIpList:
+    type: array
+    description: The list of IP ranges that are allowed to use AXFR to transfer primary zones out. Only present if this is a primary zone.
+    items:
+      $ref: './RestrictIP.yaml'
+    example:
+      - cidr: "192.168.1.0/24"
+        comment: "Office network range"
+      - singleIP: "10.0.0.100"
+        comment: "Backup server"
+  primaryNameServers:
+    $ref: './NameServerIPList.yaml'
+    description: The primary name servers that are the source of a secondary zone. Only present if this is a secondary zone.
+  originalZoneName:
+    type: string
+    description: The name of the zone that is the source of an alias zone. Only present if this is an alias zone.
+    example: "originalzone.com."
+  registrarInfo:
+    $ref: './RegistrarInfo.yaml'
+    description: Information about the name server configuration for this zone. Only present if this is a primary zone.
+  tsig:
+    $ref: './TSIG.yaml'
+    description: The TSIG information for the primary zone. Only present if this is a primary zone.
+  notifyAddresses:
+    type: array
+    description: The addresses that are notified when updates are made to the primary zone. Only present if this is a primary zone.
+    items:
+      $ref: './NotifyAddress.yaml'
+    example:
+      - notifyAddress: "192.168.1.100"
+        description: "Primary DNS server"
+      - notifyAddress: "192.168.1.101"
+        description: "Backup DNS server"
+  transferStatusDetails:
+    $ref: './TransferStatusDetails.yaml'
+    description: The zone transfer status details

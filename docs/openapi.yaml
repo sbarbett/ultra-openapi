@@ -127,7 +127,7 @@ security:
 tags:
   - name: Authorization
     description: |
-      Obtain and refresh auth tokens via the OAuth 2.0 Resource Owner Password Credentials (ROPC) grant. Requires an UltraDNS API username and password. Repeated failures may trigger temporary lockout.
+      Obtain and refresh auth tokens via the OAuth 2.0 Resource Owner Password Credentials (ROPC) grant. Requires an UltraDNS API username and password.
   - name: Tasks
     description: |
       Track asynchronous operations (e.g., exports, snapshots). 202 responses include an `X-Task-ID` header; use it to check status and retrieve results.
@@ -366,24 +366,9 @@ paths:
                     type: string
                     example: ALL
                   properties:
-                    $ref: '#/components/schemas/Zone'
+                    $ref: '#/components/schemas/ZoneProperties'
                   registrarInfo:
-                    type: object
-                    properties:
-                      nameServers:
-                        type: object
-                        properties:
-                          missing:
-                            type: array
-                            items:
-                              type: string
-                            example:
-                              - pdns1.ultradns.net.
-                              - pdns2.ultradns.net.
-                              - pdns3.ultradns.org.
-                              - pdns4.ultradns.org.
-                              - pdns5.ultradns.info.
-                              - pdns6.ultradns.co.uk.
+                    $ref: '#/components/schemas/RegistrarInfo'
               examples:
                 List Zone Properties:
                   value:
@@ -674,65 +659,46 @@ components:
         - returnedCount
     Zone:
       type: object
+      description: The Zone DTO is the data structure returned for the Zone DTOs call
       properties:
         properties:
-          type: object
-          properties:
-            accountName:
-              type: string
-              description: The account name that owns the zone
-              example: testaccount
-            dnssecStatus:
-              type: string
-              description: DNSSEC signing status of the zone
-              example: UNSIGNED
-              enum:
-                - UNSIGNED
-                - SIGNED
-            certcentralEnabled:
-              type: boolean
-              description: Whether CertCentral integration is enabled for this zone
-              example: true
-            lastModifiedDateTime:
-              type: string
-              format: date-time
-              description: Last modification timestamp
-              example: '2025-02-20T08:40:00Z'
-            name:
-              type: string
-              description: The zone name (fully qualified domain name)
-              example: 0-0-0-0-0sample.com.
-            owner:
-              type: string
-              description: The owner of the zone
-              example: team
-            resourceRecordCount:
-              type: integer
-              description: Number of resource records in the zone
-              example: 15
-            status:
-              type: string
-              description: Current status of the zone
-              example: ACTIVE
-              enum:
-                - ACTIVE
-                - SUSPENDED
-            type:
-              type: string
-              description: Zone type
-              example: PRIMARY
-              enum:
-                - ALIAS
-                - PRIMARY
-                - SECONDARY
-            ultra2:
-              type: boolean
-              description: Whether this is an Ultra2 zone
-              example: true
-            originalZoneName:
-              type: string
-              description: The original zone name for ALIAS zones
-              example: testalias.com.
+          $ref: '#/components/schemas/ZoneProperties'
+        restrictIpList:
+          type: array
+          description: The list of IP ranges that are allowed to use AXFR to transfer primary zones out. Only present if this is a primary zone.
+          items:
+            $ref: '#/components/schemas/RestrictIP'
+          example:
+            - cidr: 192.168.1.0/24
+              comment: Office network range
+            - singleIP: 10.0.0.100
+              comment: Backup server
+        primaryNameServers:
+          $ref: '#/components/schemas/NameServerIPList'
+          description: The primary name servers that are the source of a secondary zone. Only present if this is a secondary zone.
+        originalZoneName:
+          type: string
+          description: The name of the zone that is the source of an alias zone. Only present if this is an alias zone.
+          example: originalzone.com.
+        registrarInfo:
+          $ref: '#/components/schemas/RegistrarInfo'
+          description: Information about the name server configuration for this zone. Only present if this is a primary zone.
+        tsig:
+          $ref: '#/components/schemas/TSIG'
+          description: The TSIG information for the primary zone. Only present if this is a primary zone.
+        notifyAddresses:
+          type: array
+          description: The addresses that are notified when updates are made to the primary zone. Only present if this is a primary zone.
+          items:
+            $ref: '#/components/schemas/NotifyAddress'
+          example:
+            - notifyAddress: 192.168.1.100
+              description: Primary DNS server
+            - notifyAddress: 192.168.1.101
+              description: Backup DNS server
+        transferStatusDetails:
+          $ref: '#/components/schemas/TransferStatusDetails'
+          description: The zone transfer status details
     ZonesList:
       type: object
       properties:
@@ -841,6 +807,341 @@ components:
         error_description:
           type: string
           description: Detailed error description with error code
+    ZoneProperties:
+      type: object
+      description: The Zone Properties DTO holds the common metadata across all types of zones
+      properties:
+        name:
+          type: string
+          description: Name of the zone, with trailing periods (....). Must be a valid domain name. Required for zone creation. Ignored if present on update.
+          example: 0-0-0-0-0sample.com.
+        accountName:
+          type: string
+          description: Name of the account. Required for zone creation. Ignored if present on update.
+          example: testaccount
+        type:
+          type: string
+          description: Type of zone. Valid values are PRIMARY, SECONDARY or ALIAS. Required for zone creation. Ignored if present on update.
+          enum:
+            - PRIMARY
+            - SECONDARY
+            - ALIAS
+          example: PRIMARY
+        dnssecStatus:
+          type: string
+          description: Whether or not the zone is signed with DNSSEC. Valid values are SIGNED or UNSIGNED. Returned in GET responses for zone information. Ignored if present on create or update.
+          enum:
+            - SIGNED
+            - UNSIGNED
+          example: UNSIGNED
+        digicertEnabled:
+          type: boolean
+          description: Indicates whether the zone is visible to DigiCert CertCentral, allowing them to automatically manage Domain Validations. True = enabled, False = disabled (default). Not available for Alias, Secondary, or Suspended zones. This field will only be displayed if the digicert_enabled feature is enabled and active.
+          example: true
+        owner:
+          type: string
+          description: Name of the user that created the zone. Returned in GET responses for zone information. Ignored if present on create or update.
+          example: team
+        recordCount:
+          type: integer
+          description: Number of records in the zone. Returned in GET responses for zone information. Ignored if present on create or update.
+          example: 15
+        lastModifiedDateTime:
+          type: string
+          format: date-time
+          description: The last date and time the zone was modified, represented in ISO8601 format. Returned in GET responses for zone information. Ignored if present on create or update.
+          example: '2025-02-20T08:40:00Z'
+        ultra2:
+          type: boolean
+          description: Only applicable to accounts that have enabled the UltraDNS2 service. Indicates if the zone has UltraDNS2 enabled or not. Valid values are false and true. Returned in GET responses for zone information.
+          example: true
+    RestrictIP:
+      type: object
+      description: Each Restrict IP DTO holds the IP addresses that are allowed to transfer Primary Zones out using the Zone Transfer protocol (AXFR/IXFR). Only one format should be specified in the DTO at a time (range, CIDR or single IP).
+      properties:
+        startIP:
+          type: string
+          description: The start of the IP range that is allowed to transfer this primary zone out using zone transfer protocol. IPv4 or IPv6 address.
+          format: ipv4
+          example: 192.168.1.1
+        endIP:
+          type: string
+          description: The end of the IP range that is allowed to transfer this primary zone out using zone transfer protocol. IPv4 or IPv6 address.
+          format: ipv4
+          example: 192.168.1.254
+        cidr:
+          type: string
+          description: The IP ranges specified in CIDR (e.g. 1.1.1.1/30, ::10/126)
+          pattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$|^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}(\/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))$
+          example: 192.168.1.0/24
+        singleIP:
+          type: string
+          description: The IP that is allowed to transfer this primary zone out using zone transfer protocol. IPv4 or IPv6 address.
+          format: ipv4
+          example: 192.168.1.100
+        comment:
+          type: string
+          description: A description of this range of IP addresses. Optional.
+          example: Office network range
+      anyOf:
+        - required:
+            - startIP
+            - endIP
+        - required:
+            - cidr
+        - required:
+            - singleIP
+      not:
+        allOf:
+          - required:
+              - startIP
+              - endIP
+          - required:
+              - cidr
+          - required:
+              - singleIP
+    NameServerIPList:
+      type: object
+      description: The Name Server IP List DTO lists the Primary Name Servers for a Secondary Zone
+      properties:
+        nameServerIpList:
+          type: object
+          description: List of name server IPs with their TSIG configurations
+          properties:
+            nameServerIP1:
+              type: object
+              description: The primary name server for the source zone
+              properties:
+                ip:
+                  type: string
+                  description: The IP address of the primary name server for the source zone. IPv4 or IPv6 address. Required for creation or update of a secondary zone.
+                  format: ipv4
+                  example: 192.168.1.10
+                tsigKey:
+                  type: string
+                  description: If TSIG is enabled for this name server, the name of the TSIG key. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+                  example: tsig-key-1
+                tsigKeyValue:
+                  type: string
+                  description: If TSIG is enabled for this name server, the TSIG key's value. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+                  example: base64-encoded-secret-1
+                tsigAlgorithm:
+                  type: string
+                  description: The hash algorithm used to generate the TSIG key. Default is hmac-md5. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+                  enum:
+                    - hmac-md5
+                    - hmac-sha1
+                    - hmac-sha224
+                    - hmac-sha256
+                    - hmac-sha384
+                    - hmac-sha512
+                  default: hmac-md5
+                  example: hmac-sha256
+              required:
+                - ip
+            nameServerIP2:
+              type: object
+              description: The first backup name server for the source zone
+              properties:
+                ip:
+                  type: string
+                  description: The IP address of the first backup name server for the source zone. IPv4 or IPv6 address. Optional for creation or update of a secondary zone.
+                  format: ipv4
+                  example: 192.168.1.11
+                tsigKey:
+                  type: string
+                  description: If TSIG is enabled for this name server, the name of the TSIG key. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+                  example: tsig-key-2
+                tsigKeyValue:
+                  type: string
+                  description: If TSIG is enabled for this name server, the TSIG key's value. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+                  example: base64-encoded-secret-2
+                tsigAlgorithm:
+                  type: string
+                  description: The hash algorithm used to generate the TSIG key. Default is hmac-md5. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+                  enum:
+                    - hmac-md5
+                    - hmac-sha1
+                    - hmac-sha224
+                    - hmac-sha256
+                    - hmac-sha384
+                    - hmac-sha512
+                  default: hmac-md5
+                  example: hmac-sha256
+            nameServerIP3:
+              type: object
+              description: The second backup name server for the source zone
+              properties:
+                ip:
+                  type: string
+                  description: The IP address of the second backup name server for the source zone. IPv4 or IPv6 address. Optional for creation or update of a secondary zone.
+                  format: ipv4
+                  example: 192.168.1.12
+                tsigKey:
+                  type: string
+                  description: If TSIG is enabled for this name server, the name of the TSIG key. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+                  example: tsig-key-3
+                tsigKeyValue:
+                  type: string
+                  description: If TSIG is enabled for this name server, the TSIG key's value. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+                  example: base64-encoded-secret-3
+                tsigAlgorithm:
+                  type: string
+                  description: The hash algorithm used to generate the TSIG key. Default is hmac-md5. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+                  enum:
+                    - hmac-md5
+                    - hmac-sha1
+                    - hmac-sha224
+                    - hmac-sha256
+                    - hmac-sha384
+                    - hmac-sha512
+                  default: hmac-md5
+                  example: hmac-sha256
+          required:
+            - nameServerIP1
+          example:
+            nameServerIP1:
+              ip: 192.168.1.10
+              tsigKey: primary-tsig-key
+              tsigKeyValue: base64-encoded-secret
+              tsigAlgorithm: hmac-sha256
+            nameServerIP2:
+              ip: 192.168.1.11
+              tsigKey: backup-tsig-key
+              tsigKeyValue: base64-encoded-backup-secret
+              tsigAlgorithm: hmac-sha256
+    RegistrarInfo:
+      type: object
+      description: The Registrar Info DTO holds the domain name registry information for a Primary Zone
+      properties:
+        registrar:
+          type: string
+          description: The name of the domain registrar
+          example: GoDaddy
+        whoisExpiration:
+          type: string
+          format: date
+          description: The date when the domain name registration expires
+          example: '2025-12-31'
+        nameServers:
+          type: object
+          description: Name server configuration status for this domain
+          properties:
+            ok:
+              type: array
+              items:
+                type: string
+              description: List of UltraDNS name servers that are configured for this domain
+              example:
+                - pdns1.ultradns.net.
+                - pdns2.ultradns.net.
+                - pdns3.ultradns.org.
+            unknown:
+              type: array
+              items:
+                type: string
+              description: List of name servers that are configured for this domain, but are not UltraDNS-managed name servers
+              example:
+                - ns1.example.com.
+                - ns2.example.com.
+            missing:
+              type: array
+              items:
+                type: string
+              description: List of UltraDNS name servers that should be configured for this domain, but are not
+              example:
+                - pdns4.ultradns.org.
+                - pdns5.ultradns.info.
+                - pdns6.ultradns.co.uk.
+            incorrect:
+              type: array
+              items:
+                type: string
+              description: List of any obsolete UltraDNS name servers that are still configured for this zone
+              example:
+                - obsolete1.ultradns.net.
+                - obsolete2.ultradns.net.
+          example:
+            ok:
+              - pdns1.ultradns.net.
+              - pdns2.ultradns.net.
+              - pdns3.ultradns.org.
+            missing:
+              - pdns4.ultradns.org.
+              - pdns5.ultradns.info.
+              - pdns6.ultradns.co.uk.
+    TSIG:
+      type: object
+      description: The TSIG DTO holds TSIG information for the Primary Zone
+      properties:
+        tsigKeyName:
+          type: string
+          description: The name of the TSIG key for the zone. REQUIRED.
+          example: zone-tsig-key
+        tsigKeyValue:
+          type: string
+          description: The value of the TSIG key for the zone. REQUIRED.
+          example: base64-encoded-tsig-secret
+        description:
+          type: string
+          description: A description of this key. Optional.
+          example: TSIG key for zone transfers
+        tsigAlgorithm:
+          type: string
+          description: The hash algorithm used to generate the TSIG key. REQUIRED.
+          enum:
+            - hmac-md5
+            - hmac-sha1
+            - hmac-sha224
+            - hmac-sha256
+            - hmac-sha384
+            - hmac-sha512
+          example: hmac-sha256
+      required:
+        - tsigKeyName
+        - tsigKeyValue
+        - tsigAlgorithm
+    NotifyAddress:
+      type: object
+      description: Each Notify Address DTO defines an address that gets notified when there are updates to a Primary Zone
+      properties:
+        notifyAddress:
+          type: string
+          description: The IP address that is notified when the primary zone is updated. IPv4 address. REQUIRED.
+          format: ipv4
+          example: 192.168.1.100
+        description:
+          type: string
+          description: A description of this address. Optional.
+          example: Primary DNS server notification address
+      required:
+        - notifyAddress
+    TransferStatusDetails:
+      type: object
+      description: The Transfer Status Details contains the Zone Transfer Status Details
+      properties:
+        lastRefresh:
+          type: string
+          format: date-time
+          description: Displays when the last transfer attempt or refresh was. Date/Time formatted in ISO 8601 format, UTC offset based on customer-specified time zone
+          example: '2025-02-20T08:40:00Z'
+        nextRefresh:
+          type: string
+          format: date-time
+          description: Displays when the next transfer attempt or refresh is. Date/Time formatted in ISO 8601 format, UTC offset based on customer-specified time zone
+          example: '2025-02-20T09:40:00Z'
+        lastRefreshStatus:
+          type: string
+          description: Displays the status of the last transfer that was attempted
+          enum:
+            - IN_PROGRESS
+            - FAILED
+            - SUCCESSFUL
+          example: SUCCESSFUL
+        lastRefreshStatusMessage:
+          type: string
+          description: Displays the last transfer's status message. This is currently shown as failure reason.
+          example: Transfer completed successfully
   responses:
     Error401:
       description: Unauthorized

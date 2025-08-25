@@ -1,0 +1,89 @@
+type: object
+description: The Name Server IP List DTO lists the Primary Name Servers for a Secondary Zone
+properties:
+  nameServerIpList:
+    type: object
+    description: List of name server IPs with their TSIG configurations
+    properties:
+      nameServerIP1:
+        type: object
+        description: The primary name server for the source zone
+        properties:
+          ip:
+            type: string
+            description: The IP address of the primary name server for the source zone. IPv4 or IPv6 address. Required for creation or update of a secondary zone.
+            format: ipv4
+            example: "192.168.1.10"
+          tsigKey:
+            type: string
+            description: If TSIG is enabled for this name server, the name of the TSIG key. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+            example: "tsig-key-1"
+          tsigKeyValue:
+            type: string
+            description: If TSIG is enabled for this name server, the TSIG key's value. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+            example: "base64-encoded-secret-1"
+          tsigAlgorithm:
+            type: string
+            description: The hash algorithm used to generate the TSIG key. Default is hmac-md5. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+            enum: [hmac-md5, hmac-sha1, hmac-sha224, hmac-sha256, hmac-sha384, hmac-sha512]
+            default: hmac-md5
+            example: "hmac-sha256"
+        required: [ip]
+      nameServerIP2:
+        type: object
+        description: The first backup name server for the source zone
+        properties:
+          ip:
+            type: string
+            description: The IP address of the first backup name server for the source zone. IPv4 or IPv6 address. Optional for creation or update of a secondary zone.
+            format: ipv4
+            example: "192.168.1.11"
+          tsigKey:
+            type: string
+            description: If TSIG is enabled for this name server, the name of the TSIG key. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+            example: "tsig-key-2"
+          tsigKeyValue:
+            type: string
+            description: If TSIG is enabled for this name server, the TSIG key's value. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+            example: "base64-encoded-secret-2"
+          tsigAlgorithm:
+            type: string
+            description: The hash algorithm used to generate the TSIG key. Default is hmac-md5. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+            enum: [hmac-md5, hmac-sha1, hmac-sha224, hmac-sha256, hmac-sha384, hmac-sha512]
+            default: hmac-md5
+            example: "hmac-sha256"
+      nameServerIP3:
+        type: object
+        description: The second backup name server for the source zone
+        properties:
+          ip:
+            type: string
+            description: The IP address of the second backup name server for the source zone. IPv4 or IPv6 address. Optional for creation or update of a secondary zone.
+            format: ipv4
+            example: "192.168.1.12"
+          tsigKey:
+            type: string
+            description: If TSIG is enabled for this name server, the name of the TSIG key. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+            example: "tsig-key-3"
+          tsigKeyValue:
+            type: string
+            description: If TSIG is enabled for this name server, the TSIG key's value. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+            example: "base64-encoded-secret-3"
+          tsigAlgorithm:
+            type: string
+            description: The hash algorithm used to generate the TSIG key. Default is hmac-md5. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+            enum: [hmac-md5, hmac-sha1, hmac-sha224, hmac-sha256, hmac-sha384, hmac-sha512]
+            default: hmac-md5
+            example: "hmac-sha256"
+    required: [nameServerIP1]
+    example:
+      nameServerIP1:
+        ip: "192.168.1.10"
+        tsigKey: "primary-tsig-key"
+        tsigKeyValue: "base64-encoded-secret"
+        tsigAlgorithm: "hmac-sha256"
+      nameServerIP2:
+        ip: "192.168.1.11"
+        tsigKey: "backup-tsig-key"
+        tsigKeyValue: "base64-encoded-backup-secret"
+        tsigAlgorithm: "hmac-sha256"

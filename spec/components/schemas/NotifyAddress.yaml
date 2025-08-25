@@ -1,0 +1,14 @@
+type: object
+description: Each Notify Address DTO defines an address that gets notified when there are updates to a Primary Zone
+properties:
+  notifyAddress:
+    type: string
+    description: The IP address that is notified when the primary zone is updated. IPv4 address. REQUIRED.
+    format: ipv4
+    example: "192.168.1.100"
+  description:
+    type: string
+    description: A description of this address. Optional.
+    example: "Primary DNS server notification address"
+required:
+  - notifyAddress

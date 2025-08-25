@@ -1,0 +1,59 @@
+type: object
+description: The Registrar Info DTO holds the domain name registry information for a Primary Zone
+properties:
+  registrar:
+    type: string
+    description: The name of the domain registrar
+    example: "GoDaddy"
+  whoisExpiration:
+    type: string
+    format: date
+    description: The date when the domain name registration expires
+    example: "2025-12-31"
+  nameServers:
+    type: object
+    description: Name server configuration status for this domain
+    properties:
+      ok:
+        type: array
+        items:
+          type: string
+        description: List of UltraDNS name servers that are configured for this domain
+        example:
+          - "pdns1.ultradns.net."
+          - "pdns2.ultradns.net."
+          - "pdns3.ultradns.org."
+      unknown:
+        type: array
+        items:
+          type: string
+        description: List of name servers that are configured for this domain, but are not UltraDNS-managed name servers
+        example:
+          - "ns1.example.com."
+          - "ns2.example.com."
+      missing:
+        type: array
+        items:
+          type: string
+        description: List of UltraDNS name servers that should be configured for this domain, but are not
+        example:
+          - "pdns4.ultradns.org."
+          - "pdns5.ultradns.info."
+          - "pdns6.ultradns.co.uk."
+      incorrect:
+        type: array
+        items:
+          type: string
+        description: List of any obsolete UltraDNS name servers that are still configured for this zone
+        example:
+          - "obsolete1.ultradns.net."
+          - "obsolete2.ultradns.net."
+    example:
+      ok:
+        - "pdns1.ultradns.net."
+        - "pdns2.ultradns.net."
+        - "pdns3.ultradns.org."
+      missing:
+        - "pdns4.ultradns.org."
+        - "pdns5.ultradns.info."
+        - "pdns6.ultradns.co.uk."
