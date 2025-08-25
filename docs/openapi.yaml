@@ -292,7 +292,10 @@ paths:
       tags:
         - Zones
       summary: Create a Zone
-      description: The create zone API allows you to create a primary, secondary, or alias zone, and furthermore, allows you to create a zone "from scratch" by copying another zone via an uploaded file or by zone transfer.
+      description: |
+        The Create Zone API allows you to create a Primary, Secondary, or Alias Zone, and furthermore, allows you to create a Zone "from scratch" by copying another zone via an uploaded file or by Zone transfer.
+
+        The JSON examples provided below give a sample of each type of zone create call.
       operationId: createZone
       requestBody:
         required: true
@@ -346,7 +349,6 @@ paths:
           $ref: '#/components/responses/Error403'
         5XX:
           $ref: '#/components/responses/Error5xx'
-  /v3/zones:
     get:
       tags:
         - Zones
@@ -404,7 +406,7 @@ paths:
           $ref: '#/components/responses/Error401'
         5XX:
           $ref: '#/components/responses/Error5xx'
-  /v3/zones/{zoneName}:
+  /zones/{zoneName}:
     get:
       tags:
         - Zones
@@ -1081,52 +1083,6 @@ components:
               - cidr
           - required:
               - singleIP
-    TSIG:
-      type: object
-      description: The TSIG DTO holds TSIG information for the Primary Zone
-      properties:
-        tsigKeyName:
-          type: string
-          description: The name of the TSIG key for the zone. REQUIRED.
-          example: zone-tsig-key
-        tsigKeyValue:
-          type: string
-          description: The value of the TSIG key for the zone. REQUIRED.
-          example: base64-encoded-tsig-secret
-        description:
-          type: string
-          description: A description of this key. Optional.
-          example: TSIG key for zone transfers
-        tsigAlgorithm:
-          type: string
-          description: The hash algorithm used to generate the TSIG key. REQUIRED.
-          enum:
-            - hmac-md5
-            - hmac-sha1
-            - hmac-sha224
-            - hmac-sha256
-            - hmac-sha384
-            - hmac-sha512
-          example: hmac-sha256
-      required:
-        - tsigKeyName
-        - tsigKeyValue
-        - tsigAlgorithm
-    NotifyAddress:
-      type: object
-      description: Each Notify Address DTO defines an address that gets notified when there are updates to a Primary Zone
-      properties:
-        notifyAddress:
-          type: string
-          description: The IP address that is notified when the primary zone is updated. IPv4 address. REQUIRED.
-          format: ipv4
-          example: 192.168.1.100
-        description:
-          type: string
-          description: A description of this address. Optional.
-          example: Primary DNS server notification address
-      required:
-        - notifyAddress
     NameServerIPList:
       type: object
       description: The Name Server IP List DTO lists the Primary Name Servers for a Secondary Zone
@@ -1297,6 +1253,52 @@ components:
               - pdns4.ultradns.org.
               - pdns5.ultradns.info.
               - pdns6.ultradns.co.uk.
+    TSIG:
+      type: object
+      description: The TSIG DTO holds TSIG information for the Primary Zone
+      properties:
+        tsigKeyName:
+          type: string
+          description: The name of the TSIG key for the zone. REQUIRED.
+          example: zone-tsig-key
+        tsigKeyValue:
+          type: string
+          description: The value of the TSIG key for the zone. REQUIRED.
+          example: base64-encoded-tsig-secret
+        description:
+          type: string
+          description: A description of this key. Optional.
+          example: TSIG key for zone transfers
+        tsigAlgorithm:
+          type: string
+          description: The hash algorithm used to generate the TSIG key. REQUIRED.
+          enum:
+            - hmac-md5
+            - hmac-sha1
+            - hmac-sha224
+            - hmac-sha256
+            - hmac-sha384
+            - hmac-sha512
+          example: hmac-sha256
+      required:
+        - tsigKeyName
+        - tsigKeyValue
+        - tsigAlgorithm
+    NotifyAddress:
+      type: object
+      description: Each Notify Address DTO defines an address that gets notified when there are updates to a Primary Zone
+      properties:
+        notifyAddress:
+          type: string
+          description: The IP address that is notified when the primary zone is updated. IPv4 address. REQUIRED.
+          format: ipv4
+          example: 192.168.1.100
+        description:
+          type: string
+          description: A description of this address. Optional.
+          example: Primary DNS server notification address
+      required:
+        - notifyAddress
     TransferStatusDetails:
       type: object
       description: The Transfer Status Details contains the Zone Transfer Status Details
@@ -1336,6 +1338,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorGeneric'
+    Error400:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorGeneric'
     CreatedGeneric:
       description: Created
       content:
@@ -1366,12 +1374,6 @@ components:
           examples:
             Accepted:
               value: {}
-    Error400:
-      description: Bad Request
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorGeneric'
     Error403:
       description: Forbidden
       content:

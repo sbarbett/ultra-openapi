@@ -1,0 +1,119 @@
+post:
+  tags:
+    - Zones
+  summary: Create a Zone
+  description: |
+    The Create Zone API allows you to create a Primary, Secondary, or Alias Zone, and furthermore, allows you to create a Zone "from scratch" by copying another zone via an uploaded file or by Zone transfer.
+    
+    The JSON examples provided below give a sample of each type of zone create call.
+  operationId: createZone
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/ZoneCreate.yaml'
+        examples:
+          New Primary Zone:
+            summary: Create a Primary Zone from scratch
+            value:
+              properties:
+                name: "primary-example.com."
+                accountName: "example"
+                type: "PRIMARY"
+              primaryCreateInfo:
+                forceImport: true
+                createType: "NEW"
+              changeComment: "Created as agreed"
+          New Primary Zone Copied from Another Zone:
+            summary: Create a Primary Zone by copying an existing zone
+            value:
+              properties:
+                name: "copy-example.com."
+                accountName: "example"
+                type: "PRIMARY"
+              primaryCreateInfo:
+                forceImport: true
+                createType: "COPY"
+                originalZoneName: "example.cm."
+          New Primary Uploaded from a File:
+            summary: Create a Primary Zone by uploading a file
+            value:
+              properties:
+                name: "example.com."
+                accountName: "example"
+                type: "PRIMARY"
+              primaryCreateInfo:
+                forceImport: true
+                createType: "UPLOAD"
+  responses:
+    '201':
+      $ref: '../components/responses/CreatedGeneric.yaml'
+    '202':
+      $ref: '../components/responses/AcceptedGeneric.yaml'
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+
+get:
+  tags:
+    - Zones
+  summary: List Zones
+  description: Retrieves all zones in your account. The response returns an array of zone objects, each including details such as zone name, status, default TTL, and name servers.
+  operationId: listZones
+  parameters:
+    - $ref: '../components/parameters/ZoneQuery.yaml'
+    - $ref: '../components/parameters/Cursor.yaml'
+    - $ref: '../components/parameters/Limit.yaml'
+    - $ref: '../components/parameters/Sort.yaml'
+    - $ref: '../components/parameters/Reverse.yaml'
+  responses:
+    '200':
+      description: List Zones
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ZonesList.yaml'
+          examples:
+            List Zones:
+              value:
+                queryInfo:
+                  q: "zone_status:ALL network:ultra2"
+                  sort: "name"
+                  reverse: false
+                  limit: 50
+                cursorInfo:
+                  next: "c3ViLnVsdHJhZG5zMnRlc3QuY29tLjpORVhU"
+                  last: "fjpMQVNU"
+                zones:
+                - properties:
+                    name: "testzone1.com."
+                    accountName: "testaccount1"
+                    type: "PRIMARY"
+                    dnssecStatus: "SIGNED"
+                    status: "ACTIVE"
+                    owner: "testuser1"
+                    resourceRecordCount: 4826
+                    lastModifiedDateTime: "2025-08-22T13:12:00Z"
+                    ultra2: true
+                - properties:
+                    name: "testzone2.com."
+                    accountName: "testaccount2"
+                    type: "PRIMARY"
+                    dnssecStatus: "UNSIGNED"
+                    status: "ACTIVE"
+                    owner: "testuser2"
+                    resourceRecordCount: 9
+                    lastModifiedDateTime: "2025-08-21T13:26:00Z"
+                    ultra2: true
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

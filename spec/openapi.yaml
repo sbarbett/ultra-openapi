@@ -137,10 +137,8 @@ paths:
   
   # Zone endpoints
   /zones:
-    $ref: './paths/zones-create.yaml'
-  /v3/zones:
-    $ref: './paths/zones-list.yaml'
-  /v3/zones/{zoneName}:
+    $ref: './paths/zones.yaml'
+  /zones/{zoneName}:
     $ref: './paths/zones-getZoneMetadata.yaml'
   
   # Record endpoints
