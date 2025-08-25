@@ -1,0 +1,66 @@
+type: object
+description: The Primary Zone DTO contains the metadata used to create or update a Primary Zone
+properties:
+  forceImport:
+    type: boolean
+    description: Whether or not to move existing records from zones into this new zone. true = move, false = leave in existing zone (default). Only used for primary zone creation. If not present, defaults to "false". Ignored if present for update.
+    example: false
+  createType:
+    type: string
+    description: Indicates the method for creating the primary zone.
+    enum: [NEW, COPY, TRANSFER, UPLOAD]
+    example: "NEW"
+  nameServer:
+    type: object
+    description: Name server configuration for zone transfer. Required if createType is "TRANSFER".
+    properties:
+      ip:
+        type: string
+        description: IP address of the primary zone's name server (where the primary zone is being transferred from). Required if createType is "TRANSFER".
+        format: ipv4
+        example: "192.168.1.10"
+      tsigKey:
+        type: string
+        description: If TSIG is enabled for this name server, the name of the TSIG key. Used only if createType is "TRANSFER". Required if TSIG is enabled for this name server.
+        example: "transfer-tsig-key"
+      tsigKeyValue:
+        type: string
+        description: If TSIG is enabled for this name server, the TSIG key's value. Used only if createType is "TRANSFER". Required if TSIG is enabled for this name server.
+        example: "base64-encoded-tsig-secret"
+      tsigAlgorithm:
+        type: string
+        description: The hash algorithm used to generate the TSIG key. Used only if createType is "TRANSFER". Default is hmac-md5. Required if TSIG is enabled for this name server.
+        enum: [hmac-md5, hmac-sha1, hmac-sha224, hmac-sha256, hmac-sha384, hmac-sha512]
+        default: hmac-md5
+        example: "hmac-sha256"
+  originalZoneName:
+    type: string
+    description: The name of the zone being copied. The existing zone must be owned by the same account as the new zone. Required if createType is "COPY".
+    example: "originalzone.com."
+  restrictIpList:
+    type: array
+    description: The list of IP ranges that are allowed to transfer primary zones out using zone transfer protocol (AXFR/IXFR).
+    items:
+      $ref: './RestrictIP.yaml'
+    example:
+      - cidr: "192.168.1.0/24"
+        comment: "Office network range"
+      - singleIP: "10.0.0.100"
+        comment: "Backup server"
+  tsig:
+    $ref: './TSIG.yaml'
+    description: The TSIG information for the primary zone.
+  notifyAddresses:
+    type: array
+    description: The addresses that are notified when updates are made to the primary zone.
+    items:
+      $ref: './NotifyAddress.yaml'
+    example:
+      - notifyAddress: "192.168.1.100"
+        description: "Primary DNS server"
+      - notifyAddress: "192.168.1.101"
+        description: "Backup DNS server"
+  inherit:
+    type: string
+    description: Defines whether this zone should inherit the zone transfer values from the Account, and also specifies which values to inherit. Defaults to "ALL" if zone transfer settings on the account have been set.
+    example: "ALL"

@@ -2,7 +2,7 @@ get:
   tags:
     - Zones
   summary: List Zone Properties
-  description: Retrieves metadata for a specific DNS zone, including record count, name servers, status, type, and other zone-level properties. Requires the `zones_zoneName` path variable.
+  description: Retrieves metadata for a specific zone, including record count, name servers, status, type, and other zone-level properties.
   operationId: listZoneProperties
   parameters:
     - $ref: '../components/parameters/ZoneName.yaml'

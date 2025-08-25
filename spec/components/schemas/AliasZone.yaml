@@ -1,0 +1,7 @@
+type: object
+description: The Alias Zone DTO holds the metadata used for creating an Alias Zone
+properties:
+  originalZoneName:
+    type: string
+    description: The name of the zone being aliased. The existing zone must be owned by the same account as the new zone. Required for alias during creation.
+    example: "originalzone.com."

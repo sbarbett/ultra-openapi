@@ -1,0 +1,21 @@
+type: object
+description: The Zone Create DTO is the data structure required for creating a zone in UltraDNS
+properties:
+  properties:
+    $ref: './ZoneProperties.yaml'
+    description: The Zone Properties DTO is required for all zone types.
+  primaryCreateInfo:
+    $ref: './PrimaryZone.yaml'
+    description: Primary Zone settings. Required when creating a PRIMARY zone.
+  secondaryCreateInfo:
+    $ref: './SecondaryZone.yaml'
+    description: Secondary Zone settings. Required when creating a SECONDARY zone.
+  aliasCreateInfo:
+    $ref: './AliasZone.yaml'
+    description: Alias Zone settings. Required when creating an ALIAS zone.
+  changeComment:
+    type: string
+    description: A comment describing the zone creation operation.
+    example: "Create an alias zone"
+required:
+  - properties

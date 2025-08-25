@@ -136,6 +136,8 @@ paths:
     $ref: './paths/status.yaml'
   
   # Zone endpoints
+  /zones:
+    $ref: './paths/zones-create.yaml'
   /v3/zones:
     $ref: './paths/zones-list.yaml'
   /v3/zones/{zoneName}:
@@ -171,6 +173,14 @@ components:
       $ref: './components/schemas/ResultInfo.yaml'
     Zone:
       $ref: './components/schemas/Zone.yaml'
+    ZoneCreate:
+      $ref: './components/schemas/ZoneCreate.yaml'
+    PrimaryZone:
+      $ref: './components/schemas/PrimaryZone.yaml'
+    SecondaryZone:
+      $ref: './components/schemas/SecondaryZone.yaml'
+    AliasZone:
+      $ref: './components/schemas/AliasZone.yaml'
     ZonesList:
       $ref: './components/schemas/ZonesList.yaml'
     RRSet:

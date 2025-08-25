@@ -2,8 +2,7 @@ get:
   tags:
     - Zones
   summary: List Zones
-  description: Retrieves all DNS zones in your account. The response returns an array of zone objects, each 
-    including details such as zone name, status, default TTL, and name servers.
+  description: Retrieves all zones in your account. The response returns an array of zone objects, each including details such as zone name, status, default TTL, and name servers.
   operationId: listZones
   parameters:
     - $ref: '../components/parameters/ZoneQuery.yaml'

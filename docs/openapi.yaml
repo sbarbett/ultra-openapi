@@ -287,12 +287,71 @@ paths:
           $ref: '#/components/responses/Error401'
         5XX:
           $ref: '#/components/responses/Error5xx'
+  /zones:
+    post:
+      tags:
+        - Zones
+      summary: Create a Zone
+      description: The create zone API allows you to create a primary, secondary, or alias zone, and furthermore, allows you to create a zone "from scratch" by copying another zone via an uploaded file or by zone transfer.
+      operationId: createZone
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ZoneCreate'
+            examples:
+              New Primary Zone:
+                summary: Create a Primary Zone from scratch
+                value:
+                  properties:
+                    name: primary-example.com.
+                    accountName: example
+                    type: PRIMARY
+                  primaryCreateInfo:
+                    forceImport: true
+                    createType: NEW
+                  changeComment: Created as agreed
+              New Primary Zone Copied from Another Zone:
+                summary: Create a Primary Zone by copying an existing zone
+                value:
+                  properties:
+                    name: copy-example.com.
+                    accountName: example
+                    type: PRIMARY
+                  primaryCreateInfo:
+                    forceImport: true
+                    createType: COPY
+                    originalZoneName: example.cm.
+              New Primary Uploaded from a File:
+                summary: Create a Primary Zone by uploading a file
+                value:
+                  properties:
+                    name: example.com.
+                    accountName: example
+                    type: PRIMARY
+                  primaryCreateInfo:
+                    forceImport: true
+                    createType: UPLOAD
+      responses:
+        '201':
+          $ref: '#/components/responses/CreatedGeneric'
+        '202':
+          $ref: '#/components/responses/AcceptedGeneric'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
   /v3/zones:
     get:
       tags:
         - Zones
       summary: List Zones
-      description: Retrieves all DNS zones in your account. The response returns an array of zone objects, each including details such as zone name, status, default TTL, and name servers.
+      description: Retrieves all zones in your account. The response returns an array of zone objects, each including details such as zone name, status, default TTL, and name servers.
       operationId: listZones
       parameters:
         - $ref: '#/components/parameters/ZoneQuery'
@@ -350,7 +409,7 @@ paths:
       tags:
         - Zones
       summary: List Zone Properties
-      description: Retrieves metadata for a specific DNS zone, including record count, name servers, status, type, and other zone-level properties. Requires the `zones_zoneName` path variable.
+      description: Retrieves metadata for a specific zone, including record count, name servers, status, type, and other zone-level properties.
       operationId: listZoneProperties
       parameters:
         - $ref: '#/components/parameters/ZoneName'
@@ -699,6 +758,128 @@ components:
         transferStatusDetails:
           $ref: '#/components/schemas/TransferStatusDetails'
           description: The zone transfer status details
+    ZoneCreate:
+      type: object
+      description: The Zone Create DTO is the data structure required for creating a zone in UltraDNS
+      properties:
+        properties:
+          $ref: '#/components/schemas/ZoneProperties'
+          description: The Zone Properties DTO is required for all zone types.
+        primaryCreateInfo:
+          $ref: '#/components/schemas/PrimaryZone'
+          description: Primary Zone settings. Required when creating a PRIMARY zone.
+        secondaryCreateInfo:
+          $ref: '#/components/schemas/SecondaryZone'
+          description: Secondary Zone settings. Required when creating a SECONDARY zone.
+        aliasCreateInfo:
+          $ref: '#/components/schemas/AliasZone'
+          description: Alias Zone settings. Required when creating an ALIAS zone.
+        changeComment:
+          type: string
+          description: A comment describing the zone creation operation.
+          example: Create an alias zone
+      required:
+        - properties
+    PrimaryZone:
+      type: object
+      description: The Primary Zone DTO contains the metadata used to create or update a Primary Zone
+      properties:
+        forceImport:
+          type: boolean
+          description: Whether or not to move existing records from zones into this new zone. true = move, false = leave in existing zone (default). Only used for primary zone creation. If not present, defaults to "false". Ignored if present for update.
+          example: false
+        createType:
+          type: string
+          description: Indicates the method for creating the primary zone.
+          enum:
+            - NEW
+            - COPY
+            - TRANSFER
+            - UPLOAD
+          example: NEW
+        nameServer:
+          type: object
+          description: Name server configuration for zone transfer. Required if createType is "TRANSFER".
+          properties:
+            ip:
+              type: string
+              description: IP address of the primary zone's name server (where the primary zone is being transferred from). Required if createType is "TRANSFER".
+              format: ipv4
+              example: 192.168.1.10
+            tsigKey:
+              type: string
+              description: If TSIG is enabled for this name server, the name of the TSIG key. Used only if createType is "TRANSFER". Required if TSIG is enabled for this name server.
+              example: transfer-tsig-key
+            tsigKeyValue:
+              type: string
+              description: If TSIG is enabled for this name server, the TSIG key's value. Used only if createType is "TRANSFER". Required if TSIG is enabled for this name server.
+              example: base64-encoded-tsig-secret
+            tsigAlgorithm:
+              type: string
+              description: The hash algorithm used to generate the TSIG key. Used only if createType is "TRANSFER". Default is hmac-md5. Required if TSIG is enabled for this name server.
+              enum:
+                - hmac-md5
+                - hmac-sha1
+                - hmac-sha224
+                - hmac-sha256
+                - hmac-sha384
+                - hmac-sha512
+              default: hmac-md5
+              example: hmac-sha256
+        originalZoneName:
+          type: string
+          description: The name of the zone being copied. The existing zone must be owned by the same account as the new zone. Required if createType is "COPY".
+          example: originalzone.com.
+        restrictIpList:
+          type: array
+          description: The list of IP ranges that are allowed to transfer primary zones out using zone transfer protocol (AXFR/IXFR).
+          items:
+            $ref: '#/components/schemas/RestrictIP'
+          example:
+            - cidr: 192.168.1.0/24
+              comment: Office network range
+            - singleIP: 10.0.0.100
+              comment: Backup server
+        tsig:
+          $ref: '#/components/schemas/TSIG'
+          description: The TSIG information for the primary zone.
+        notifyAddresses:
+          type: array
+          description: The addresses that are notified when updates are made to the primary zone.
+          items:
+            $ref: '#/components/schemas/NotifyAddress'
+          example:
+            - notifyAddress: 192.168.1.100
+              description: Primary DNS server
+            - notifyAddress: 192.168.1.101
+              description: Backup DNS server
+        inherit:
+          type: string
+          description: Defines whether this zone should inherit the zone transfer values from the Account, and also specifies which values to inherit. Defaults to "ALL" if zone transfer settings on the account have been set.
+          example: ALL
+    SecondaryZone:
+      type: object
+      description: The Secondary Zone Create DTO holds the metadata used to create or update a Secondary Zone
+      properties:
+        primaryNameServers:
+          $ref: '#/components/schemas/NameServerIPList'
+          description: The primary name servers of the source zone for the secondary zone. Required for creating or updating a secondary zone. Ignored in all other cases.
+        notificationEmailAddress:
+          type: string
+          description: The Notification Email for a secondary zone.
+          example: admin@example.com
+        allowUnresponsiveNS:
+          type: boolean
+          description: When enabled, allows for an IP Address that may be offline or unresponsive to be configured. true = enabled
+          example: false
+    AliasZone:
+      type: object
+      description: The Alias Zone DTO holds the metadata used for creating an Alias Zone
+      properties:
+        originalZoneName:
+          type: string
+          description: The name of the zone being aliased. The existing zone must be owned by the same account as the new zone. Required for alias during creation.
+          example: originalzone.com.
     ZonesList:
       type: object
       properties:
@@ -900,6 +1081,52 @@ components:
               - cidr
           - required:
               - singleIP
+    TSIG:
+      type: object
+      description: The TSIG DTO holds TSIG information for the Primary Zone
+      properties:
+        tsigKeyName:
+          type: string
+          description: The name of the TSIG key for the zone. REQUIRED.
+          example: zone-tsig-key
+        tsigKeyValue:
+          type: string
+          description: The value of the TSIG key for the zone. REQUIRED.
+          example: base64-encoded-tsig-secret
+        description:
+          type: string
+          description: A description of this key. Optional.
+          example: TSIG key for zone transfers
+        tsigAlgorithm:
+          type: string
+          description: The hash algorithm used to generate the TSIG key. REQUIRED.
+          enum:
+            - hmac-md5
+            - hmac-sha1
+            - hmac-sha224
+            - hmac-sha256
+            - hmac-sha384
+            - hmac-sha512
+          example: hmac-sha256
+      required:
+        - tsigKeyName
+        - tsigKeyValue
+        - tsigAlgorithm
+    NotifyAddress:
+      type: object
+      description: Each Notify Address DTO defines an address that gets notified when there are updates to a Primary Zone
+      properties:
+        notifyAddress:
+          type: string
+          description: The IP address that is notified when the primary zone is updated. IPv4 address. REQUIRED.
+          format: ipv4
+          example: 192.168.1.100
+        description:
+          type: string
+          description: A description of this address. Optional.
+          example: Primary DNS server notification address
+      required:
+        - notifyAddress
     NameServerIPList:
       type: object
       description: The Name Server IP List DTO lists the Primary Name Servers for a Secondary Zone
@@ -1070,52 +1297,6 @@ components:
               - pdns4.ultradns.org.
               - pdns5.ultradns.info.
               - pdns6.ultradns.co.uk.
-    TSIG:
-      type: object
-      description: The TSIG DTO holds TSIG information for the Primary Zone
-      properties:
-        tsigKeyName:
-          type: string
-          description: The name of the TSIG key for the zone. REQUIRED.
-          example: zone-tsig-key
-        tsigKeyValue:
-          type: string
-          description: The value of the TSIG key for the zone. REQUIRED.
-          example: base64-encoded-tsig-secret
-        description:
-          type: string
-          description: A description of this key. Optional.
-          example: TSIG key for zone transfers
-        tsigAlgorithm:
-          type: string
-          description: The hash algorithm used to generate the TSIG key. REQUIRED.
-          enum:
-            - hmac-md5
-            - hmac-sha1
-            - hmac-sha224
-            - hmac-sha256
-            - hmac-sha384
-            - hmac-sha512
-          example: hmac-sha256
-      required:
-        - tsigKeyName
-        - tsigKeyValue
-        - tsigAlgorithm
-    NotifyAddress:
-      type: object
-      description: Each Notify Address DTO defines an address that gets notified when there are updates to a Primary Zone
-      properties:
-        notifyAddress:
-          type: string
-          description: The IP address that is notified when the primary zone is updated. IPv4 address. REQUIRED.
-          format: ipv4
-          example: 192.168.1.100
-        description:
-          type: string
-          description: A description of this address. Optional.
-          example: Primary DNS server notification address
-      required:
-        - notifyAddress
     TransferStatusDetails:
       type: object
       description: The Transfer Status Details contains the Zone Transfer Status Details
@@ -1155,6 +1336,36 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorGeneric'
+    CreatedGeneric:
+      description: Created
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Successful
+          examples:
+            Created:
+              value:
+                message: Successful
+    AcceptedGeneric:
+      description: Accepted
+      headers:
+        X-Task-Id:
+          description: Task ID for tracking the operation progress
+          schema:
+            type: string
+            example: task-12345
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: {}
+          examples:
+            Accepted:
+              value: {}
     Error400:
       description: Bad Request
       content:

@@ -1,0 +1,14 @@
+type: object
+description: The Secondary Zone Create DTO holds the metadata used to create or update a Secondary Zone
+properties:
+  primaryNameServers:
+    $ref: './NameServerIPList.yaml'
+    description: The primary name servers of the source zone for the secondary zone. Required for creating or updating a secondary zone. Ignored in all other cases.
+  notificationEmailAddress:
+    type: string
+    description: The Notification Email for a secondary zone.
+    example: "admin@example.com"
+  allowUnresponsiveNS:
+    type: boolean
+    description: When enabled, allows for an IP Address that may be offline or unresponsive to be configured. true = enabled
+    example: false

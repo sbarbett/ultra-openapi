@@ -1,0 +1,15 @@
+description: Accepted
+headers:
+  X-Task-Id:
+    description: Task ID for tracking the operation progress
+    schema:
+      type: string
+      example: "task-12345"
+content:
+  application/json:
+    schema:
+      type: object
+      properties: {}
+    examples:
+      Accepted:
+        value: {}
