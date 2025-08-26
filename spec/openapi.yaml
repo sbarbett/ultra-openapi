@@ -139,7 +139,7 @@ paths:
   /zones:
     $ref: './paths/zones.yaml'
   /zones/{zoneName}:
-    $ref: './paths/zones-getZoneMetadata.yaml'
+    $ref: './paths/zones-zoneMeta.yaml'
   
   # Record endpoints
   /zones/{zoneName}/rrsets:

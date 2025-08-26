@@ -407,6 +407,222 @@ paths:
         5XX:
           $ref: '#/components/responses/Error5xx'
   /zones/{zoneName}:
+    put:
+      tags:
+        - Zones
+      summary: Update a Zone
+      description: |
+        The Update Zone call allows you to update certain aspects of either a Primary or a Secondary Zone. You cannot use this call to:
+
+        - Update an Alias Zone.
+        - Specify Primary Name Servers for a Primary zone.
+        - Specify restrict IPs, TSIG, or Notify addresses for a Secondary Zone.
+
+        As this is a FULL update (replacing data) for Primary Zone updates, you must include any necessary restrict IPs, Notify addresses, or Primary Name Servers that apply. Any data not included with the update will be deleted from the Primary Zone.
+      operationId: updateZone
+      parameters:
+        - $ref: '#/components/parameters/ZoneName'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ZoneCreate'
+            examples:
+              Update Restrict IP for Primary Zone:
+                summary: Update Restrict IP information for Primary Zone
+                value:
+                  properties:
+                    name: example.com.
+                    accountName: example
+                    type: PRIMARY
+                  primaryCreateInfo:
+                    restrictIPList:
+                      - startIP: 10.20.30.40
+                        endIP: 20.20.20.20
+                        comment: Comment
+                  changeComment: Updating zone
+              Update TSIG and Notify for Primary Zone:
+                summary: Update TSIG and Notify information for Primary Zone
+                value:
+                  properties:
+                    name: example.com.
+                    accountName: example
+                    type: PRIMARY
+                  primaryCreateInfo:
+                    tsig:
+                      tsigKeyName: Key
+                      tsigKeyValue: This would be a hash if it was real
+                      description: TSIG for primary-example.com
+                      tsigAlgorithm: hmac-sha256
+                    notifyAddresses:
+                      - notifyAddress: 2.4.5.6
+                        description: East Coast Server
+                      - notifyAddress: 5.6.7.8
+                        description: West Coast Server
+                  changeComment: Updating TSIG and notify addresses
+              Update Primary Name Servers for Secondary Zone:
+                summary: Update Primary Name Server information for Secondary Zone
+                value:
+                  properties:
+                    name: example.com.
+                    accountName: example
+                    type: SECONDARY
+                  secondaryCreateInfo:
+                    primaryNameServers:
+                      nameServerIpList:
+                        nameServerIP1:
+                          ip: 1.2.3.4
+                          tsigKey: key1
+                          tsigKeyValue: value1
+                        nameServerIP2:
+                          ip: 2.4.5.6
+                          tsigKey: key2
+                          tsigKeyValue: value2
+                        nameServerIP3:
+                          ip: 3.4.5.6
+                          tsigKey: key3
+                          tsigKeyValue: value3
+                  changeComment: Updating primary name servers
+      responses:
+        '200':
+          description: Zone updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Zone'
+        '202':
+          $ref: '#/components/responses/AcceptedGeneric'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+    patch:
+      tags:
+        - Zones
+      summary: Partially Update a Zone
+      description: |
+        The Partial Update a Zone call is used to:
+
+        - Update the restrictIPs, TSIG key, and/or Notify Address information for a Primary zone without having to explicitly list all of them. Any Restrict IPs, TSIGs or Notify Addresses not included in the call are retained on the server.
+        - Update the Primary Name Servers for a Secondary zone without having to explicitly list all of them. Any Primary Name Servers not included in the call are retained on the server.
+
+        Alias zones cannot be updated.
+      operationId: partiallyUpdateZone
+      parameters:
+        - $ref: '#/components/parameters/ZoneName'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ZoneCreate'
+            examples:
+              Partial Update Restrict IP for Primary Zone:
+                summary: Partially update restrict IP information for Primary Zone
+                value:
+                  properties:
+                    name: example.com.
+                    accountName: example
+                    type: PRIMARY
+                  primaryCreateInfo:
+                    restrictIPList:
+                      - startIP: 10.20.30.40
+                        endIP: 20.20.20.20
+                        comment: New restrict IP range
+                  changeComment: Adding new restrict IP range
+              Partial Update TSIG for Primary Zone:
+                summary: Partially update TSIG information for Primary Zone
+                value:
+                  properties:
+                    name: example.com.
+                    accountName: example
+                    type: PRIMARY
+                  primaryCreateInfo:
+                    tsig:
+                      tsigKeyName: NewKey
+                      tsigKeyValue: This would be a hash if it was real
+                      description: New TSIG key for example.com
+                      tsigAlgorithm: hmac-sha256
+                  changeComment: Updating TSIG key
+              Partial Update Primary Name Servers for Secondary Zone:
+                summary: Partially update primary name servers for Secondary Zone
+                value:
+                  properties:
+                    name: example.com.
+                    accountName: example
+                    type: SECONDARY
+                  secondaryCreateInfo:
+                    primaryNameServers:
+                      nameServerIpList:
+                        nameServerIP1:
+                          ip: 1.2.3.4
+                          tsigKey: key1
+                          tsigKeyValue: value1
+                  changeComment: Adding new primary name server
+          application/json-patch+json:
+            schema:
+              type: array
+              description: JSON Patch operations for partial zone updates
+              items:
+                type: object
+                properties:
+                  op:
+                    type: string
+                    enum:
+                      - add
+                      - remove
+                      - replace
+                      - copy
+                      - move
+                      - test
+                    description: The operation to be performed
+                  path:
+                    type: string
+                    description: A JSON Pointer string specifying a location within the target document
+                  value:
+                    description: The value to be used within the operations
+                required:
+                  - op
+                  - path
+            examples:
+              JSON Patch Example:
+                summary: JSON Patch operations for zone updates
+                value:
+                  - op: replace
+                    path: /primaryCreateInfo/tsig/tsigKeyName
+                    value: NewTSIGKey
+                  - op: add
+                    path: /primaryCreateInfo/restrictIPList/-
+                    value:
+                      startIP: 192.168.1.100
+                      endIP: 192.168.1.200
+                      comment: New IP range
+      responses:
+        '200':
+          description: Zone partially updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Zone'
+        '202':
+          $ref: '#/components/responses/AcceptedGeneric'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
     get:
       tags:
         - Zones
