@@ -138,8 +138,12 @@ paths:
   # Zone endpoints
   /zones:
     $ref: './paths/zones.yaml'
+  /zones/export:
+    $ref: './paths/zones-export.yaml'
   /zones/{zoneName}:
     $ref: './paths/zones-zoneMeta.yaml'
+  /zones/{zoneName}/transfer:
+    $ref: './paths/zones-zoneMeta-transfer.yaml'
   
   # Record endpoints
   /zones/{zoneName}/rrsets:

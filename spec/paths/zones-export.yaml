@@ -1,0 +1,44 @@
+post:
+  tags:
+    - Zones
+  summary: Export a Zone
+  description: |
+    Exporting a Zone will create a task to export the zone details into a BIND file. Once the task has been completed the BIND file can be downloaded.
+  operationId: exportZone
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            zoneNames:
+              type: array
+              items:
+                type: string
+              description: The name or names of the zones that are being exported, with or without the trailing dot.
+              example: ["name.com", "name2.com."]
+          required:
+            - zoneNames
+        examples:
+          Export Single Zone:
+            summary: Export a single zone
+            value:
+              zoneNames: ["example.com"]
+          Export Multiple Zones:
+            summary: Export multiple zones
+            value:
+              zoneNames: ["name.com", "name2.com."]
+  responses:
+    '202':
+      $ref: '../components/responses/AcceptedGeneric.yaml'
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
