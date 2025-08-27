@@ -1,0 +1,7 @@
+name: offset
+in: query
+schema:
+  type: integer
+  minimum: 0
+  default: 0
+description: The position in the list for the first returned element (0 based). The default value is 0.

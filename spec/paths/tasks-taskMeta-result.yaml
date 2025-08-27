@@ -2,17 +2,12 @@ get:
   tags:
     - Tasks
   summary: Task Result
-  description: Retrieves the final result of a completed background task. Requires the `currentTask` variable, which
+  description: Retrieves the final result of a completed background task. Requires the `taskId` variable, which
     the collection automatically populates from the x-task-id header of prior async requests. Returns the task's 
     result payload when finished.
   operationId: taskResult
   parameters:
-    - name: currentTask
-      in: path
-      required: true
-      schema:
-        type: string
-      description: Task ID from x-task-id header
+    - $ref: '../components/parameters/TaskId.yaml'
   responses:
     '200':
       description: Task Result

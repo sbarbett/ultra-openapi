@@ -1,0 +1,30 @@
+type: object
+description: The Task DTO is used to describe the current state of a task.
+properties:
+  taskId:
+    type: string
+    format: uuid
+    description: Id for the task.
+    example: "0b40c7dd-748d-4c49-8506-26f0c7d2ea9c"
+  code:
+    type: string
+    enum:
+      - PENDING
+      - IN_PROCESS
+      - COMPLETE
+      - ERROR
+    description: Current state of the task.
+    example: "COMPLETE"
+  message:
+    type: string
+    description: Current message for the task.
+    example: "Processing complete"
+  resultUri:
+    type: string
+    format: uri-reference
+    description: If task is COMPLETE, the URI from where the resulting data can be downloaded.
+    example: "/tasks/0b40c7dd-748d-4c49-8506-26f0c7d2ea9c/result"
+required:
+  - taskId
+  - code
+  - message

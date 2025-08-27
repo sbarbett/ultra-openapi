@@ -1,0 +1,7 @@
+name: taskId
+in: path
+required: true
+schema:
+  type: string
+  format: uuid
+description: Task ID from x-task-id header

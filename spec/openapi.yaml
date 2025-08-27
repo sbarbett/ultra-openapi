@@ -152,10 +152,12 @@ paths:
     $ref: './paths/records-listByType.yaml'
   
   # Task endpoints
-  /tasks/{currentTask}:
-    $ref: './paths/tasks-check.yaml'
-  /tasks/{currentTask}/result:
-    $ref: './paths/tasks-result.yaml'
+  /tasks:
+    $ref: './paths/tasks.yaml'
+  /tasks/{taskId}:
+    $ref: './paths/tasks-taskMeta.yaml'
+  /tasks/{taskId}/result:
+    $ref: './paths/tasks-taskMeta-result.yaml'
 
 # Security schemes
 components:
@@ -193,6 +195,10 @@ components:
       $ref: './components/schemas/TokenResponse.yaml'
     ErrorGeneric:
       $ref: './components/schemas/ErrorGeneric.yaml'
+    Task:
+      $ref: './components/schemas/Task.yaml'
+    TaskList:
+      $ref: './components/schemas/TaskList.yaml'
 
 # Tags
 tags:

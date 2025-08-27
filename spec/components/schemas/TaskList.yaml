@@ -1,0 +1,23 @@
+type: object
+description: The TaskList DTO is returned when requesting the state of all tasks for a user.
+properties:
+  tasks:
+    type: array
+    description: The list of returned tasks. Each entry in the list matches the task DTO described above.
+    items:
+      $ref: './Task.yaml'
+    example:
+      - taskId: "0b40c7dd-748d-4c49-8506-26f0c7d2ea9c"
+        code: "COMPLETE"
+        message: "Processing complete"
+        resultUri: "/tasks/0b40c7dd-748d-4c49-8506-26f0c7d2ea9c/result"
+  queryInfo:
+    $ref: './QueryInfo.yaml'
+    description: The query used to construct the list.
+  resultInfo:
+    $ref: './ResultInfo.yaml'
+    description: Information about the result set.
+required:
+  - tasks
+  - queryInfo
+  - resultInfo

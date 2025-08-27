@@ -1,0 +1,12 @@
+name: sort
+in: query
+schema:
+  type: string
+  enum:
+    - CODE
+    - CONTENT_TYPE
+    - EXTENSIONS
+    - HAS_DATA
+    - DATE
+  default: CODE
+description: The sort column used to order the list. Valid sort fields are CODE, CONTENT_TYPE, EXTENSIONS, HAS_DATA, DATE. The default value is CODE.

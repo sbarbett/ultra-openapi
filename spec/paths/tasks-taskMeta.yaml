@@ -1,0 +1,28 @@
+get:
+  tags:
+    - Tasks
+  summary: Check Task
+  description: Checks the status of a background task.
+  operationId: checkTask
+  parameters:
+    - $ref: '../components/parameters/TaskId.yaml'
+  responses:
+    '200':
+      description: Check Task
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/Task.yaml'
+          examples:
+            Check Task:
+              value:
+                taskId: "605b23e4-edb9-4f23-ae2d-33fe24d6033f"
+                code: "COMPLETE"
+                message: "domain.com. export completed."
+                resultUri: "/tasks/605b23e4-edb9-4f23-ae2d-33fe24d6033f/result"
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

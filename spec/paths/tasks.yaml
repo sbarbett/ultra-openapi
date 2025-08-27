@@ -1,0 +1,57 @@
+get:
+  tags:
+    - Tasks
+  summary: Get the List of Tasks
+  description: Retrieves a list of all tasks for the current user with optional filtering and pagination.
+  operationId: getTasks
+  parameters:
+    - $ref: '../components/parameters/QueryParams.yaml'
+      description: |
+        The query used to construct the list. Query operators are code and hasData.
+        
+        Valid values for code are:
+        - PENDING
+        - IN_PROCESS
+        - COMPLETE
+        - ERROR
+        
+        Valid values for hasData are TRUE or FALSE. Default value of hasData is NULL. Query operators need be followed by a colon ( : ).
+        
+        Example:
+        - q="code:COMPLETE"
+        - q="hasData:TRUE"
+        - q="code:COMPLETE hasData:TRUE"
+    - $ref: '../components/parameters/Offset.yaml'
+    - $ref: '../components/parameters/Limit.yaml'
+    - $ref: '../components/parameters/TaskSort.yaml'
+    - $ref: '../components/parameters/Reverse.yaml'
+  responses:
+    '200':
+      description: List of tasks retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/TaskList.yaml'
+          examples:
+            Task List:
+              value:
+                tasks:
+                  - taskId: "0b40c7dd-748d-4c49-8506-26f0c7d2ea9c"
+                    code: "COMPLETE"
+                    message: "Processing complete"
+                    resultUri: "/tasks/0b40c7dd-748d-4c49-8506-26f0c7d2ea9c/result"
+                queryInfo:
+                  q: "code:COMPLETE"
+                  sort: "CODE"
+                  reverse: false
+                  limit: 100
+                resultInfo:
+                  totalCount: 1
+                  offset: 0
+                  returnedCount: 1
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
