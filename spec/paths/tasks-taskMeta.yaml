@@ -1,14 +1,14 @@
 get:
   tags:
     - Tasks
-  summary: Check Task
-  description: Checks the status of a background task.
+  summary: Get the Status of a Task
+  description: Retrieves the current status of a background task. Returns a Task DTO with the current state of the task.
   operationId: checkTask
   parameters:
     - $ref: '../components/parameters/TaskId.yaml'
   responses:
     '200':
-      description: Check Task
+      description: Task status retrieved successfully
       content:
         application/json:
           schema:
@@ -22,6 +22,26 @@ get:
                 resultUri: "/tasks/605b23e4-edb9-4f23-ae2d-33fe24d6033f/result"
     '401':
       $ref: '../components/responses/Error401.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+
+delete:
+  tags:
+    - Tasks
+  summary: Delete a Task
+  description: This call will remove information from the system for a task that has completed or is in an error-state.
+  operationId: deleteTask
+  parameters:
+    - $ref: '../components/parameters/TaskId.yaml'
+  responses:
+    '204':
+      description: Task deleted successfully
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
     '404':
       $ref: '../components/responses/Error404.yaml'
     '5XX':

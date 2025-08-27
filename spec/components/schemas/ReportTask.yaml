@@ -1,0 +1,35 @@
+type: object
+description: The Reporter Task DTO is used to describe the current state of a task.
+properties:
+  taskId:
+    type: string
+    description: Id for the task.
+    example: "ZQV-013d3c5c-7b14-4ff0-b4af-453b76a827b6"
+  code:
+    type: string
+    enum:
+      - PENDING
+      - IN_PROCESS
+      - COMPLETE
+      - ERROR
+    description: Current state of the task.
+    example: "COMPLETE"
+  message:
+    type: string
+    description: Current message for the task.
+    example: "Completed ZQV Report Successfully."
+  lastModifiedDateTime:
+    type: string
+    format: date-time
+    description: Last Modified date time of the task.
+    example: "2016-08-26T12:33:22.000Z"
+  resultUri:
+    type: string
+    format: uri-reference
+    description: If task is COMPLETE, the URI from where the resulting data can be downloaded.
+    example: "https://api.ultradns.com/reports/tasks/ZQV-013d3c5c-7b14-4ff0-b4af-453b76a827b6"
+required:
+  - taskId
+  - code
+  - message
+  - lastModifiedDateTime

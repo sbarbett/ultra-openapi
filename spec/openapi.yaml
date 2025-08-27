@@ -199,6 +199,12 @@ components:
       $ref: './components/schemas/Task.yaml'
     TaskList:
       $ref: './components/schemas/TaskList.yaml'
+    ReportTask:
+      $ref: './components/schemas/ReportTask.yaml'
+    ReportTaskList:
+      $ref: './components/schemas/ReportTaskList.yaml'
+    ZoneDelete:
+      $ref: './components/schemas/ZoneDelete.yaml'
 
 # Tags
 tags:

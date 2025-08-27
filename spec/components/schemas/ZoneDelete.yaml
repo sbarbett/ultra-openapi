@@ -1,0 +1,8 @@
+type: object
+description: Optional request body for zone deletion
+properties:
+  changeComment:
+    type: string
+    description: Comment describing the reason for the zone deletion
+    example: "Deleting Zone as agreed"
+

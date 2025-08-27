@@ -1,0 +1,21 @@
+type: object
+description: The Reporter TaskList DTO is returned when requesting the state of all tasks for a user.
+properties:
+  tasks:
+    type: array
+    description: The list of returned tasks. Each entry in the list matches the task DTO described above.
+    items:
+      $ref: './ReportTask.yaml'
+    example:
+      - taskId: "ZQV-013d3c5c-7b14-4ff0-b4af-453b76a827b6"
+        code: "COMPLETE"
+        message: "Completed ZQV Report Successfully."
+        lastModifiedDateTime: "2016-08-26T12:33:22.000Z"
+        resultUri: "https://api.ultradns.com/reports/tasks/ZQV-013d3c5c-7b14-4ff0-b4af-453b76a827b6"
+      - taskId: "PQV-003f098b-a2df-437e-8482-65e8d93b4858"
+        code: "COMPLETE"
+        message: "Completed PQVReport Successfully."
+        lastModifiedDateTime: "2016-08-26T12:33:22.000Z"
+        resultUri: "https://api.ultradns.com/reports/tasks/PQV-003f098b-a2df-437e-8482-65e8d93b4858"
+required:
+  - tasks

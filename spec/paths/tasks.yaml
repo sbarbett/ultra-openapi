@@ -25,15 +25,19 @@ get:
     - $ref: '../components/parameters/Limit.yaml'
     - $ref: '../components/parameters/TaskSort.yaml'
     - $ref: '../components/parameters/Reverse.yaml'
+    - $ref: '../components/parameters/TaskType.yaml'
   responses:
     '200':
       description: List of tasks retrieved successfully
       content:
         application/json:
           schema:
-            $ref: '../components/schemas/TaskList.yaml'
+            oneOf:
+              - $ref: '../components/schemas/TaskList.yaml'
+              - $ref: '../components/schemas/ReportTaskList.yaml'
           examples:
             Task List:
+              summary: Regular task list (default)
               value:
                 tasks:
                   - taskId: "0b40c7dd-748d-4c49-8506-26f0c7d2ea9c"
@@ -49,6 +53,20 @@ get:
                   totalCount: 1
                   offset: 0
                   returnedCount: 1
+            Report Task List:
+              summary: Report task list (when taskType=reporting)
+              value:
+                tasks:
+                  - taskId: "ZQV-013d3c5c-7b14-4ff0-b4af-453b76a827b6"
+                    code: "COMPLETE"
+                    message: "Completed ZQV Report Successfully."
+                    lastModifiedDateTime: "2016-08-26T12:33:22.000Z"
+                    resultUri: "https://api.ultradns.com/reports/tasks/ZQV-013d3c5c-7b14-4ff0-b4af-453b76a827b6"
+                  - taskId: "PQV-003f098b-a2df-437e-8482-65e8d93b4858"
+                    code: "COMPLETE"
+                    message: "Completed PQVReport Successfully."
+                    lastModifiedDateTime: "2016-08-26T12:33:22.000Z"
+                    resultUri: "https://api.ultradns.com/reports/tasks/PQV-003f098b-a2df-437e-8482-65e8d93b4858"
     '401':
       $ref: '../components/responses/Error401.yaml'
     '403':

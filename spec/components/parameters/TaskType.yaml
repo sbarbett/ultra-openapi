@@ -1,0 +1,8 @@
+name: taskType
+in: query
+required: false
+schema:
+  type: string
+  enum:
+    - reporting
+description: For viewing reporting tasks user needs to set its value to "reporting". By default only Rest API configurations tasks will be returned as per current functionality.

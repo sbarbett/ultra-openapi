@@ -263,3 +263,40 @@ get:
       $ref: '../components/responses/Error404.yaml'
     '5XX':
       $ref: '../components/responses/Error5xx.yaml'
+
+delete:
+  tags:
+    - Zones
+  summary: Delete a Zone
+  description: |
+    The Delete Zone API allows you to delete any zone you have the proper authority to delete. You cannot delete a primary zone if it has an Alias zone.
+    
+    If delete happens immediately, Status Code 204 is returned with no body content.
+    If delete happens in the background, a Status Code 202 is returned with a status response message of Pending, along with an X-Task-Id header in body content.
+  operationId: deleteZone
+  parameters:
+    - $ref: '../components/parameters/ZoneName.yaml'
+  requestBody:
+    required: false
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/ZoneDelete.yaml'
+        examples:
+          Delete Zone with Change Comment:
+            summary: Delete zone with a change comment
+            value:
+              changeComment: "Deleting Zone as agreed"
+  responses:
+    '202':
+      $ref: '../components/responses/AcceptedGeneric.yaml'
+    '204':
+      description: Zone deleted successfully
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

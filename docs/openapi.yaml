@@ -748,6 +748,42 @@ paths:
           $ref: '#/components/responses/Error404'
         5XX:
           $ref: '#/components/responses/Error5xx'
+    delete:
+      tags:
+        - Zones
+      summary: Delete a Zone
+      description: |
+        The Delete Zone API allows you to delete any zone you have the proper authority to delete. You cannot delete a primary zone if it has an Alias zone.
+
+        If delete happens immediately, Status Code 204 is returned with no body content.
+        If delete happens in the background, a Status Code 202 is returned with a status response message of Pending, along with an X-Task-Id header in body content.
+      operationId: deleteZone
+      parameters:
+        - $ref: '#/components/parameters/ZoneName'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ZoneDelete'
+            examples:
+              Delete Zone with Change Comment:
+                summary: Delete zone with a change comment
+                value:
+                  changeComment: Deleting Zone as agreed
+      responses:
+        '202':
+          $ref: '#/components/responses/AcceptedGeneric'
+        '204':
+          description: Zone deleted successfully
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
   /zones/{zoneName}/transfer:
     post:
       tags:
@@ -922,15 +958,19 @@ paths:
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/TaskSort'
         - $ref: '#/components/parameters/Reverse'
+        - $ref: '#/components/parameters/TaskType'
       responses:
         '200':
           description: List of tasks retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TaskList'
+                oneOf:
+                  - $ref: '#/components/schemas/TaskList'
+                  - $ref: '#/components/schemas/ReportTaskList'
               examples:
                 Task List:
+                  summary: Regular task list (default)
                   value:
                     tasks:
                       - taskId: 0b40c7dd-748d-4c49-8506-26f0c7d2ea9c
@@ -946,6 +986,20 @@ paths:
                       totalCount: 1
                       offset: 0
                       returnedCount: 1
+                Report Task List:
+                  summary: Report task list (when taskType=reporting)
+                  value:
+                    tasks:
+                      - taskId: ZQV-013d3c5c-7b14-4ff0-b4af-453b76a827b6
+                        code: COMPLETE
+                        message: Completed ZQV Report Successfully.
+                        lastModifiedDateTime: '2016-08-26T12:33:22.000Z'
+                        resultUri: https://api.ultradns.com/reports/tasks/ZQV-013d3c5c-7b14-4ff0-b4af-453b76a827b6
+                      - taskId: PQV-003f098b-a2df-437e-8482-65e8d93b4858
+                        code: COMPLETE
+                        message: Completed PQVReport Successfully.
+                        lastModifiedDateTime: '2016-08-26T12:33:22.000Z'
+                        resultUri: https://api.ultradns.com/reports/tasks/PQV-003f098b-a2df-437e-8482-65e8d93b4858
         '401':
           $ref: '#/components/responses/Error401'
         '403':
@@ -956,14 +1010,14 @@ paths:
     get:
       tags:
         - Tasks
-      summary: Check Task
-      description: Checks the status of a background task.
+      summary: Get the Status of a Task
+      description: Retrieves the current status of a background task. Returns a Task DTO with the current state of the task.
       operationId: checkTask
       parameters:
         - $ref: '#/components/parameters/TaskId'
       responses:
         '200':
-          description: Check Task
+          description: Task status retrieved successfully
           content:
             application/json:
               schema:
@@ -981,23 +1035,48 @@ paths:
           $ref: '#/components/responses/Error404'
         5XX:
           $ref: '#/components/responses/Error5xx'
+    delete:
+      tags:
+        - Tasks
+      summary: Delete a Task
+      description: This call will remove information from the system for a task that has completed or is in an error-state.
+      operationId: deleteTask
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '204':
+          description: Task deleted successfully
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
   /tasks/{taskId}/result:
     get:
       tags:
         - Tasks
-      summary: Task Result
-      description: Retrieves the final result of a completed background task. Requires the `taskId` variable, which the collection automatically populates from the x-task-id header of prior async requests. Returns the task's result payload when finished.
+      summary: Get the Results of a Task
+      description: Retrieves the final result of a completed background task. The content will be returned as a downloadable file. The name of the file will be the {taskId} that was submitted with the request. The file extension and content type are set by the background task and will be appropriate to the data returned.
       operationId: taskResult
       parameters:
         - $ref: '#/components/parameters/TaskId'
       responses:
         '200':
-          description: Task Result
+          description: Task result file downloaded successfully
           content:
-            text/plain:
-              examples:
-                Task Result:
-                  value: ";File created: 06/17/2025 23:57\r\n;Record count: 8\r\n$ORIGIN domain.com.\r\n@\t86400\tIN\tSOA pdns1.ultradns.net. shane\\.barbetta.digicert.com. (\r\n\t\t\t2025061707\t;Serial\r\n\t\t\t86400\t\t;Refresh\r\n\t\t\t86400\t\t;Retry\r\n\t\t\t86400\t\t;Expire\r\n\t\t\t86400\t\t;Minimum\r\n\t\t)\r\n@\t86400\tIN\tNS\tpdns1.ultradns.net.\r\n@\t86400\tIN\tNS\tpdns2.ultradns.net.\r\n@\t86400\tIN\tNS\tpdns3.ultradns.org.\r\n@\t86400\tIN\tNS\tpdns4.ultradns.org.\r\n@\t86400\tIN\tNS\tpdns5.ultradns.info.\r\n@\t86400\tIN\tNS\tpdns6.ultradns.co.uk.\r\nwww\t300\tIN\tA\t204.74.99.100\r\n"
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: string
+                    description: The task result content as a string
+                required:
+                  - content
+              description: The task result as a downloadable file. The filename will be the taskId and the content type will be determined by the background task.
         '401':
           $ref: '#/components/responses/Error401'
         '404':
@@ -1403,6 +1482,72 @@ components:
         - tasks
         - queryInfo
         - resultInfo
+    ReportTask:
+      type: object
+      description: The Reporter Task DTO is used to describe the current state of a task.
+      properties:
+        taskId:
+          type: string
+          description: Id for the task.
+          example: ZQV-013d3c5c-7b14-4ff0-b4af-453b76a827b6
+        code:
+          type: string
+          enum:
+            - PENDING
+            - IN_PROCESS
+            - COMPLETE
+            - ERROR
+          description: Current state of the task.
+          example: COMPLETE
+        message:
+          type: string
+          description: Current message for the task.
+          example: Completed ZQV Report Successfully.
+        lastModifiedDateTime:
+          type: string
+          format: date-time
+          description: Last Modified date time of the task.
+          example: '2016-08-26T12:33:22.000Z'
+        resultUri:
+          type: string
+          format: uri-reference
+          description: If task is COMPLETE, the URI from where the resulting data can be downloaded.
+          example: https://api.ultradns.com/reports/tasks/ZQV-013d3c5c-7b14-4ff0-b4af-453b76a827b6
+      required:
+        - taskId
+        - code
+        - message
+        - lastModifiedDateTime
+    ReportTaskList:
+      type: object
+      description: The Reporter TaskList DTO is returned when requesting the state of all tasks for a user.
+      properties:
+        tasks:
+          type: array
+          description: The list of returned tasks. Each entry in the list matches the task DTO described above.
+          items:
+            $ref: '#/components/schemas/ReportTask'
+          example:
+            - taskId: ZQV-013d3c5c-7b14-4ff0-b4af-453b76a827b6
+              code: COMPLETE
+              message: Completed ZQV Report Successfully.
+              lastModifiedDateTime: '2016-08-26T12:33:22.000Z'
+              resultUri: https://api.ultradns.com/reports/tasks/ZQV-013d3c5c-7b14-4ff0-b4af-453b76a827b6
+            - taskId: PQV-003f098b-a2df-437e-8482-65e8d93b4858
+              code: COMPLETE
+              message: Completed PQVReport Successfully.
+              lastModifiedDateTime: '2016-08-26T12:33:22.000Z'
+              resultUri: https://api.ultradns.com/reports/tasks/PQV-003f098b-a2df-437e-8482-65e8d93b4858
+      required:
+        - tasks
+    ZoneDelete:
+      type: object
+      description: Optional request body for zone deletion
+      properties:
+        changeComment:
+          type: string
+          description: Comment describing the reason for the zone deletion
+          example: Deleting Zone as agreed
     ZoneProperties:
       type: object
       description: The Zone Properties DTO holds the common metadata across all types of zones
@@ -1871,6 +2016,15 @@ components:
           - DATE
         default: CODE
       description: The sort column used to order the list. Valid sort fields are CODE, CONTENT_TYPE, EXTENSIONS, HAS_DATA, DATE. The default value is CODE.
+    TaskType:
+      name: taskType
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+          - reporting
+      description: For viewing reporting tasks user needs to set its value to "reporting". By default only Rest API configurations tasks will be returned as per current functionality.
     TaskId:
       name: taskId
       in: path
