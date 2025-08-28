@@ -1,0 +1,56 @@
+post:
+  tags:
+    - Zones
+  summary: Suspend a Zone
+  description: |
+    Suspending a zone allows you to temporarily stop serving data for a zone without deleting that zone. When you suspend a zone, the following changes happen:
+    
+    - The zone cannot be updated via a PUT or PATCH
+    - Performing a GET will still return zone data
+  operationId: suspendZone
+  parameters:
+    - $ref: '../components/parameters/ZoneName.yaml'
+  requestBody:
+    required: false
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            changeComment:
+              type: string
+              description: An optional field allowing users to create a comment for a zone operation using up to 512 characters of free text, which can be viewed and searched for via the Audit Log Report. Not applicable for Batch or JSON Patch calls.
+              maxLength: 512
+              example: "Suspend this zone. No longer active."
+        examples:
+          Suspend Zone with Change Comment:
+            summary: Suspend Zone with Change Comment
+            value:
+              changeComment: "Suspend this zone. No longer active."
+  responses:
+    '200':
+      description: Zone suspended successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Zone suspended successfully"
+          examples:
+            Suspend Completed:
+              value:
+                message: "Zone suspended successfully"
+    '202':
+      $ref: '../components/responses/AcceptedGeneric.yaml'
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

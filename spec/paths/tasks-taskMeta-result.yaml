@@ -2,7 +2,7 @@ get:
   tags:
     - Tasks
   summary: Get the Results of a Task
-  description: Retrieves the final result of a completed background task. The content will be returned as a downloadable file. The name of the file will be the {taskId} that was submitted with the request. The file extension and content type are set by the background task and will be appropriate to the data returned.
+  description: Retrieves the final result of a completed background task.
   operationId: taskResult
   parameters:
     - $ref: '../components/parameters/TaskId.yaml'

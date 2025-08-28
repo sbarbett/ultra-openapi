@@ -237,10 +237,7 @@ paths:
       tags:
         - Platform
       summary: Get Version
-      description: |-
-        The version call provides the version of the REST API currently in production.
-
-        This call does not require an Authorization header to be specified, which allows it to be used to verify that there are no networking issues between a client and the REST API server.
+      description: The version call provides the version of the REST API currently in production. This call does not require an Authorization header to be specified, which allows it to be used to verify that there are no networking issues between a client and the REST API server.
       operationId: getVersion
       responses:
         '200':
@@ -292,10 +289,7 @@ paths:
       tags:
         - Zones
       summary: Create a Zone
-      description: |
-        The Create Zone API allows you to create a Primary, Secondary, or Alias Zone, and furthermore, allows you to create a Zone "from scratch" by copying another zone via an uploaded file or by Zone transfer.
-
-        The JSON examples provided below give a sample of each type of zone create call.
+      description: The Create Zone API allows you to create a Primary, Secondary, or Alias Zone, and furthermore, allows you to create a Zone "from scratch" by copying another zone via an uploaded file or by Zone transfer.
       operationId: createZone
       requestBody:
         required: true
@@ -431,8 +425,7 @@ paths:
       tags:
         - Zones
       summary: Export a Zone
-      description: |
-        Exporting a Zone will create a task to export the zone details into a BIND file. Once the task has been completed the BIND file can be downloaded.
+      description: Exporting a Zone will create a task to export the zone details into a BIND file. Once the task has been completed the BIND file can be downloaded.
       operationId: exportZone
       requestBody:
         required: true
@@ -752,11 +745,7 @@ paths:
       tags:
         - Zones
       summary: Delete a Zone
-      description: |
-        The Delete Zone API allows you to delete any zone you have the proper authority to delete. You cannot delete a primary zone if it has an Alias zone.
-
-        If delete happens immediately, Status Code 204 is returned with no body content.
-        If delete happens in the background, a Status Code 202 is returned with a status response message of Pending, along with an X-Task-Id header in body content.
+      description: The Delete Zone API allows you to delete any zone you have the proper authority to delete. You cannot delete a primary zone if it has an Alias zone.
       operationId: deleteZone
       parameters:
         - $ref: '#/components/parameters/ZoneName'
@@ -813,6 +802,173 @@ paths:
                 Transfer Completed:
                   value:
                     message: Zone transfer completed successfully
+        '202':
+          $ref: '#/components/responses/AcceptedGeneric'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+  /zones/{zoneName}/convert:
+    post:
+      tags:
+        - Zones
+      summary: Convert a Zone
+      description: The Convert Zone call converts a Secondary Zone into a Primary Zone.
+      operationId: convertZone
+      parameters:
+        - $ref: '#/components/parameters/ZoneName'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                changeComment:
+                  type: string
+                  description: Optional comment for the zone conversion
+                  example: Converting zone 12/05/2020
+            examples:
+              Convert Zone with Change Comment:
+                summary: Convert Zone with Change Comment
+                value:
+                  changeComment: Converting zone 12/05/2020
+      responses:
+        '201':
+          description: Zone conversion completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Zone converted successfully
+              examples:
+                Conversion Completed:
+                  value:
+                    message: Zone converted successfully
+        '202':
+          $ref: '#/components/responses/AcceptedGeneric'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+  /zones/{zoneName}/unalias:
+    post:
+      tags:
+        - Zones
+      summary: Unalias a Zone
+      description: |
+        Unaliasing a zone is the process of converting an Alias Zone into a Primary Zone. When you unalias a zone, the following changes happen:
+
+        - All of the data and zone configuration information is copied from the Primary to the Alias.
+        - The Alias is converted into a Primary zone.
+        - Any correlation between the original Primary and new Primary (formerly the Alias) is removed; the two are now wholly separate Primary zones.
+      operationId: unaliasZone
+      parameters:
+        - $ref: '#/components/parameters/ZoneName'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                changeComment:
+                  type: string
+                  description: An optional field allowing users to create a comment for a zone operation using up to 512 characters of free text, which can be viewed and searched for via the Audit Log Report. Not applicable for Batch or JSON Patch calls.
+                  maxLength: 512
+                  example: Unalias this zone. No longer required.
+            examples:
+              Unalias Zone with Change Comment:
+                summary: Unalias Zone with Change Comment
+                value:
+                  changeComment: Unalias this zone. No longer required.
+      responses:
+        '200':
+          description: Zone unalias completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Zone unaliased successfully
+              examples:
+                Unalias Completed:
+                  value:
+                    message: Zone unaliased successfully
+        '202':
+          $ref: '#/components/responses/AcceptedGeneric'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+  /zones/{zoneName}/suspend:
+    post:
+      tags:
+        - Zones
+      summary: Suspend a Zone
+      description: |
+        Suspending a zone allows you to temporarily stop serving data for a zone without deleting that zone. When you suspend a zone, the following changes happen:
+
+        - The zone cannot be updated via a PUT or PATCH
+        - Performing a GET will still return zone data
+      operationId: suspendZone
+      parameters:
+        - $ref: '#/components/parameters/ZoneName'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                changeComment:
+                  type: string
+                  description: An optional field allowing users to create a comment for a zone operation using up to 512 characters of free text, which can be viewed and searched for via the Audit Log Report. Not applicable for Batch or JSON Patch calls.
+                  maxLength: 512
+                  example: Suspend this zone. No longer active.
+            examples:
+              Suspend Zone with Change Comment:
+                summary: Suspend Zone with Change Comment
+                value:
+                  changeComment: Suspend this zone. No longer active.
+      responses:
+        '200':
+          description: Zone suspended successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Zone suspended successfully
+              examples:
+                Suspend Completed:
+                  value:
+                    message: Zone suspended successfully
         '202':
           $ref: '#/components/responses/AcceptedGeneric'
         '400':
@@ -1011,7 +1167,7 @@ paths:
       tags:
         - Tasks
       summary: Get the Status of a Task
-      description: Retrieves the current status of a background task. Returns a Task DTO with the current state of the task.
+      description: Retrieves the current status of a background task.
       operationId: checkTask
       parameters:
         - $ref: '#/components/parameters/TaskId'
@@ -1059,7 +1215,7 @@ paths:
       tags:
         - Tasks
       summary: Get the Results of a Task
-      description: Retrieves the final result of a completed background task. The content will be returned as a downloadable file. The name of the file will be the {taskId} that was submitted with the request. The file extension and content type are set by the background task and will be appropriate to the data returned.
+      description: Retrieves the final result of a completed background task.
       operationId: taskResult
       parameters:
         - $ref: '#/components/parameters/TaskId'

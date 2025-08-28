@@ -1,0 +1,51 @@
+post:
+  tags:
+    - Zones
+  summary: Convert a Zone
+  description: The Convert Zone call converts a Secondary Zone into a Primary Zone.
+  operationId: convertZone
+  parameters:
+    - $ref: '../components/parameters/ZoneName.yaml'
+  requestBody:
+    required: false
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            changeComment:
+              type: string
+              description: Optional comment for the zone conversion
+              example: "Converting zone 12/05/2020"
+        examples:
+          Convert Zone with Change Comment:
+            summary: Convert Zone with Change Comment
+            value:
+              changeComment: "Converting zone 12/05/2020"
+  responses:
+    '201':
+      description: Zone conversion completed successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Zone converted successfully"
+          examples:
+            Conversion Completed:
+              value:
+                message: "Zone converted successfully"
+    '202':
+      $ref: '../components/responses/AcceptedGeneric.yaml'
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

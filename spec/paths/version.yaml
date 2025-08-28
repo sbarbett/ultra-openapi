@@ -2,9 +2,7 @@ get:
   tags:
     - Platform
   summary: Get Version
-  description: "The version call provides the version of the REST API currently in production.\n\nThis call does not require
-    an Authorization header to be specified, which allows it to be used to verify that there are no networking issues
-    between a client and the REST API server."
+  description: The version call provides the version of the REST API currently in production. This call does not require an Authorization header to be specified, which allows it to be used to verify that there are no networking issues between a client and the REST API server.
   operationId: getVersion
   responses:
     '200':

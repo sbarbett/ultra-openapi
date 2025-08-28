@@ -2,10 +2,7 @@ post:
   tags:
     - Zones
   summary: Create a Zone
-  description: |
-    The Create Zone API allows you to create a Primary, Secondary, or Alias Zone, and furthermore, allows you to create a Zone "from scratch" by copying another zone via an uploaded file or by Zone transfer.
-    
-    The JSON examples provided below give a sample of each type of zone create call.
+  description: The Create Zone API allows you to create a Primary, Secondary, or Alias Zone, and furthermore, allows you to create a Zone "from scratch" by copying another zone via an uploaded file or by Zone transfer.
   operationId: createZone
   requestBody:
     required: true

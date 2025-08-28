@@ -2,7 +2,7 @@ get:
   tags:
     - Tasks
   summary: Get the Status of a Task
-  description: Retrieves the current status of a background task. Returns a Task DTO with the current state of the task.
+  description: Retrieves the current status of a background task.
   operationId: checkTask
   parameters:
     - $ref: '../components/parameters/TaskId.yaml'

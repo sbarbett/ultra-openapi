@@ -268,11 +268,7 @@ delete:
   tags:
     - Zones
   summary: Delete a Zone
-  description: |
-    The Delete Zone API allows you to delete any zone you have the proper authority to delete. You cannot delete a primary zone if it has an Alias zone.
-    
-    If delete happens immediately, Status Code 204 is returned with no body content.
-    If delete happens in the background, a Status Code 202 is returned with a status response message of Pending, along with an X-Task-Id header in body content.
+  description: The Delete Zone API allows you to delete any zone you have the proper authority to delete. You cannot delete a primary zone if it has an Alias zone.
   operationId: deleteZone
   parameters:
     - $ref: '../components/parameters/ZoneName.yaml'

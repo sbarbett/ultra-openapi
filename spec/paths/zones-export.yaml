@@ -2,8 +2,7 @@ post:
   tags:
     - Zones
   summary: Export a Zone
-  description: |
-    Exporting a Zone will create a task to export the zone details into a BIND file. Once the task has been completed the BIND file can be downloaded.
+  description: Exporting a Zone will create a task to export the zone details into a BIND file. Once the task has been completed the BIND file can be downloaded.
   operationId: exportZone
   requestBody:
     required: true

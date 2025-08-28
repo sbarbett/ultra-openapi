@@ -144,6 +144,12 @@ paths:
     $ref: './paths/zones-zoneMeta.yaml'
   /zones/{zoneName}/transfer:
     $ref: './paths/zones-zoneMeta-transfer.yaml'
+  /zones/{zoneName}/convert:
+    $ref: './paths/zones-zoneMeta-convert.yaml'
+  /zones/{zoneName}/unalias:
+    $ref: './paths/zones-zoneMeta-unalias.yaml'
+  /zones/{zoneName}/suspend:
+    $ref: './paths/zones-zoneMeta-suspend.yaml'
   
   # Record endpoints
   /zones/{zoneName}/rrsets:

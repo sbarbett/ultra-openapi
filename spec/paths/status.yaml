@@ -2,7 +2,7 @@ get:
   tags:
     - Platform
   summary: Get Status
-  description: "The status call provides a simple way to determine if the REST API is running, and to make sure you are connecting to the UltraDNS Portal with proper authorization."
+  description: The status call provides a simple way to determine if the REST API is running, and to make sure you are connecting to the UltraDNS Portal with proper authorization.
   operationId: getStatus
   responses:
     '200':
