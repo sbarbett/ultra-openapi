@@ -1,19 +1,162 @@
 type: object
+description: The WebForward DTO creates, modifies, or retrieves a Web Forward.
 properties:
-  defaultForwardType:
-    type: string
-    description: The type of redirect/forward
-    example: HTTP_301_REDIRECT
-    enum: [HTTP_301_REDIRECT, HTTP_302_REDIRECT]
-  defaultRedirectTo:
-    type: string
-    description: The target URL for the redirect
-    example: https://www.example.com
   guid:
     type: string
-    description: Unique identifier for the web forward rule
-    example: 9034F201636B98D9
+    description: |
+      System-generated unique identifier for this object.
+      
+      Returned for Get Web Forwards call.
+      Required for Update and Partial Update of Web Forwards.
+    example: "9034F201636B98D9"
   requestTo:
     type: string
-    description: The hostname being forwarded
-    example: www.domain.com
+    description: |
+      Specifies the URL to be redirected.
+      
+      The anchor character (#) is supported when creating a unique record.
+      For example, sub.abc.com/index.html and sub.abc.com/index.html#anchor will be recognized and allowed.
+      
+      Required for creation.
+      Must be a valid URL.
+      Performing an HTTPS redirect requires the use of a valid certificateId.
+    example: "www.domain.com"
+  defaultRedirectTo:
+    type: string
+    description: |
+      URL destination of the redirect.
+      
+      Required for creation.
+      Either http:// or https:// are acceptable.
+    example: "https://www.example.com"
+  defaultForwardType:
+    type: string
+    enum: [Framed, HTTP_301_REDIRECT, HTTP_302_REDIRECT, HTTP_303_REDIRECT, HTTP_307_REDIRECT]
+    description: |
+      Type of forward. Valid values include:
+      - Framed
+      - HTTP_301_REDIRECT
+      - HTTP_302_REDIRECT
+      - HTTP_303_REDIRECT
+      - HTTP_307_REDIRECT
+      
+      Required for creation.
+    example: "HTTP_301_REDIRECT"
+  certificateManagedType:
+    type: string
+    enum: [EE]
+    description: |
+      Indicates that the certificate for the HTTPS Redirect is going to be Encryption Everywhere (EE - managed by UltraDNS).
+      
+      Valid value is: EE.
+      Required when creating an HTTPS Redirect and not providing your own certificates, and the Managed Certs/Automated Certificate Management feature is enabled.
+      Cannot be provided if the certificateId field is present.
+    example: "EE"
+  certificateId:
+    type: string
+    description: |
+      The unique certificate identifier, which can be retrieved using the Get the List of Certificates call. Required when creating an HTTPS Redirect.
+      
+      Cannot be provided if the certificateManagedType field is present.
+      Required for HTTPS Redirect.
+    example: "cert-12345"
+  relativeForwardType:
+    type: string
+    enum: [PARAMETER, PATH, PARAMETER_AND_PATH]
+    description: |
+      The Type of relative forward. Valid values include:
+      - PARAMETER – Parameter is appended to the target path.
+      - PATH – Path is appended to the target path.
+      - PARAMETER_AND_PATH – Both the Path and Parameter are appended to the target path.
+    example: "PARAMETER"
+  records:
+    type: array
+    description: |
+      Present if you are using advanced web forward to specify where to forward, based on custom headers.
+    items:
+      type: object
+      properties:
+        redirectTo:
+          type: string
+          description: |
+            URL destination of the redirect.
+            
+            Required on create (if records are present).
+            Must be a valid URL. Can include a port number.
+            Either http:// or https:// are acceptable.
+          example: "https://www.example.com"
+        forwardType:
+          type: string
+          enum: [Framed, HTTP_301_REDIRECT, HTTP_302_REDIRECT, HTTP_303_REDIRECT, HTTP_307_REDIRECT]
+          description: |
+            Type of forward. Valid values include:
+            - Framed
+            - HTTP_301_REDIRECT
+            - HTTP_302_REDIRECT
+            - HTTP_303_REDIRECT
+            - HTTP_307_REDIRECT
+            
+            Required on create (if records are present).
+          example: "HTTP_302_REDIRECT"
+        priority:
+          type: integer
+          minimum: 1
+          description: |
+            Order for a record to match. Lower numbers have higher priority.
+            
+            Positive integer.
+            Required on create (if records are present).
+          example: 1
+        rules:
+          type: array
+          description: |
+            Array of one or more rules.
+            
+            Required on create (if records are present).
+          items:
+            type: object
+            properties:
+              header:
+                type: string
+                description: |
+                  Name of the header to match.
+                  
+                  Required on create (if records are present).
+                  Must be a header returned by the Get Custom HTTP Headers of Account call.
+                example: "User-Agent"
+              matchCriteria:
+                type: string
+                enum: [BEGINS_WITH, CONTAINS, ENDS_WITH, MATCHES]
+                description: |
+                  Type of match to perform. Valid values include:
+                  - BEGINS_WITH
+                  - CONTAINS
+                  - ENDS_WITH
+                  - MATCHES
+                  
+                  Required on create (if records are present).
+                example: "CONTAINS"
+              value:
+                type: string
+                description: |
+                  Expected header value.
+                  
+                  Required on create (if records are present).
+                example: "Mobile"
+              caseInsensitive:
+                type: boolean
+                default: false
+                description: |
+                  Flag to indicate if the match takes case into account (true) or not (false).
+                  
+                  If not present, defaults to false.
+                example: true
+            required:
+              - header
+              - matchCriteria
+              - value
+          required:
+            - redirectTo
+            - forwardType
+            - priority
+            - rules

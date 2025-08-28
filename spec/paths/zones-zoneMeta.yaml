@@ -287,6 +287,7 @@ delete:
     '202':
       $ref: '../components/responses/AcceptedGeneric.yaml'
     '204':
+      $ref: '../components/responses/NoContentGeneric.yaml'
       description: Zone deleted successfully
     '401':
       $ref: '../components/responses/Error401.yaml'

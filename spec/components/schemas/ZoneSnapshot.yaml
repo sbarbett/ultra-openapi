@@ -1,0 +1,46 @@
+type: object
+description: The ZoneSnapshot DTO contains a complete snapshot of a zone including all resource records and web forwards
+properties:
+  zoneName:
+    type: string
+    description: The name of the zone for which this snapshot was taken
+    example: "00-ben-doc-test.com"
+  rrSets:
+    type: array
+    description: Array of resource record sets (RRSets) in the zone
+    items:
+      $ref: './RRSet.yaml'
+    example:
+      - ownerName: "def.00-ben-doc-test.com."
+        rrtype: "A (1)"
+        ttl: 300
+        rdata:
+          - "204.74.99.100"
+      - ownerName: "00-ben-doc-test.com."
+        rrtype: "NS (2)"
+        ttl: 500
+        rdata:
+          - "udns1.ultradns.net."
+          - "udns2.ultradns.net."
+      - ownerName: "rd.00-ben-doc-test.com."
+        rrtype: "A (1)"
+        ttl: 300
+        rdata:
+          - "3.4.5.6"
+        profile:
+          description: "rd pool"
+          order: "ROUND_ROBIN"
+          "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
+  webForwards:
+    type: array
+    description: Array of web forward rules in the zone (optional)
+    items:
+      $ref: './WebForward.yaml'
+    example:
+      - guid: "090845B113499BEB"
+        requestTo: "abc.com.00-ben-doc-test.com/requestTo.html"
+        defaultRedirectTo: "http://abc.com/redirectTo.html"
+        defaultForwardType: "HTTP_301_REDIRECT"
+required:
+  - zoneName
+  - rrSets

@@ -1,0 +1,47 @@
+post:
+  tags:
+    - Zones
+  summary: Restore the Zone Snapshot
+  description: |
+    Restore the Zone Snapshot.
+    
+    **Important Notes:**
+    - Restore activity is final and cannot be rolled-back.
+    - Restore is only allowed for zones that meet the following criteria:
+      - Restore only supports primary zones.
+      - The zone should not have more than 50,000 records, including the allowed pool's resource records.
+      - The zone should only have:
+        - Basic Resource Records.
+        - Resource Distribution Pools
+        - Directional DNS Pools
+        - Load Balancing pools
+        - Simple Monitor / Failover pools
+        - Simple Load Balancing pools
+        - Web Forwarding
+      - The zone should not have:
+        - Mail Forwarding
+      - Additionally, Restore does not support the following types of zones:
+        - Signed zones
+        - Secondary zones
+        - Alias zones
+        - Suspended zones
+    - If a Zone Snapshot contains a Directional (DIR) pool with Global Account Level GEO and Source IP groups, once the Restore operation is completed, the Account level GEO and Source IP groups will be converted to the local pool level groups.
+    - To further clarify the previous point about the Restore functionality, a zone must also satisfy the above criteria at the time of the Restore operation. For example, if a zone was signed after a Snapshot was created, or a directional pool was added, or the number of records exceeded 50,000, the Restore operation will not be allowed.
+    - Restore is a background activity; it is highly recommended to refrain from performing any activity that could change the zone configuration while a Restore is in-progress. Doing so might lead to data inconsistency or other unexpected results.
+    - A user might require full READ, WRITE, UPDATE and DELETE permissions on the zone and all of its resource records to Restore a Snapshot.
+  operationId: restoreZoneSnapshot
+  parameters:
+    - $ref: '../components/parameters/ZoneName.yaml'
+  responses:
+    '202':
+      $ref: '../components/responses/AcceptedGeneric.yaml'
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

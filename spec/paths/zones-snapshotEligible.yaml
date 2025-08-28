@@ -1,0 +1,55 @@
+get:
+  tags:
+    - Zones
+  summary: List Zone Snapshot Eligibility
+  description: Returns the list of eligible zones and the existing Snapshot date with description, if any exist.
+  operationId: listZoneSnapshotEligible
+  parameters:
+    - $ref: '../components/parameters/QueryParams.yaml'
+      description: |
+        The query used to construct the list. Format: `query_param:value+query_param_2:value`
+        
+        Example: `name:abc`
+        
+        Query operators are:
+        
+        - **name** - Name of the zone (allowing for partial string matches).
+    - $ref: '../components/parameters/Offset.yaml'
+    - $ref: '../components/parameters/Limit.yaml'
+    - $ref: '../components/parameters/Reverse.yaml'
+  responses:
+    '200':
+      description: List Zone Snapshot Eligibility
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ZoneSnapshotEligibleList.yaml'
+          examples:
+            List Zone Snapshot Eligibility:
+              value:
+                zones:
+                  - zoneName: "abc.com."
+                    snapshots:
+                      - date: "2018-09-24T14:59:18.208Z"
+                        description: "Description for snapshot purpose"
+                  - zoneName: "abc1.com."
+                    snapshots:
+                      - date: "2018-12-03T10:59:38.208Z"
+                        description: "Description for snapshot purpose"
+                queryInfo:
+                  q: "name:abc"
+                  limit: 100
+                  reverse: false
+                  sort: "name"
+                resultInfo:
+                  totalCount: 2
+                  offset: 0
+                  returnedCount: 2
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

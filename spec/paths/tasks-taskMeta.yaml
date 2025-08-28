@@ -37,6 +37,7 @@ delete:
     - $ref: '../components/parameters/TaskId.yaml'
   responses:
     '204':
+      $ref: '../components/responses/NoContentGeneric.yaml'
       description: Task deleted successfully
     '401':
       $ref: '../components/responses/Error401.yaml'

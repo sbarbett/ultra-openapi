@@ -1,0 +1,138 @@
+get:
+  tags:
+    - Zones
+  summary: Get Snapshot of a Zone
+  description: Get Snapshot of a Zone.
+  operationId: getZoneSnapshot
+  parameters:
+    - $ref: '../components/parameters/ZoneName.yaml'
+  responses:
+    '200':
+      description: Zone Snapshot
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ZoneSnapshot.yaml'
+          examples:
+            Zone Snapshot:
+              value:
+                zoneName: "00-ben-doc-test.com"
+                rrSets:
+                  - ownerName: "def.00-ben-doc-test.com."
+                    rrtype: "A (1)"
+                    ttl: 300
+                    rdata:
+                      - "204.74.99.100"
+                  - ownerName: "00-ben-doc-test.com."
+                    rrtype: "NS (2)"
+                    ttl: 500
+                    rdata:
+                      - "udns1.ultradns.net."
+                      - "udns2.ultradns.net."
+                  - ownerName: "rd.00-ben-doc-test.com."
+                    rrtype: "A (1)"
+                    ttl: 300
+                    rdata:
+                      - "3.4.5.6"
+                    profile:
+                      description: "rd pool"
+                      order: "ROUND_ROBIN"
+                      "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
+                webForwards:
+                  - guid: "090845B113499BEB"
+                    requestTo: "abc.com.00-ben-doc-test.com/requestTo.html"
+                    defaultRedirectTo: "http://abc.com/redirectTo.html"
+                    defaultForwardType: "HTTP_301_REDIRECT"
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+
+post:
+  tags:
+    - Zones
+  summary: Create a Snapshot of a Zone
+  description: |
+    Create a Snapshot of a Zone - Deletes previously saved Snapshots of the zone.
+    
+    **Important Notes:**
+    - Snapshot activity is final and cannot be rolled-back.
+    - A zone can have a maximum of one Snapshot at a time. A zone snapshot request will either create a Snapshot (if it does not already exist), or will overwrite the existing Snapshot (if it already exists).
+    - Snapshot is only allowed for zones that meet the following criteria:
+      - Snapshot only supports primary zones.
+      - The zone should not have more than 50,000 records, including the allowed pool's resource records.
+      - The zone should only have:
+        - Basic Resource Records.
+        - Resource Distribution Pools
+        - Directional DNS Pools
+        - Load Balancing pools
+        - Simple Monitor / Failover pools
+        - Simple Load Balancing pools
+        - Web Forwarding
+      - The zone should not have:
+        - Mail Forwarding
+      - Additionally, Snapshot does not support the following types of zones:
+        - Signed zones
+        - Secondary zones
+        - Alias zones
+        - Suspended zones
+    - Snapshot is a background activity; it is highly recommended to refrain from performing any activity that could change the zone configuration while a Snapshot is in-progress. Doing so might lead to data inconsistency or other unexpected results.
+    - A user with basic READ permissions on a zone and its resource records may be allowed to take a zone Snapshot.
+  operationId: createZoneSnapshot
+  parameters:
+    - $ref: '../components/parameters/ZoneName.yaml'
+  requestBody:
+    required: false
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            description:
+              type: string
+              description: Snapshot description.
+              example: "Backup snapshot before major changes"
+        example:
+          description: "Backup snapshot before major changes"
+  responses:
+    '202':
+      $ref: '../components/responses/AcceptedGeneric.yaml'
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+
+delete:
+  tags:
+    - Zones
+  summary: Delete the snapshot of a Zone
+  description: Delete the snapshot of a Zone.
+  operationId: deleteZoneSnapshot
+  parameters:
+    - $ref: '../components/parameters/ZoneName.yaml'
+  responses:
+    '204':
+      $ref: '../components/responses/NoContentGeneric.yaml'
+      description: Snapshot deleted successfully
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

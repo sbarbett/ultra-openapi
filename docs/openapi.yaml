@@ -128,12 +128,12 @@ tags:
   - name: Authorization
     description: |
       Obtain and refresh auth tokens via the OAuth 2.0 Resource Owner Password Credentials (ROPC) grant. Requires an UltraDNS API username and password.
-  - name: Tasks
-    description: |
-      Track asynchronous operations (e.g., exports, snapshots). 202 responses include an `X-Task-ID` header; use it to check status and retrieve results.
   - name: Platform
     description: |
       Health, version, and connectivity checks for monitoring and compatibility.
+  - name: Tasks
+    description: |
+      Track asynchronous operations (e.g., exports, snapshots). 202 responses include an `X-Task-ID` header; use it to check status and retrieve results.
   - name: Zones
     description: |
       Manage DNS zones: create, read, update, delete; export zone files; capture snapshots.
@@ -469,6 +469,62 @@ paths:
           $ref: '#/components/responses/Error404'
         5XX:
           $ref: '#/components/responses/Error5xx'
+  /zones/snapshot-eligible:
+    get:
+      tags:
+        - Zones
+      summary: List Zone Snapshot Eligibility
+      description: Returns the list of eligible zones and the existing Snapshot date with description, if any exist.
+      operationId: listZoneSnapshotEligible
+      parameters:
+        - $ref: '#/components/parameters/QueryParams'
+          description: |
+            The query used to construct the list. Format: `query_param:value+query_param_2:value`
+
+            Example: `name:abc`
+
+            Query operators are:
+
+            - **name** - Name of the zone (allowing for partial string matches).
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Reverse'
+      responses:
+        '200':
+          description: List Zone Snapshot Eligibility
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ZoneSnapshotEligibleList'
+              examples:
+                List Zone Snapshot Eligibility:
+                  value:
+                    zones:
+                      - zoneName: abc.com.
+                        snapshots:
+                          - date: '2018-09-24T14:59:18.208Z'
+                            description: Description for snapshot purpose
+                      - zoneName: abc1.com.
+                        snapshots:
+                          - date: '2018-12-03T10:59:38.208Z'
+                            description: Description for snapshot purpose
+                    queryInfo:
+                      q: name:abc
+                      limit: 100
+                      reverse: false
+                      sort: name
+                    resultInfo:
+                      totalCount: 2
+                      offset: 0
+                      returnedCount: 2
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
   /zones/{zoneName}:
     put:
       tags:
@@ -764,6 +820,7 @@ paths:
         '202':
           $ref: '#/components/responses/AcceptedGeneric'
         '204':
+          $ref: '#/components/responses/NoContentGeneric'
           description: Zone deleted successfully
         '401':
           $ref: '#/components/responses/Error401'
@@ -969,6 +1026,191 @@ paths:
                 Suspend Completed:
                   value:
                     message: Zone suspended successfully
+        '202':
+          $ref: '#/components/responses/AcceptedGeneric'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+  /zones/{zoneName}/snapshot:
+    get:
+      tags:
+        - Zones
+      summary: Get Snapshot of a Zone
+      description: Get Snapshot of a Zone.
+      operationId: getZoneSnapshot
+      parameters:
+        - $ref: '#/components/parameters/ZoneName'
+      responses:
+        '200':
+          description: Zone Snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ZoneSnapshot'
+              examples:
+                Zone Snapshot:
+                  value:
+                    zoneName: 00-ben-doc-test.com
+                    rrSets:
+                      - ownerName: def.00-ben-doc-test.com.
+                        rrtype: A (1)
+                        ttl: 300
+                        rdata:
+                          - 204.74.99.100
+                      - ownerName: 00-ben-doc-test.com.
+                        rrtype: NS (2)
+                        ttl: 500
+                        rdata:
+                          - udns1.ultradns.net.
+                          - udns2.ultradns.net.
+                      - ownerName: rd.00-ben-doc-test.com.
+                        rrtype: A (1)
+                        ttl: 300
+                        rdata:
+                          - 3.4.5.6
+                        profile:
+                          description: rd pool
+                          order: ROUND_ROBIN
+                          '@context': http://schemas.ultradns.com/RDPool.jsonschema
+                    webForwards:
+                      - guid: 090845B113499BEB
+                        requestTo: abc.com.00-ben-doc-test.com/requestTo.html
+                        defaultRedirectTo: http://abc.com/redirectTo.html
+                        defaultForwardType: HTTP_301_REDIRECT
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+    post:
+      tags:
+        - Zones
+      summary: Create a Snapshot of a Zone
+      description: |
+        Create a Snapshot of a Zone - Deletes previously saved Snapshots of the zone.
+
+        **Important Notes:**
+        - Snapshot activity is final and cannot be rolled-back.
+        - A zone can have a maximum of one Snapshot at a time. A zone snapshot request will either create a Snapshot (if it does not already exist), or will overwrite the existing Snapshot (if it already exists).
+        - Snapshot is only allowed for zones that meet the following criteria:
+          - Snapshot only supports primary zones.
+          - The zone should not have more than 50,000 records, including the allowed pool's resource records.
+          - The zone should only have:
+            - Basic Resource Records.
+            - Resource Distribution Pools
+            - Directional DNS Pools
+            - Load Balancing pools
+            - Simple Monitor / Failover pools
+            - Simple Load Balancing pools
+            - Web Forwarding
+          - The zone should not have:
+            - Mail Forwarding
+          - Additionally, Snapshot does not support the following types of zones:
+            - Signed zones
+            - Secondary zones
+            - Alias zones
+            - Suspended zones
+        - Snapshot is a background activity; it is highly recommended to refrain from performing any activity that could change the zone configuration while a Snapshot is in-progress. Doing so might lead to data inconsistency or other unexpected results.
+        - A user with basic READ permissions on a zone and its resource records may be allowed to take a zone Snapshot.
+      operationId: createZoneSnapshot
+      parameters:
+        - $ref: '#/components/parameters/ZoneName'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  description: Snapshot description.
+                  example: Backup snapshot before major changes
+            example:
+              description: Backup snapshot before major changes
+      responses:
+        '202':
+          $ref: '#/components/responses/AcceptedGeneric'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+    delete:
+      tags:
+        - Zones
+      summary: Delete the snapshot of a Zone
+      description: Delete the snapshot of a Zone.
+      operationId: deleteZoneSnapshot
+      parameters:
+        - $ref: '#/components/parameters/ZoneName'
+      responses:
+        '204':
+          $ref: '#/components/responses/NoContentGeneric'
+          description: Snapshot deleted successfully
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+  /zones/{zoneName}/restore:
+    post:
+      tags:
+        - Zones
+      summary: Restore the Zone Snapshot
+      description: |
+        Restore the Zone Snapshot.
+
+        **Important Notes:**
+        - Restore activity is final and cannot be rolled-back.
+        - Restore is only allowed for zones that meet the following criteria:
+          - Restore only supports primary zones.
+          - The zone should not have more than 50,000 records, including the allowed pool's resource records.
+          - The zone should only have:
+            - Basic Resource Records.
+            - Resource Distribution Pools
+            - Directional DNS Pools
+            - Load Balancing pools
+            - Simple Monitor / Failover pools
+            - Simple Load Balancing pools
+            - Web Forwarding
+          - The zone should not have:
+            - Mail Forwarding
+          - Additionally, Restore does not support the following types of zones:
+            - Signed zones
+            - Secondary zones
+            - Alias zones
+            - Suspended zones
+        - If a Zone Snapshot contains a Directional (DIR) pool with Global Account Level GEO and Source IP groups, once the Restore operation is completed, the Account level GEO and Source IP groups will be converted to the local pool level groups.
+        - To further clarify the previous point about the Restore functionality, a zone must also satisfy the above criteria at the time of the Restore operation. For example, if a zone was signed after a Snapshot was created, or a directional pool was added, or the number of records exceeded 50,000, the Restore operation will not be allowed.
+        - Restore is a background activity; it is highly recommended to refrain from performing any activity that could change the zone configuration while a Restore is in-progress. Doing so might lead to data inconsistency or other unexpected results.
+        - A user might require full READ, WRITE, UPDATE and DELETE permissions on the zone and all of its resource records to Restore a Snapshot.
+      operationId: restoreZoneSnapshot
+      parameters:
+        - $ref: '#/components/parameters/ZoneName'
+      responses:
         '202':
           $ref: '#/components/responses/AcceptedGeneric'
         '400':
@@ -1201,6 +1443,7 @@ paths:
         - $ref: '#/components/parameters/TaskId'
       responses:
         '204':
+          $ref: '#/components/responses/NoContentGeneric'
           description: Task deleted successfully
         '401':
           $ref: '#/components/responses/Error401'
@@ -1491,27 +1734,99 @@ components:
         - zones
     RRSet:
       type: object
+      description: The RRSet DTO is the basic unit for resource record manipulation in the REST API. An RRSet contains the data for all resource records present at the same owner name (label), and with the same type and class (all records in UltraDNS have IN class).
       properties:
         ownerName:
           type: string
-          description: The owner name (record label) of the RRSet
-          example: domain.com.
+          description: |
+            The domain name of the owner of the RRSet. Can be either:
+            - Fully Qualified Domain Name (FQDN)
+            - Relative Domain Name
+
+            If a FQDN, it must be contained within the zone name FQDN.
+
+            NO for PUT, POST, or PATCH calls. Ignored if present.
+            Not present (and ignored if present) if this RRSet is embedded inside of an Owner structure.
+          example: a.domain.name.
+        rrtype:
+          type: string
+          description: |
+            Resource Record Type for the RRSet.
+
+            Must be formatted as the well-known resource record type (A, AAAA, TXT, etc.) and the corresponding number for the type, between 1 and 65535 or a known resource record name (A, AAAA, SRV, etc.).
+
+            NO for PUT, POST, or PATCH calls. Ignored if present.
+            Not present (and ignored if present) if this RRSet is embedded inside of an Owner structure.
+          example: A (1)
+        ttl:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+          description: |
+            The time to live (in seconds) for all records in the RRSet.
+
+            Must be a value between 0 and 2147483647, inclusive.
+
+            Should be included in PUT, POST or PATCH calls.
+            If TTL is not specified, the value set at the account level (either for record type or global setting) will be used.
+          example: 300
         rdata:
           type: array
           items:
             type: string
-          description: Array of record data values in BIND presentation format
+          description: |
+            The data for the records in the RRSet.
+
+            Must use the BIND presentation format for the specified rrtype.
+
+            For MX, NS, CNAME, PTR, and APEXALIAS record types, the rdata value cannot be relative to the zone name. It must be a FQDN.
+
+            If rrtype is MX, entering "0 ." will create a NULL MX record, implying that "No Service" is available for the server / record.
+
+            REQUIRED for PUT, POST, or PATCH calls. Must include BIND formatted data.
+
+            Multiple non-Null MX records with the same domain/host label are supported.
+            Only 1 Null-MX record is supported per domain/host.
+            A domain/host cannot contain both Null and Non-Null MX records.
           example:
-            - pdns1.ultradns.net.
-            - pdns2.ultradns.net.
-        rrtype:
-          type: string
-          description: DNS record type with numeric value
-          example: NS (2)
-        ttl:
-          type: integer
-          description: Time to live in seconds
-          example: 86400
+            - 1.2.3.4
+        systemGenerated:
+          type: array
+          items:
+            type: boolean
+          description: |
+            Indicates whether the record in an rdata list is system generated or not.
+
+            It represents the Boolean value that corresponds to the record in the list (in same order the records are returned).
+
+            Will be returned for GET requests when used as the query parameter systemGeneratedStatus.
+            If the query parameter is set to true, then the attribute name will be returned in the response.
+            Ignored for PUT/PATCH/POST requests.
+          example:
+            - false
+        ultra2SystemGenerated:
+          type: array
+          items:
+            type: boolean
+          description: |
+            Indicates whether the nameserver in an rdata list is generated by the Ultra2 system or not.
+
+            ultra2SystemGenerated will only be returned for those accounts which have Ultra2 enabled, as well as the associated NS records.
+          example:
+            - true
+            - true
+            - false
+            - false
+        profile:
+          type: object
+          description: |
+            If an RRSet is associated with an UltraDNS pool, the "profile" field is present and contains pool specific attributes.
+
+            Different types of profiles have different object layouts and attributes.
+          example:
+            description: rd pool
+            order: ROUND_ROBIN
+            '@context': http://schemas.ultradns.com/RDPool.jsonschema
     RRSetsList:
       type: object
       properties:
@@ -1704,6 +2019,291 @@ components:
           type: string
           description: Comment describing the reason for the zone deletion
           example: Deleting Zone as agreed
+    ZoneSnapshotEligible:
+      type: object
+      description: The ZoneSnapshotEligible DTO details the snapshot status/eligibility of a zone
+      properties:
+        zoneName:
+          type: string
+          description: The Zone name
+          example: abc.com.
+        snapshots:
+          type: array
+          description: The stored Snapshot information (if available)
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date-time
+                description: The date and time of the latest available Snapshot (in ISO 8601 format)
+                example: '2018-09-24T14:59:18.208Z'
+              description:
+                type: string
+                description: The description for the Zone Snapshot
+                example: Description for snapshot purpose
+            required:
+              - date
+              - description
+      required:
+        - zoneName
+        - snapshots
+    ZoneSnapshotEligibleList:
+      type: object
+      description: The ZoneSnapshotEligibleList DTO contains a list of zone snapshot eligibility information with query and result metadata
+      properties:
+        queryInfo:
+          $ref: '#/components/schemas/QueryInfo'
+          description: Information about the query used to construct the list
+        resultInfo:
+          $ref: '#/components/schemas/ResultInfo'
+          description: Information about the results returned
+        zones:
+          type: array
+          description: The list of the zone objects, which includes the domain name and possible Snapshot date
+          items:
+            $ref: '#/components/schemas/ZoneSnapshotEligible'
+          example:
+            - zoneName: abc.com.
+              snapshots:
+                - date: '2018-09-24T14:59:18.208Z'
+                  description: Description for snapshot purpose
+            - zoneName: abc1.com.
+              snapshots:
+                - date: '2018-12-03T10:59:38.208Z'
+                  description: Description for snapshot purpose
+      required:
+        - zones
+        - queryInfo
+        - resultInfo
+    ZoneSnapshot:
+      type: object
+      description: The ZoneSnapshot DTO contains a complete snapshot of a zone including all resource records and web forwards
+      properties:
+        zoneName:
+          type: string
+          description: The name of the zone for which this snapshot was taken
+          example: 00-ben-doc-test.com
+        rrSets:
+          type: array
+          description: Array of resource record sets (RRSets) in the zone
+          items:
+            $ref: '#/components/schemas/RRSet'
+          example:
+            - ownerName: def.00-ben-doc-test.com.
+              rrtype: A (1)
+              ttl: 300
+              rdata:
+                - 204.74.99.100
+            - ownerName: 00-ben-doc-test.com.
+              rrtype: NS (2)
+              ttl: 500
+              rdata:
+                - udns1.ultradns.net.
+                - udns2.ultradns.net.
+            - ownerName: rd.00-ben-doc-test.com.
+              rrtype: A (1)
+              ttl: 300
+              rdata:
+                - 3.4.5.6
+              profile:
+                description: rd pool
+                order: ROUND_ROBIN
+                '@context': http://schemas.ultradns.com/RDPool.jsonschema
+        webForwards:
+          type: array
+          description: Array of web forward rules in the zone (optional)
+          items:
+            $ref: '#/components/schemas/WebForward'
+          example:
+            - guid: 090845B113499BEB
+              requestTo: abc.com.00-ben-doc-test.com/requestTo.html
+              defaultRedirectTo: http://abc.com/redirectTo.html
+              defaultForwardType: HTTP_301_REDIRECT
+      required:
+        - zoneName
+        - rrSets
+    WebForward:
+      type: object
+      description: The WebForward DTO creates, modifies, or retrieves a Web Forward.
+      properties:
+        guid:
+          type: string
+          description: |
+            System-generated unique identifier for this object.
+
+            Returned for Get Web Forwards call.
+            Required for Update and Partial Update of Web Forwards.
+          example: 9034F201636B98D9
+        requestTo:
+          type: string
+          description: |
+            Specifies the URL to be redirected.
+
+            The anchor character (#) is supported when creating a unique record.
+            For example, sub.abc.com/index.html and sub.abc.com/index.html#anchor will be recognized and allowed.
+
+            Required for creation.
+            Must be a valid URL.
+            Performing an HTTPS redirect requires the use of a valid certificateId.
+          example: www.domain.com
+        defaultRedirectTo:
+          type: string
+          description: |
+            URL destination of the redirect.
+
+            Required for creation.
+            Either http:// or https:// are acceptable.
+          example: https://www.example.com
+        defaultForwardType:
+          type: string
+          enum:
+            - Framed
+            - HTTP_301_REDIRECT
+            - HTTP_302_REDIRECT
+            - HTTP_303_REDIRECT
+            - HTTP_307_REDIRECT
+          description: |
+            Type of forward. Valid values include:
+            - Framed
+            - HTTP_301_REDIRECT
+            - HTTP_302_REDIRECT
+            - HTTP_303_REDIRECT
+            - HTTP_307_REDIRECT
+
+            Required for creation.
+          example: HTTP_301_REDIRECT
+        certificateManagedType:
+          type: string
+          enum:
+            - EE
+          description: |
+            Indicates that the certificate for the HTTPS Redirect is going to be Encryption Everywhere (EE - managed by UltraDNS).
+
+            Valid value is: EE.
+            Required when creating an HTTPS Redirect and not providing your own certificates, and the Managed Certs/Automated Certificate Management feature is enabled.
+            Cannot be provided if the certificateId field is present.
+          example: EE
+        certificateId:
+          type: string
+          description: |
+            The unique certificate identifier, which can be retrieved using the Get the List of Certificates call. Required when creating an HTTPS Redirect.
+
+            Cannot be provided if the certificateManagedType field is present.
+            Required for HTTPS Redirect.
+          example: cert-12345
+        relativeForwardType:
+          type: string
+          enum:
+            - PARAMETER
+            - PATH
+            - PARAMETER_AND_PATH
+          description: |
+            The Type of relative forward. Valid values include:
+            - PARAMETER – Parameter is appended to the target path.
+            - PATH – Path is appended to the target path.
+            - PARAMETER_AND_PATH – Both the Path and Parameter are appended to the target path.
+          example: PARAMETER
+        records:
+          type: array
+          description: |
+            Present if you are using advanced web forward to specify where to forward, based on custom headers.
+          items:
+            type: object
+            properties:
+              redirectTo:
+                type: string
+                description: |
+                  URL destination of the redirect.
+
+                  Required on create (if records are present).
+                  Must be a valid URL. Can include a port number.
+                  Either http:// or https:// are acceptable.
+                example: https://www.example.com
+              forwardType:
+                type: string
+                enum:
+                  - Framed
+                  - HTTP_301_REDIRECT
+                  - HTTP_302_REDIRECT
+                  - HTTP_303_REDIRECT
+                  - HTTP_307_REDIRECT
+                description: |
+                  Type of forward. Valid values include:
+                  - Framed
+                  - HTTP_301_REDIRECT
+                  - HTTP_302_REDIRECT
+                  - HTTP_303_REDIRECT
+                  - HTTP_307_REDIRECT
+
+                  Required on create (if records are present).
+                example: HTTP_302_REDIRECT
+              priority:
+                type: integer
+                minimum: 1
+                description: |
+                  Order for a record to match. Lower numbers have higher priority.
+
+                  Positive integer.
+                  Required on create (if records are present).
+                example: 1
+              rules:
+                type: array
+                description: |
+                  Array of one or more rules.
+
+                  Required on create (if records are present).
+                items:
+                  type: object
+                  properties:
+                    header:
+                      type: string
+                      description: |
+                        Name of the header to match.
+
+                        Required on create (if records are present).
+                        Must be a header returned by the Get Custom HTTP Headers of Account call.
+                      example: User-Agent
+                    matchCriteria:
+                      type: string
+                      enum:
+                        - BEGINS_WITH
+                        - CONTAINS
+                        - ENDS_WITH
+                        - MATCHES
+                      description: |
+                        Type of match to perform. Valid values include:
+                        - BEGINS_WITH
+                        - CONTAINS
+                        - ENDS_WITH
+                        - MATCHES
+
+                        Required on create (if records are present).
+                      example: CONTAINS
+                    value:
+                      type: string
+                      description: |
+                        Expected header value.
+
+                        Required on create (if records are present).
+                      example: Mobile
+                    caseInsensitive:
+                      type: boolean
+                      default: false
+                      description: |
+                        Flag to indicate if the match takes case into account (true) or not (false).
+
+                        If not present, defaults to false.
+                      example: true
+                  required:
+                    - header
+                    - matchCriteria
+                    - value
+                required:
+                  - redirectTo
+                  - forwardType
+                  - priority
+                  - rules
     ZoneProperties:
       type: object
       description: The Zone Properties DTO holds the common metadata across all types of zones
@@ -2100,6 +2700,16 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorGeneric'
+    NoContentGeneric:
+      description: No Content
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: {}
+          examples:
+            NoContent:
+              value: {}
   parameters:
     QueryParams:
       name: q
@@ -2137,6 +2747,14 @@ components:
         type: boolean
         default: false
       description: Whether to reverse the sort order
+    Offset:
+      name: offset
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+      description: The position in the list for the first returned element (0 based). The default value is 0.
     ZoneName:
       name: zoneName
       in: path
@@ -2151,14 +2769,6 @@ components:
       schema:
         type: string
       description: The DNS record type (e.g., A, CNAME, MX, TXT)
-    Offset:
-      name: offset
-      in: query
-      schema:
-        type: integer
-        minimum: 0
-        default: 0
-      description: The position in the list for the first returned element (0 based). The default value is 0.
     TaskSort:
       name: sort
       in: query

@@ -1,0 +1,27 @@
+type: object
+description: The ZoneSnapshotEligibleList DTO contains a list of zone snapshot eligibility information with query and result metadata
+properties:
+  queryInfo:
+    $ref: './QueryInfo.yaml'
+    description: Information about the query used to construct the list
+  resultInfo:
+    $ref: './ResultInfo.yaml'
+    description: Information about the results returned
+  zones:
+    type: array
+    description: The list of the zone objects, which includes the domain name and possible Snapshot date
+    items:
+      $ref: './ZoneSnapshotEligible.yaml'
+    example:
+      - zoneName: "abc.com."
+        snapshots:
+          - date: "2018-09-24T14:59:18.208Z"
+            description: "Description for snapshot purpose"
+      - zoneName: "abc1.com."
+        snapshots:
+          - date: "2018-12-03T10:59:38.208Z"
+            description: "Description for snapshot purpose"
+required:
+  - zones
+  - queryInfo
+  - resultInfo

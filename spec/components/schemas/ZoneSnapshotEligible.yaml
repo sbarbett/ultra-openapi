@@ -1,0 +1,28 @@
+type: object
+description: The ZoneSnapshotEligible DTO details the snapshot status/eligibility of a zone
+properties:
+  zoneName:
+    type: string
+    description: The Zone name
+    example: "abc.com."
+  snapshots:
+    type: array
+    description: The stored Snapshot information (if available)
+    items:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date-time
+          description: The date and time of the latest available Snapshot (in ISO 8601 format)
+          example: "2018-09-24T14:59:18.208Z"
+        description:
+          type: string
+          description: The description for the Zone Snapshot
+          example: "Description for snapshot purpose"
+      required:
+        - date
+        - description
+required:
+  - zoneName
+  - snapshots

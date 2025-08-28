@@ -140,6 +140,8 @@ paths:
     $ref: './paths/zones.yaml'
   /zones/export:
     $ref: './paths/zones-export.yaml'
+  /zones/snapshot-eligible:
+    $ref: './paths/zones-snapshotEligible.yaml'
   /zones/{zoneName}:
     $ref: './paths/zones-zoneMeta.yaml'
   /zones/{zoneName}/transfer:
@@ -150,6 +152,10 @@ paths:
     $ref: './paths/zones-zoneMeta-unalias.yaml'
   /zones/{zoneName}/suspend:
     $ref: './paths/zones-zoneMeta-suspend.yaml'
+  /zones/{zoneName}/snapshot:
+    $ref: './paths/zones-zoneMeta-snapshot.yaml'
+  /zones/{zoneName}/restore:
+    $ref: './paths/zones-zoneMeta-restore.yaml'
   
   # Record endpoints
   /zones/{zoneName}/rrsets:
@@ -211,6 +217,14 @@ components:
       $ref: './components/schemas/ReportTaskList.yaml'
     ZoneDelete:
       $ref: './components/schemas/ZoneDelete.yaml'
+    ZoneSnapshotEligible:
+      $ref: './components/schemas/ZoneSnapshotEligible.yaml'
+    ZoneSnapshotEligibleList:
+      $ref: './components/schemas/ZoneSnapshotEligibleList.yaml'
+    ZoneSnapshot:
+      $ref: './components/schemas/ZoneSnapshot.yaml'
+    WebForward:
+      $ref: './components/schemas/WebForward.yaml'
 
 # Tags
 tags:
@@ -219,14 +233,14 @@ tags:
       Obtain and refresh auth tokens via the OAuth 2.0 Resource Owner Password Credentials (ROPC) grant.
       Requires an UltraDNS API username and password.
 
+  - name: Platform
+    description: >
+      Health, version, and connectivity checks for monitoring and compatibility.
+
   - name: Tasks
     description: >
       Track asynchronous operations (e.g., exports, snapshots). 202 responses include an `X-Task-ID` header;
       use it to check status and retrieve results.
-
-  - name: Platform
-    description: >
-      Health, version, and connectivity checks for monitoring and compatibility.
 
   - name: Zones
     description: >
