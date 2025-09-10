@@ -835,10 +835,7 @@ paths:
       tags:
         - Zones
       summary: Request Zone Transfer
-      description: |
-        The Request Zone Transfer call sends an AXFR request through a Secondary Zone, to the primary name server in order to update the Secondary Zone with information from the Primary Zone.
-
-        The {zoneName} identified in the call should be the name of the Secondary Zone to be updated.
+      description: The Request Zone Transfer call sends an AXFR request through a Secondary Zone, to the primary name server in order to update the Secondary Zone with information from the Primary Zone.
       operationId: requestZoneTransfer
       parameters:
         - $ref: '#/components/parameters/ZoneName'
