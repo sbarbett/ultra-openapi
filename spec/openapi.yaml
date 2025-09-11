@@ -227,6 +227,8 @@ components:
       $ref: './components/schemas/ZoneSnapshot.yaml'
     WebForward:
       $ref: './components/schemas/WebForward.yaml'
+    JSONPatch:
+      $ref: './components/schemas/JSONPatch.yaml'
 
 # Tags
 tags:

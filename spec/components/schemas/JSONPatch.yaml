@@ -1,0 +1,119 @@
+type: object
+description: |
+  JSON Patch DTO for RFC 6902 compliant partial updates. This allows you to specify multiple types of updates to a single entity in the system using standardized JSON Patch operations.
+  
+  JSON Patch calls allow you to specify multiple types of updates to a single entity in the system. For example, you can use a single call to update a NotifyAddress for a zone, add a new address to the list, and remove one you no longer need.
+  
+  **Important Notes:**
+  - JSON Patch requests must use the PATCH HTTP method
+  - Content-Type header must be set to `application/json-patch+json`
+  - The request body must contain a JSON array of JSON Patch DTOs
+  - Array indices start at 0 (first item is 0, second is 1, etc.)
+  - For RRSets with multiple values in rdata entries (MX, NS, SOA), you can index both the record and the value within that record
+properties:
+  op:
+    type: string
+    enum:
+      - add
+      - replace
+      - remove
+      - move
+    description: |
+      Patch operation type you want to perform. Valid values are:
+      - **add**: Add a new value to an array or object
+      - **replace**: Replace an existing value
+      - **remove**: Remove a value from an array or object
+      - **move**: Move a value from one position to another (used for pool record ordering)
+    example: "replace"
+  path:
+    type: string
+    description: |
+      A JSON pointer that identifies the target (JSON target) on which you want to perform the provided operation. The path should be RFC-6901 compliant.
+      
+      **Special Cases for RRSets:**
+      - For rdata entries with multiple values (MX, NS, SOA), you can use double indexing
+      - Format: `/rdata/{recordIndex}/{valueIndex}` to target specific values within a record
+      - Format: `/rdata/{recordIndex}` to target all values in a specific record
+      
+      **Examples:**
+      - `/rdata/0/1` - Second value of the first record
+      - `/rdata/1` - All values of the second record
+      - `/restrictIpList/0/endIP` - endIP field of the first restrictIP entry
+    example: "/rdata/0/1"
+  value:
+    oneOf:
+      - type: string
+      - type: number
+      - type: boolean
+      - type: object
+      - type: array
+    description: |
+      The value you want to apply to the JSON target provided. The value is ignored when the op is set to "remove."
+      
+      The type of this field depends on what you're updating:
+      - String for simple field updates
+      - Number for numeric values
+      - Boolean for true/false values
+      - Object for complex field updates
+      - Array for adding multiple items
+    example: "new.mail.server.biz."
+  from:
+    type: string
+    description: |
+      The existing value or path that needs to be changed or moved. This field is used when the "move" operation type is used.
+      
+      **Move Operation:**
+      - Used to reorder items in arrays (commonly used for pool record ordering)
+      - The item at the "from" path is moved to the "path" location
+      - Currently valid for Resource Distribution (RD) pools, Simple Load Balancing (SLB) pools, and SiteBacker/Traffic Controller (SB/TC) pools
+    example: "/rdata/1"
+
+examples:
+  replace_operation:
+    summary: Replace operation example
+    description: Replace the endIP address for the first restrictIP entry
+    value:
+      op: "replace"
+      path: "/restrictIpList/0/endIP"
+      value: "7.7.7.7"
+  
+  add_operation:
+    summary: Add operation example
+    description: Add a new restrictIP entry to the list
+    value:
+      op: "add"
+      path: "/restrictIpList/1"
+      value:
+        startIP: "1.1.1.1"
+        endIP: "2.2.2.2"
+  
+  remove_operation:
+    summary: Remove operation example
+    description: Remove the fourth restrictIP entry from the list
+    value:
+      op: "remove"
+      path: "/restrictIpList/3"
+  
+  move_operation:
+    summary: Move operation example
+    description: Move rdata from position 1 to position 2 within a pool
+    value:
+      op: "move"
+      path: "/rdata/2"
+      from: "/rdata/1"
+  
+  mx_record_update:
+    summary: MX record update example
+    description: Update specific values within MX records using double indexing
+    value:
+      op: "replace"
+      path: "/rdata/0/1"
+      value: "new.mail.server.biz."
+  
+  secondary_zone_update:
+    summary: Secondary zone update example
+    description: Add a new primary name server IP address
+    value:
+      op: "add"
+      path: "/primaryNameServers/nameServerIpList/nameServerIp1/ip"
+      value: "2.2.20.8"

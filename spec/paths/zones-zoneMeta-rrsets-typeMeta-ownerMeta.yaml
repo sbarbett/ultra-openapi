@@ -266,3 +266,120 @@ put:
       $ref: '../components/responses/Error404.yaml'
     '5XX':
       $ref: '../components/responses/Error5xx.yaml'
+
+patch:
+  tags:
+    - Records
+  summary: Partially Update an RRSet
+  description: |
+    This call allows you to update some of the information in a set of resource records of a particular type (an RRSet) for a specified domain owner.
+    
+    This differs from the Update RRSet call in two ways:
+    - If you do not specify the TTL, the existing TTL will continue to be used
+    - Any resource records specified will be added to the RRSet. Existing records are not modified or removed (except for A and CNAME records)
+    
+    **Special Case for A and CNAME Records:**
+    Since only a single resource record is allowed in an A or CNAME RRSet, if you perform a partial update, you will modify the single resource record.
+    
+    **Two Update Methods Supported:**
+    1. **Regular PATCH**: Send an RRSet DTO with Content-Type: application/json
+    2. **JSON PATCH**: Send JSON Patch DTOs with Content-Type: application/json-patch+json
+  operationId: partiallyUpdateRrset
+  parameters:
+    - $ref: '../components/parameters/ZoneName.yaml'
+    - $ref: '../components/parameters/RecordType.yaml'
+    - $ref: '../components/parameters/OwnerName.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        description: |
+          Regular PATCH request using RRSet DTO. Use this for simple partial updates.
+          
+          **Behavior:**
+          - If TTL is not specified, existing TTL will be used
+          - New rdata entries will be added to existing ones
+          - For A and CNAME records, the single record will be modified
+        schema:
+          $ref: '../components/schemas/RRSet.yaml'
+        examples:
+          Partial Update A Record:
+            summary: Partially update an A record (modifies the single record)
+            value:
+              ttl: 600
+              rdata:
+                - "1.2.3.4"
+          Partial Update MX Record:
+            summary: Partially update MX records (adds to existing records)
+            value:
+              rdata:
+                - "30 mail3.example.com."
+          Partial Update TXT Record:
+            summary: Partially update TXT records (adds to existing records)
+            value:
+              ttl: 3600
+              rdata:
+                - "\"additional TXT record\""
+      application/json-patch+json:
+        description: |
+          JSON PATCH request using RFC 6902 compliant JSON Patch DTOs. Use this for complex partial updates with multiple operations.
+          
+          **Features:**
+          - Support for add, replace, remove, and move operations
+          - Can update specific values within rdata entries using double indexing
+          - Can perform multiple operations in a single request
+        schema:
+          type: array
+          items:
+            $ref: '../components/schemas/JSONPatch.yaml'
+        examples:
+          Update MX Records with JSON Patch:
+            summary: Update specific values within MX records using double indexing
+            value:
+              - op: "replace"
+                path: "/rdata/0/1"
+                value: "new.mail.server.biz."
+              - op: "replace"
+                path: "/rdata/1"
+                value: "30 new3.mail.server.biz."
+          Add and Remove Records with JSON Patch:
+            summary: Add new records and remove existing ones
+            value:
+              - op: "add"
+                path: "/rdata/2"
+                value: "40 mail4.example.com."
+              - op: "remove"
+                path: "/rdata/0"
+          Update TTL with JSON Patch:
+            summary: Update only the TTL value
+            value:
+              - op: "replace"
+                path: "/ttl"
+                value: 7200
+  responses:
+    '200':
+      description: RRSet partially updated successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "RRSet partially updated successfully"
+          examples:
+            Success Response:
+              value:
+                message: "RRSet partially updated successfully"
+    '202':
+      $ref: '../components/responses/AcceptedGeneric.yaml'
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

@@ -1752,6 +1752,273 @@ paths:
           $ref: '#/components/responses/Error404'
         5XX:
           $ref: '#/components/responses/Error5xx'
+    post:
+      tags:
+        - Records
+      summary: Create RRSet for an Owner
+      description: |
+        The Create RRSet for an Owner call requires you to send an Resource Record Set (RRSet) DTO with the call. However, the ownerName and rrtype fields are not required because they are specified in the URI. If the DTO you send does include them, they will be ignored.
+      operationId: createRrsetForOwner
+      parameters:
+        - $ref: '#/components/parameters/ZoneName'
+        - $ref: '#/components/parameters/RecordType'
+        - $ref: '#/components/parameters/OwnerName'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RRSet'
+            examples:
+              A Record:
+                summary: Create an A-type RRSet
+                value:
+                  ttl: 300
+                  rdata:
+                    - 1.2.3.4
+              AAAA Record:
+                summary: Create an AAAA-type RRSet
+                value:
+                  ttl: 300
+                  rdata:
+                    - 2001:db8::1
+              MX Record:
+                summary: Create an MX-type RRSet
+                value:
+                  ttl: 3600
+                  rdata:
+                    - 10 mail1.example.com.
+                    - 20 mail2.example.com.
+              TXT Record:
+                summary: Create a TXT-type RRSet
+                value:
+                  ttl: 3600
+                  rdata:
+                    - '"v=spf1 include:_spf.google.com ~all"'
+              CNAME Record:
+                summary: Create a CNAME-type RRSet
+                value:
+                  ttl: 300
+                  rdata:
+                    - www.example.com.
+              SRV Record:
+                summary: Create an SRV-type RRSet
+                value:
+                  ttl: 300
+                  rdata:
+                    - 1 5 81 test.example.com.
+      responses:
+        '201':
+          $ref: '#/components/responses/CreatedGeneric'
+        '202':
+          $ref: '#/components/responses/AcceptedGeneric'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+    put:
+      tags:
+        - Records
+      summary: Update an RRSet
+      description: |
+        This call allows you to update a set of resource records of a particular type (an RRSet) for a specified domain owner.
+
+        Be sure to specify the TTL and ALL of the record information. Any resource records not included will be removed from the RRSet, and the TTL value specified at the account level for the record type (or global TTL value) will be used.
+      operationId: updateRrset
+      parameters:
+        - $ref: '#/components/parameters/ZoneName'
+        - $ref: '#/components/parameters/RecordType'
+        - $ref: '#/components/parameters/OwnerName'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RRSet'
+            examples:
+              Update A Record:
+                summary: Update an A-type RRSet with multiple IPs
+                value:
+                  ttl: 300
+                  rdata:
+                    - 1.2.3.4
+                    - 5.6.7.8
+              Update MX Record:
+                summary: Update an MX-type RRSet with new mail servers
+                value:
+                  ttl: 3600
+                  rdata:
+                    - 10 mail1.example.com.
+                    - 20 mail2.example.com.
+                    - 30 mail3.example.com.
+              Update TXT Record:
+                summary: Update a TXT-type RRSet with new SPF record
+                value:
+                  ttl: 3600
+                  rdata:
+                    - '"v=spf1 include:_spf.google.com include:_spf.salesforce.com ~all"'
+              Update CNAME Record:
+                summary: Update a CNAME-type RRSet
+                value:
+                  ttl: 300
+                  rdata:
+                    - new-target.example.com.
+              Update SRV Record:
+                summary: Update an SRV-type RRSet with new service endpoints
+                value:
+                  ttl: 300
+                  rdata:
+                    - 1 5 81 test1.example.com.
+                    - 2 5 81 test2.example.com.
+      responses:
+        '200':
+          description: RRSet updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: RRSet updated successfully
+              examples:
+                Success Response:
+                  value:
+                    message: RRSet updated successfully
+        '202':
+          $ref: '#/components/responses/AcceptedGeneric'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+    patch:
+      tags:
+        - Records
+      summary: Partially Update an RRSet
+      description: |
+        This call allows you to update some of the information in a set of resource records of a particular type (an RRSet) for a specified domain owner.
+
+        This differs from the Update RRSet call in two ways:
+        - If you do not specify the TTL, the existing TTL will continue to be used
+        - Any resource records specified will be added to the RRSet. Existing records are not modified or removed (except for A and CNAME records)
+
+        **Special Case for A and CNAME Records:**
+        Since only a single resource record is allowed in an A or CNAME RRSet, if you perform a partial update, you will modify the single resource record.
+
+        **Two Update Methods Supported:**
+        1. **Regular PATCH**: Send an RRSet DTO with Content-Type: application/json
+        2. **JSON PATCH**: Send JSON Patch DTOs with Content-Type: application/json-patch+json
+      operationId: partiallyUpdateRrset
+      parameters:
+        - $ref: '#/components/parameters/ZoneName'
+        - $ref: '#/components/parameters/RecordType'
+        - $ref: '#/components/parameters/OwnerName'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            description: |
+              Regular PATCH request using RRSet DTO. Use this for simple partial updates.
+
+              **Behavior:**
+              - If TTL is not specified, existing TTL will be used
+              - New rdata entries will be added to existing ones
+              - For A and CNAME records, the single record will be modified
+            schema:
+              $ref: '#/components/schemas/RRSet'
+            examples:
+              Partial Update A Record:
+                summary: Partially update an A record (modifies the single record)
+                value:
+                  ttl: 600
+                  rdata:
+                    - 1.2.3.4
+              Partial Update MX Record:
+                summary: Partially update MX records (adds to existing records)
+                value:
+                  rdata:
+                    - 30 mail3.example.com.
+              Partial Update TXT Record:
+                summary: Partially update TXT records (adds to existing records)
+                value:
+                  ttl: 3600
+                  rdata:
+                    - '"additional TXT record"'
+          application/json-patch+json:
+            description: |
+              JSON PATCH request using RFC 6902 compliant JSON Patch DTOs. Use this for complex partial updates with multiple operations.
+
+              **Features:**
+              - Support for add, replace, remove, and move operations
+              - Can update specific values within rdata entries using double indexing
+              - Can perform multiple operations in a single request
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/JSONPatch'
+            examples:
+              Update MX Records with JSON Patch:
+                summary: Update specific values within MX records using double indexing
+                value:
+                  - op: replace
+                    path: /rdata/0/1
+                    value: new.mail.server.biz.
+                  - op: replace
+                    path: /rdata/1
+                    value: 30 new3.mail.server.biz.
+              Add and Remove Records with JSON Patch:
+                summary: Add new records and remove existing ones
+                value:
+                  - op: add
+                    path: /rdata/2
+                    value: 40 mail4.example.com.
+                  - op: remove
+                    path: /rdata/0
+              Update TTL with JSON Patch:
+                summary: Update only the TTL value
+                value:
+                  - op: replace
+                    path: /ttl
+                    value: 7200
+      responses:
+        '200':
+          description: RRSet partially updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: RRSet partially updated successfully
+              examples:
+                Success Response:
+                  value:
+                    message: RRSet partially updated successfully
+        '202':
+          $ref: '#/components/responses/AcceptedGeneric'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
 components:
   securitySchemes:
     oauth2:
@@ -2677,6 +2944,120 @@ components:
                   - forwardType
                   - priority
                   - rules
+    JSONPatch:
+      type: object
+      description: |
+        JSON Patch DTO for RFC 6902 compliant partial updates. This allows you to specify multiple types of updates to a single entity in the system using standardized JSON Patch operations.
+
+        JSON Patch calls allow you to specify multiple types of updates to a single entity in the system. For example, you can use a single call to update a NotifyAddress for a zone, add a new address to the list, and remove one you no longer need.
+
+        **Important Notes:**
+        - JSON Patch requests must use the PATCH HTTP method
+        - Content-Type header must be set to `application/json-patch+json`
+        - The request body must contain a JSON array of JSON Patch DTOs
+        - Array indices start at 0 (first item is 0, second is 1, etc.)
+        - For RRSets with multiple values in rdata entries (MX, NS, SOA), you can index both the record and the value within that record
+      properties:
+        op:
+          type: string
+          enum:
+            - add
+            - replace
+            - remove
+            - move
+          description: |
+            Patch operation type you want to perform. Valid values are:
+            - **add**: Add a new value to an array or object
+            - **replace**: Replace an existing value
+            - **remove**: Remove a value from an array or object
+            - **move**: Move a value from one position to another (used for pool record ordering)
+          example: replace
+        path:
+          type: string
+          description: |
+            A JSON pointer that identifies the target (JSON target) on which you want to perform the provided operation. The path should be RFC-6901 compliant.
+
+            **Special Cases for RRSets:**
+            - For rdata entries with multiple values (MX, NS, SOA), you can use double indexing
+            - Format: `/rdata/{recordIndex}/{valueIndex}` to target specific values within a record
+            - Format: `/rdata/{recordIndex}` to target all values in a specific record
+
+            **Examples:**
+            - `/rdata/0/1` - Second value of the first record
+            - `/rdata/1` - All values of the second record
+            - `/restrictIpList/0/endIP` - endIP field of the first restrictIP entry
+          example: /rdata/0/1
+        value:
+          oneOf:
+            - type: string
+            - type: number
+            - type: boolean
+            - type: object
+            - type: array
+          description: |
+            The value you want to apply to the JSON target provided. The value is ignored when the op is set to "remove."
+
+            The type of this field depends on what you're updating:
+            - String for simple field updates
+            - Number for numeric values
+            - Boolean for true/false values
+            - Object for complex field updates
+            - Array for adding multiple items
+          example: new.mail.server.biz.
+        from:
+          type: string
+          description: |
+            The existing value or path that needs to be changed or moved. This field is used when the "move" operation type is used.
+
+            **Move Operation:**
+            - Used to reorder items in arrays (commonly used for pool record ordering)
+            - The item at the "from" path is moved to the "path" location
+            - Currently valid for Resource Distribution (RD) pools, Simple Load Balancing (SLB) pools, and SiteBacker/Traffic Controller (SB/TC) pools
+          example: /rdata/1
+      examples:
+        replace_operation:
+          summary: Replace operation example
+          description: Replace the endIP address for the first restrictIP entry
+          value:
+            op: replace
+            path: /restrictIpList/0/endIP
+            value: 7.7.7.7
+        add_operation:
+          summary: Add operation example
+          description: Add a new restrictIP entry to the list
+          value:
+            op: add
+            path: /restrictIpList/1
+            value:
+              startIP: 1.1.1.1
+              endIP: 2.2.2.2
+        remove_operation:
+          summary: Remove operation example
+          description: Remove the fourth restrictIP entry from the list
+          value:
+            op: remove
+            path: /restrictIpList/3
+        move_operation:
+          summary: Move operation example
+          description: Move rdata from position 1 to position 2 within a pool
+          value:
+            op: move
+            path: /rdata/2
+            from: /rdata/1
+        mx_record_update:
+          summary: MX record update example
+          description: Update specific values within MX records using double indexing
+          value:
+            op: replace
+            path: /rdata/0/1
+            value: new.mail.server.biz.
+        secondary_zone_update:
+          summary: Secondary zone update example
+          description: Add a new primary name server IP address
+          value:
+            op: add
+            path: /primaryNameServers/nameServerIpList/nameServerIp1/ip
+            value: 2.2.20.8
     ZoneProperties:
       type: object
       description: The Zone Properties DTO holds the common metadata across all types of zones
