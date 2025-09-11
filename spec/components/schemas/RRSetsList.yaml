@@ -1,14 +1,57 @@
 type: object
+description: |
+  This is returned when retrieving multiple RRSets from the server. It is not used for creating or updating RRSets.
 properties:
-  resultInfo:
-    $ref: './ResultInfo.yaml'
+  zoneName:
+    type: string
+    description: The FQDN for the zone
+    example: "abc.com."
   rrSets:
     type: array
     items:
       $ref: './RRSet.yaml'
-  zoneName:
-    type: string
-    description: The zone name
-    example: domain.com
+    description: The list of Resource Record Set (RRSet) DTO
+  queryInfo:
+    $ref: './QueryInfo.yaml'
+  resultInfo:
+    $ref: './ResultInfo.yaml'
 required:
+  - zoneName
   - rrSets
+  - queryInfo
+  - resultInfo
+
+examples:
+  ultra2_response:
+    summary: Ultra2 Enabled Account Response
+    description: Response results for Ultra2 enabled account with NS records
+    value:
+      zoneName: "abc.com."
+      rrSets:
+        - ownerName: "abc.com."
+          rrtype: "NS (2)"
+          ttl: 86400
+          rdata:
+            - "ns1.hostingsvcs.com."
+            - "ns2.hostingsvcs.com."
+            - "udns1.ultradns.net."
+            - "udns2.ultradns.net."
+          systemGenerated:
+            - true
+            - true
+            - true
+            - true
+          ultra2SystemGenerated:
+            - true
+            - true
+            - false
+            - false
+      queryInfo:
+        q: "kind:ALL"
+        sort: "OWNER"
+        reverse: false
+        limit: 50
+      resultInfo:
+        totalCount: 1
+        offset: 0
+        returnedCount: 1

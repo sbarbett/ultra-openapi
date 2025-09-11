@@ -1,0 +1,14 @@
+name: systemGeneratedStatus
+in: query
+required: false
+schema:
+  type: boolean
+  default: false
+description: |
+  Used to indicate whether the records in rrdata are system generated or not. 
+  Returns the systemGenerated attribute in an RRSet response.
+  
+  When set to `true`, the response will include a `systemGenerated` array that corresponds to each record in the `rdata` array, indicating whether each record was system generated or not.
+  
+  For Ultra2 enabled accounts, this may also return the `ultra2SystemGenerated` attribute for NS records.
+example: true

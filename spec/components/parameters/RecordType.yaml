@@ -1,0 +1,38 @@
+name: recordType
+in: path
+required: true
+schema:
+  type: string
+  pattern: '^(A|AAAA|APEXALIAS|CAA|CNAME|DS|HINFO|HTTPS|MX|NAPTR|NS|PTR|RP|SPF|SRV|SVCB|SSHFP|TLSA|TXT|ANY|[1-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1-5][0-9][0-9][0-9]|6[0-4][0-9][0-9]|65[0-4][0-9]|655[0-2][0-9]|6553[0-5])$'
+description: |
+  The DNS record type. Can be specified as either:
+  
+  - **Record name** (e.g., A, TXT, AAAA, SRV)
+  - **Record type number** (e.g., 1, 16, 28, 33)
+  - **ANY** - Special reserved word that returns all RRSets for the specified owner name
+  
+  **Supported Record Types:**
+  
+  | Record Type | Type ID | Description |
+  |-------------|---------|-------------|
+  | A (IPv4) | 1 | The Address (A) record is the most basic type of syntax used in DNS records, indicating the actual IP address of the domain. Regular DNS addresses are mapped for 32-bit IPv4 addresses. |
+  | AAAA (IPv6) | 28 | The AAAA (quad A) record is also an address record that indicates the actual IP address of the domain. It allows for mapping 128-bit IPv6 addresses. |
+  | Apex Alias | - | The Apex Alias (Alias) record basically prevents your users from having to enter the "www" at the beginning of a URL. Apex Alias allows you to replace an A record with a CNAME record that resolves to another host name. |
+  | CAA (Certification Authority Authorization) | 257 | The Certification Authority Authorization (CAA) record allows domain owners to declare which certificate authorities can issue a certificate for a domain. |
+  | CNAME | 5 | The Canonical Name (CNAME) record makes one domain an alias of another domain. The CNAME record is often used to associate new subdomains with the DNS records of an existing domain. |
+  | Delegation Signer | 43 | The DNS Delegation Signer (DS) record indicates that the delegated zone is digitally signed and contains the hash of the DNSSEC Key Signing Key (KSK). |
+  | HINFO (Host Info) | 13 | The Host Information (HINFO) record identifies the hardware and operating system of a host. |
+  | HTTPS | 65 | The HTTPS record is a variation of the Service Binding (SVCB) record and is designed to facilitate connections to services that use HTTPS by advertising HTTPS-specific details. |
+  | MX (Mail Exchange) | 15 | The Mail Exchange (MX) record contains a list of mail exchange servers that are to be used for the domain. |
+  | NAPTR (Naming Authority Pointer) | 35 | The Naming Authority Pointer (NAPTR) record is most commonly used for applications in Internet telephony, for example, in the mapping of servers and user addresses in the Session Initiation Protocol (SIP). |
+  | NS (Name Server) | 2 | A Name Server (NS) record provides authoritative server information for a (sub) domain. |
+  | PTR (Pointer) | 12 | The Pointer record is used for the Reverse DNS lookup. By using an IP address, you can get the associated domain/hostname. |
+  | RP (Responsible Person) | 17 | The Responsible Person (RP) record identifies the contact information of the person (or group) responsible for a host or zone. |
+  | SPF (Sender Policy Framework) | 99 | The Sender Policy Framework record is a type of TXT record that identifies which mail servers are permitted to send email on behalf of your domain. |
+  | SRV (Service Locator) | 33 | A Service (SRV) record provides information (the location, i.e. hostname and port number) about available network services. |
+  | SVCB Service Binding | 64 | The Service Binding (SVCB) record type is used to provides alternative endpoints that are authoritative for the service, along with parameters associated with each of the endpoints. |
+  | SSH Fingerprint | 44 | The DNS Secure Shell Fingerprint (SSHFP) record provides a way to verify Secure Shell (SSH) host keys using Domain Name System Security (DNSSEC). |
+  | TLSA (TLS Association) | 52 | The Transport Layer Security Authentication (TLSA) record provides communication security across the internet, by using channel encryption. |
+  | TXT (Text) | 16 | The Text (TXT) record lets an administrator insert any text they would like into the DNS record, and it is often used for denoting facts about the domain. |
+  
+example: "A"

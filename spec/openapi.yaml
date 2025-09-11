@@ -134,6 +134,14 @@ paths:
     $ref: './paths/version.yaml'
   /status:
     $ref: './paths/status.yaml'
+
+  # Task endpoints
+  /tasks:
+    $ref: './paths/tasks.yaml'
+  /tasks/{taskId}:
+    $ref: './paths/tasks-taskMeta.yaml'
+  /tasks/{taskId}/result:
+    $ref: './paths/tasks-taskMeta-result.yaml'
   
   # Zone endpoints
   /zones:
@@ -159,17 +167,11 @@ paths:
   
   # Record endpoints
   /zones/{zoneName}/rrsets:
-    $ref: './paths/records-list.yaml'
-  /zones/{zoneName}/rrsets/{records_type}:
-    $ref: './paths/records-listByType.yaml'
-  
-  # Task endpoints
-  /tasks:
-    $ref: './paths/tasks.yaml'
-  /tasks/{taskId}:
-    $ref: './paths/tasks-taskMeta.yaml'
-  /tasks/{taskId}/result:
-    $ref: './paths/tasks-taskMeta-result.yaml'
+    $ref: './paths/zones-zoneMeta-rrsets.yaml'
+  /zones/{zoneName}/rrsets/{recordType}:
+    $ref: './paths/zones-zoneMeta-rrsets-rtypeMeta.yaml'
+  /zones/{zoneName}/rrsets/{recordType}/{ownerName}:
+    $ref: './paths/zones-zoneMeta-rrsets-typeMeta-ownerMeta.yaml'
 
 # Security schemes
 components:

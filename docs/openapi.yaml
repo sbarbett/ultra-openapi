@@ -284,6 +284,160 @@ paths:
           $ref: '#/components/responses/Error401'
         5XX:
           $ref: '#/components/responses/Error5xx'
+  /tasks:
+    get:
+      tags:
+        - Tasks
+      summary: Get the List of Tasks
+      description: Retrieves a list of all tasks for the current user with optional filtering and pagination.
+      operationId: getTasks
+      parameters:
+        - $ref: '#/components/parameters/QueryParams'
+          description: |
+            The query used to construct the list. Query operators are code and hasData.
+
+            Valid values for code are:
+            - PENDING
+            - IN_PROCESS
+            - COMPLETE
+            - ERROR
+
+            Valid values for hasData are TRUE or FALSE. Default value of hasData is NULL. Query operators need be followed by a colon ( : ).
+
+            Example:
+            - q="code:COMPLETE"
+            - q="hasData:TRUE"
+            - q="code:COMPLETE hasData:TRUE"
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/TaskSort'
+        - $ref: '#/components/parameters/Reverse'
+        - $ref: '#/components/parameters/TaskType'
+      responses:
+        '200':
+          description: List of tasks retrieved successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/TaskList'
+                  - $ref: '#/components/schemas/ReportTaskList'
+              examples:
+                Task List:
+                  summary: Regular task list (default)
+                  value:
+                    tasks:
+                      - taskId: 0b40c7dd-748d-4c49-8506-26f0c7d2ea9c
+                        code: COMPLETE
+                        message: Processing complete
+                        resultUri: /tasks/0b40c7dd-748d-4c49-8506-26f0c7d2ea9c/result
+                    queryInfo:
+                      q: code:COMPLETE
+                      sort: CODE
+                      reverse: false
+                      limit: 100
+                    resultInfo:
+                      totalCount: 1
+                      offset: 0
+                      returnedCount: 1
+                Report Task List:
+                  summary: Report task list (when taskType=reporting)
+                  value:
+                    tasks:
+                      - taskId: ZQV-013d3c5c-7b14-4ff0-b4af-453b76a827b6
+                        code: COMPLETE
+                        message: Completed ZQV Report Successfully.
+                        lastModifiedDateTime: '2016-08-26T12:33:22.000Z'
+                        resultUri: https://api.ultradns.com/reports/tasks/ZQV-013d3c5c-7b14-4ff0-b4af-453b76a827b6
+                      - taskId: PQV-003f098b-a2df-437e-8482-65e8d93b4858
+                        code: COMPLETE
+                        message: Completed PQVReport Successfully.
+                        lastModifiedDateTime: '2016-08-26T12:33:22.000Z'
+                        resultUri: https://api.ultradns.com/reports/tasks/PQV-003f098b-a2df-437e-8482-65e8d93b4858
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+  /tasks/{taskId}:
+    get:
+      tags:
+        - Tasks
+      summary: Get the Status of a Task
+      description: Retrieves the current status of a background task.
+      operationId: checkTask
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: Task status retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+              examples:
+                Check Task:
+                  value:
+                    taskId: 605b23e4-edb9-4f23-ae2d-33fe24d6033f
+                    code: COMPLETE
+                    message: domain.com. export completed.
+                    resultUri: /tasks/605b23e4-edb9-4f23-ae2d-33fe24d6033f/result
+        '401':
+          $ref: '#/components/responses/Error401'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+    delete:
+      tags:
+        - Tasks
+      summary: Delete a Task
+      description: This call will remove information from the system for a task that has completed or is in an error-state.
+      operationId: deleteTask
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '204':
+          $ref: '#/components/responses/NoContentGeneric'
+          description: Task deleted successfully
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+  /tasks/{taskId}/result:
+    get:
+      tags:
+        - Tasks
+      summary: Get the Results of a Task
+      description: Retrieves the final result of a completed background task.
+      operationId: taskResult
+      parameters:
+        - $ref: '#/components/parameters/TaskId'
+      responses:
+        '200':
+          description: Task result file downloaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: string
+                    description: The task result content as a string
+                required:
+                  - content
+              description: The task result as a downloadable file. The filename will be the taskId and the content type will be determined by the background task.
+        '401':
+          $ref: '#/components/responses/Error401'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
   /zones:
     post:
       tags:
@@ -1224,257 +1378,376 @@ paths:
     get:
       tags:
         - Records
-      summary: List RRsets
-      description: |-
-        Retrieves all resource record sets (RRSets) in the specified DNS zone. Requires the `records_zoneName` environment variable.
-
-        Supports optional query parameters to filter results (for example, by record type, ownerName, TTL) or paginate the list.
-      operationId: listRrsets
+      summary: List all RRSets in a Zone
+      description: This call provides a list of all RRSets in a zone, or if specific query parameters are used, a list of the RRSets in a zone that match the provided criteria.
+      operationId: listRrsetsInZone
       parameters:
         - $ref: '#/components/parameters/ZoneName'
+        - $ref: '#/components/parameters/QueryParams'
+          description: |
+            The query used to construct the list. Query operators are:
+
+            - **TTL**: Exact match for the TTL value. Only valid for RECORDS RRSets type; ignored for the other kinds of RRSets.
+            - **Owner**: Partial match to an owner name. Valid for all RRSets.
+            - **Value**: Partial match for the rdata for a resource record. Only valid for the RECORDS RRSet type; ignored for other kinds of RRSets.
+            - **Kind** (defaults to ALL): The kind of RRSets or Pools that will be returned. One or more types can be specified if separated by commas. Valid values are:
+              - ALL (returns all kinds)
+              - RECORDS
+              - POOLS (returns all pool kinds)
+              - RD_POOLS
+              - DIR_POOLS
+              - SB_POOLS
+              - TC_POOLS
+
+            Example: `ttl:300+owner:test+kind:RECORDS`
+          example: ttl:300+owner:test+kind:RECORDS
+        - $ref: '#/components/parameters/Offset'
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Sort'
+          description: |
+            The sort column used to define the order of the list. Valid values are:
+            - OWNER (default)
+            - TTL
+            - TYPE (specifies the Record type)
+          example: TYPE
         - $ref: '#/components/parameters/Reverse'
+        - $ref: '#/components/parameters/SystemGeneratedStatus'
       responses:
         '200':
-          description: List RRsets
+          description: List of RRSets in the zone
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RRSetsList'
               examples:
-                List RRsets:
+                List all RRSets:
+                  summary: List all RRSets for a Zone
                   value:
-                    queryInfo:
-                      limit: 100
-                      reverse: false
-                      sort: OWNER
-                    resultInfo:
-                      offset: 0
-                      returnedCount: 3
-                      totalCount: 3
+                    zoneName: primary-example.com.
                     rrSets:
-                      - ownerName: domain.com.
-                        rdata:
-                          - pdns1.ultradns.net.
-                          - pdns2.ultradns.net.
-                          - pdns3.ultradns.org.
-                          - pdns4.ultradns.org.
-                          - pdns5.ultradns.info.
-                          - pdns6.ultradns.co.uk.
-                        rrtype: NS (2)
-                        ttl: 86400
-                      - ownerName: domain.com.
-                        rdata:
-                          - pdns1.ultradns.net. shane\.barbetta.digicert.com. 2025061702 86400 86400 86400 86400
-                        rrtype: SOA (6)
-                        ttl: 86400
-                      - ownerName: www.domain.com.
-                        rdata:
-                          - 204.74.99.100
+                      - ownerName: arecord.primary-example.com.
                         rrtype: A (1)
-                        ttl: 300
-                    zoneName: domain.com
+                        ttl: 500
+                        rdata:
+                          - 1.1.1.1
+                      - ownerName: arecord.primary-example.com1.primary-example.com.
+                        rrtype: A (1)
+                        ttl: 500
+                        rdata:
+                          - 1.1.1.1
+                      - ownerName: arecord.primarytest.com.primary-example.com.
+                        rrtype: A (1)
+                        ttl: 500
+                        rdata:
+                          - 2.2.2.2
+                      - ownerName: arecord.primarytest.com.primary-example.com.
+                        rrtype: AAAA (28)
+                        ttl: 500
+                        rdata:
+                          - fdda:5cc1:23:4:0:0:0:1f
+                    queryInfo:
+                      q: kind:ALL
+                      sort: OWNER
+                      reverse: false
+                      limit: 100
+                    resultInfo:
+                      totalCount: 4
+                      offset: 0
+                      returnedCount: 4
+                List RRSets with Query Parameters:
+                  summary: List RRSets with Query Parameters and systemGeneratedStatus
+                  value:
+                    zoneName: primary-example.com.
+                    rrSets:
+                      - ownerName: srvrecord.primarytest.com.primary-example.com.
+                        rrtype: SRV (33)
+                        ttl: 500
+                        rdata:
+                          - 1 5 81 test.primarytest.com.
+                        systemGenerated:
+                          - false
+                          - false
+                      - ownerName: spfrecord.primarytest.com.primary-example.com.
+                        rrtype: SPF (99)
+                        ttl: 500
+                        rdata:
+                          - '"spfrecorddata"'
+                        systemGenerated:
+                          - false
+                      - ownerName: rprecord.primarytest.com.primary-example.com.
+                        rrtype: RP (17)
+                        ttl: 500
+                        rdata:
+                          - mail1.primary-example.com. text1.primary-example.com.
+                        systemGenerated:
+                          - false
+                          - true
+                      - ownerName: ptrrecord.primarytest.com.primary-example.com.
+                        rrtype: PTR (12)
+                        ttl: 500
+                        rdata:
+                          - test1.primarytest.com.primary-example.com.
+                        systemGenerated:
+                          - false
+                    queryInfo:
+                      q: ttl:300+owner:test+kind:RECORDS
+                      sort: TYPE
+                      reverse: true
+                      limit: 100
+                    resultInfo:
+                      totalCount: 4
+                      offset: 0
+                      returnedCount: 4
+        '400':
+          $ref: '#/components/responses/Error400'
         '401':
           $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
         '404':
           $ref: '#/components/responses/Error404'
         5XX:
           $ref: '#/components/responses/Error5xx'
-  /zones/{zoneName}/rrsets/{records_type}:
+  /zones/{zoneName}/rrsets/{recordType}:
     get:
       tags:
         - Records
-      summary: List Records by Type
-      description: Retrieves all resource record sets (RRSets) of a specific type within the specified DNS zone. Requires the `records_zoneName` and `records_type` environment variables. Set `records_type` to the desired record type (e.g., A, CNAME, TXT) to filter the results. The response returns an array of matching RRSet objects.
-      operationId: listRecordsByType
+      summary: List all RRSets by Type
+      description: |
+        This call allows you to list all RRSets of a particular Record type for a specified zone. This differs from the List all RRSets in a Zone because that call returns RRSets of records based on the kind of set or pool, while this call returns RRSets based on the record type.
+
+        The Type can be a DNS record name (for example A, TXT, AAAA, SRV), or a number value that corresponds to a resource record type.
+      operationId: listRrsetsByType
       parameters:
         - $ref: '#/components/parameters/ZoneName'
-        - $ref: '#/components/parameters/RecordsType'
+        - $ref: '#/components/parameters/RecordType'
+        - $ref: '#/components/parameters/QueryParams'
+          description: |
+            The query used to construct the list. Query operators are:
+
+            - **TTL**: Exact match for the TTL value. Only valid for RECORDS RRSets type; ignored for the other kinds of RRSets.
+            - **Owner**: Partial match to an owner name. Valid for all RRSets.
+            - **Value**: Partial match for the rdata for a resource record. Only valid for the RECORDS RRSet type; ignored for other kinds of RRSets.
+            - **Kind** (defaults to ALL): The kind of RRSets or Pools that will be returned. One or more types can be specified if separated by commas. Valid values are:
+              - ALL (returns all kinds)
+              - RECORDS
+              - POOLS (returns all pool kinds)
+              - RD_POOLS
+              - DIR_POOLS
+              - SB_POOLS
+              - TC_POOLS
+
+            Example: `ttl:300+owner:test+kind:RECORDS`
+          example: ttl:300+owner:test+kind:RECORDS
+        - $ref: '#/components/parameters/Offset'
         - $ref: '#/components/parameters/Limit'
         - $ref: '#/components/parameters/Sort'
+          description: |
+            The sort column used to define the order of the list. Valid values are:
+            - OWNER (default)
+            - TTL
+            - TYPE (specifies the Record type)
+          example: OWNER
         - $ref: '#/components/parameters/Reverse'
+        - $ref: '#/components/parameters/SystemGeneratedStatus'
       responses:
         '200':
-          description: List Records by Type
+          description: List of RRSets of the specified type in the zone
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/RRSetsList'
               examples:
-                List Records by Type:
+                List A Records:
+                  summary: List all A records in a zone
                   value:
-                    queryInfo:
-                      limit: 100
-                      reverse: false
-                      sort: OWNER
-                    resultInfo:
-                      offset: 0
-                      returnedCount: 1
-                      totalCount: 1
+                    zoneName: example.com.
                     rrSets:
-                      - ownerName: www.domain.com.
-                        rdata:
-                          - 204.74.99.100
+                      - ownerName: www.example.com.
                         rrtype: A (1)
                         ttl: 300
-                    zoneName: domain.com
-        '401':
-          $ref: '#/components/responses/Error401'
-        '404':
-          $ref: '#/components/responses/Error404'
-        5XX:
-          $ref: '#/components/responses/Error5xx'
-  /tasks:
-    get:
-      tags:
-        - Tasks
-      summary: Get the List of Tasks
-      description: Retrieves a list of all tasks for the current user with optional filtering and pagination.
-      operationId: getTasks
-      parameters:
-        - $ref: '#/components/parameters/QueryParams'
-          description: |
-            The query used to construct the list. Query operators are code and hasData.
-
-            Valid values for code are:
-            - PENDING
-            - IN_PROCESS
-            - COMPLETE
-            - ERROR
-
-            Valid values for hasData are TRUE or FALSE. Default value of hasData is NULL. Query operators need be followed by a colon ( : ).
-
-            Example:
-            - q="code:COMPLETE"
-            - q="hasData:TRUE"
-            - q="code:COMPLETE hasData:TRUE"
-        - $ref: '#/components/parameters/Offset'
-        - $ref: '#/components/parameters/Limit'
-        - $ref: '#/components/parameters/TaskSort'
-        - $ref: '#/components/parameters/Reverse'
-        - $ref: '#/components/parameters/TaskType'
-      responses:
-        '200':
-          description: List of tasks retrieved successfully
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: '#/components/schemas/TaskList'
-                  - $ref: '#/components/schemas/ReportTaskList'
-              examples:
-                Task List:
-                  summary: Regular task list (default)
-                  value:
-                    tasks:
-                      - taskId: 0b40c7dd-748d-4c49-8506-26f0c7d2ea9c
-                        code: COMPLETE
-                        message: Processing complete
-                        resultUri: /tasks/0b40c7dd-748d-4c49-8506-26f0c7d2ea9c/result
+                        rdata:
+                          - 192.168.1.1
+                      - ownerName: mail.example.com.
+                        rrtype: A (1)
+                        ttl: 300
+                        rdata:
+                          - 192.168.1.2
                     queryInfo:
-                      q: code:COMPLETE
-                      sort: CODE
+                      q: kind:RECORDS
+                      sort: OWNER
+                      reverse: false
+                      limit: 100
+                    resultInfo:
+                      totalCount: 2
+                      offset: 0
+                      returnedCount: 2
+                List TXT Records:
+                  summary: List all TXT records in a zone
+                  value:
+                    zoneName: example.com.
+                    rrSets:
+                      - ownerName: example.com.
+                        rrtype: TXT (16)
+                        ttl: 3600
+                        rdata:
+                          - '"v=spf1 include:_spf.google.com ~all"'
+                      - ownerName: _dmarc.example.com.
+                        rrtype: TXT (16)
+                        ttl: 3600
+                        rdata:
+                          - '"v=DMARC1; p=quarantine; rua=mailto:dmarc@example.com"'
+                    queryInfo:
+                      q: kind:RECORDS
+                      sort: OWNER
+                      reverse: false
+                      limit: 100
+                    resultInfo:
+                      totalCount: 2
+                      offset: 0
+                      returnedCount: 2
+                List MX Records:
+                  summary: List all MX records in a zone
+                  value:
+                    zoneName: example.com.
+                    rrSets:
+                      - ownerName: example.com.
+                        rrtype: MX (15)
+                        ttl: 3600
+                        rdata:
+                          - 10 mail1.example.com.
+                          - 20 mail2.example.com.
+                    queryInfo:
+                      q: kind:RECORDS
+                      sort: OWNER
                       reverse: false
                       limit: 100
                     resultInfo:
                       totalCount: 1
                       offset: 0
                       returnedCount: 1
-                Report Task List:
-                  summary: Report task list (when taskType=reporting)
-                  value:
-                    tasks:
-                      - taskId: ZQV-013d3c5c-7b14-4ff0-b4af-453b76a827b6
-                        code: COMPLETE
-                        message: Completed ZQV Report Successfully.
-                        lastModifiedDateTime: '2016-08-26T12:33:22.000Z'
-                        resultUri: https://api.ultradns.com/reports/tasks/ZQV-013d3c5c-7b14-4ff0-b4af-453b76a827b6
-                      - taskId: PQV-003f098b-a2df-437e-8482-65e8d93b4858
-                        code: COMPLETE
-                        message: Completed PQVReport Successfully.
-                        lastModifiedDateTime: '2016-08-26T12:33:22.000Z'
-                        resultUri: https://api.ultradns.com/reports/tasks/PQV-003f098b-a2df-437e-8482-65e8d93b4858
+        '400':
+          $ref: '#/components/responses/Error400'
         '401':
           $ref: '#/components/responses/Error401'
         '403':
           $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
         5XX:
           $ref: '#/components/responses/Error5xx'
-  /tasks/{taskId}:
+  /zones/{zoneName}/rrsets/{recordType}/{ownerName}:
     get:
       tags:
-        - Tasks
-      summary: Get the Status of a Task
-      description: Retrieves the current status of a background task.
-      operationId: checkTask
+        - Records
+      summary: List all RRSets of a Type for an Owner
+      description: |
+        This call returns a list of RRSets of a specified type for the Owner Name provided in the call.
+
+        The identified Type can be any of the following:
+        - A DNS record-type name (A, TXT, AAAA, SRV)
+        - A number corresponding to a resource record type (from 1 to 65535)
+        - The special reserved word "ANY", which will return all RRSets for the specified owner name
+
+        Owner name can be a relative name (does not include the zone name), or an absolute name (includes the zone name).
+
+        **Important Notes:**
+        - Using a query parameter with an owner name is automatically a string-match search; it will return all owner names that contain the specified string
+        - When the owner name is specified as part of the URI, the search will return only the RRSets for the owner name that exactly matches the specified name
+      operationId: listRrsetsByTypeAndOwner
       parameters:
-        - $ref: '#/components/parameters/TaskId'
+        - $ref: '#/components/parameters/ZoneName'
+        - $ref: '#/components/parameters/RecordType'
+        - $ref: '#/components/parameters/OwnerName'
+        - $ref: '#/components/parameters/SystemGeneratedStatus'
       responses:
         '200':
-          description: Task status retrieved successfully
+          description: List of RRSets of the specified type for the specified owner
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Task'
+                $ref: '#/components/schemas/RRSetsList'
               examples:
-                Check Task:
+                List A Records for Owner:
+                  summary: List all A records for a specific owner
                   value:
-                    taskId: 605b23e4-edb9-4f23-ae2d-33fe24d6033f
-                    code: COMPLETE
-                    message: domain.com. export completed.
-                    resultUri: /tasks/605b23e4-edb9-4f23-ae2d-33fe24d6033f/result
-        '401':
-          $ref: '#/components/responses/Error401'
-        '404':
-          $ref: '#/components/responses/Error404'
-        5XX:
-          $ref: '#/components/responses/Error5xx'
-    delete:
-      tags:
-        - Tasks
-      summary: Delete a Task
-      description: This call will remove information from the system for a task that has completed or is in an error-state.
-      operationId: deleteTask
-      parameters:
-        - $ref: '#/components/parameters/TaskId'
-      responses:
-        '204':
-          $ref: '#/components/responses/NoContentGeneric'
-          description: Task deleted successfully
+                    zoneName: domain.name.
+                    rrSets:
+                      - ownerName: test.domain.name.
+                        rrtype: A (1)
+                        ttl: 300
+                        rdata:
+                          - 9.8.7.6
+                    queryInfo:
+                      q: kind:RECORDS
+                      sort: OWNER
+                      reverse: false
+                      limit: 100
+                    resultInfo:
+                      totalCount: 1
+                      offset: 0
+                      returnedCount: 1
+                List All Records for Owner:
+                  summary: List all RRSets for a specific owner using ANY type
+                  value:
+                    zoneName: domain.name.
+                    rrSets:
+                      - ownerName: test.domain.name.
+                        rrtype: A (1)
+                        ttl: 300
+                        rdata:
+                          - 9.8.7.6
+                      - ownerName: test.domain.name.
+                        rrtype: TXT (16)
+                        ttl: 300
+                        rdata:
+                          - The quick brown fox jumped over the lazy dog
+                          - Here is another TXT record in the RRSet
+                    queryInfo:
+                      q: kind:RECORDS
+                      sort: OWNER
+                      reverse: false
+                      limit: 100
+                    resultInfo:
+                      totalCount: 2
+                      offset: 0
+                      returnedCount: 2
+                List Records with System Generated Status:
+                  summary: List records with systemGenerated attribute
+                  value:
+                    zoneName: domain.name.
+                    rrSets:
+                      - ownerName: test.domain.name.
+                        rrtype: A (1)
+                        ttl: 300
+                        rdata:
+                          - 9.8.7.6
+                        systemGenerated:
+                          - false
+                      - ownerName: test.domain.name.
+                        rrtype: TXT (16)
+                        ttl: 300
+                        rdata:
+                          - The quick brown fox jumped over the lazy dog
+                          - Here is another TXT record in the RRSet
+                        systemGenerated:
+                          - false
+                          - false
+                    queryInfo:
+                      q: kind:RECORDS
+                      sort: OWNER
+                      reverse: false
+                      limit: 100
+                    resultInfo:
+                      totalCount: 2
+                      offset: 0
+                      returnedCount: 2
+        '400':
+          $ref: '#/components/responses/Error400'
         '401':
           $ref: '#/components/responses/Error401'
         '403':
           $ref: '#/components/responses/Error403'
-        '404':
-          $ref: '#/components/responses/Error404'
-        5XX:
-          $ref: '#/components/responses/Error5xx'
-  /tasks/{taskId}/result:
-    get:
-      tags:
-        - Tasks
-      summary: Get the Results of a Task
-      description: Retrieves the final result of a completed background task.
-      operationId: taskResult
-      parameters:
-        - $ref: '#/components/parameters/TaskId'
-      responses:
-        '200':
-          description: Task result file downloaded successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  content:
-                    type: string
-                    description: The task result content as a string
-                required:
-                  - content
-              description: The task result as a downloadable file. The filename will be the taskId and the content type will be determined by the background task.
-        '401':
-          $ref: '#/components/responses/Error401'
         '404':
           $ref: '#/components/responses/Error404'
         5XX:
@@ -1731,7 +2004,16 @@ components:
         - zones
     RRSet:
       type: object
-      description: The RRSet DTO is the basic unit for resource record manipulation in the REST API. An RRSet contains the data for all resource records present at the same owner name (label), and with the same type and class (all records in UltraDNS have IN class).
+      description: |
+        The RRSet DTO is the basic unit for resource record manipulation in the REST API. An RRSet contains the data for all resource records present at the same owner name (label), and with the same type and class (all records in UltraDNS have IN class).
+
+        The UltraDNS REST API enforces the same TTL for all records in an RRSet (with the exception of a directional pool).
+
+        Rather than trying to specify a custom structure for each different resource record type, the data for all resource records is represented by an "rdata" field. This field's contents map to the data supplied in the BIND presentation format for a resource record.
+
+        If an RRSet is associated with an UltraDNS pool, the "profile" field is present and contains pool specific attributes.
+
+        The RRSet DTO is used in the List (GET), Create (POST), and Update (PATCH) RRSets API calls. When a user is submitting an RRSet DTO to the server, the owner name and rrtype are not required, because they are specified by the URI. If present, they will be ignored.
       properties:
         ownerName:
           type: string
@@ -1824,21 +2106,115 @@ components:
             description: rd pool
             order: ROUND_ROBIN
             '@context': http://schemas.ultradns.com/RDPool.jsonschema
+      examples:
+        a_record:
+          summary: A Record Example
+          description: Example of an A record RRSet
+          value:
+            ownerName: a.domain.name.
+            rrtype: A (1)
+            ttl: 300
+            rdata:
+              - 1.2.3.4
+        null_mx_record:
+          summary: NULL MX Record Example
+          description: Example of a NULL MX record RRSet
+          value:
+            ownerName: a.domain.name.
+            rrtype: MX (15)
+            ttl: 300
+            rdata:
+              - 0 .
+        a_record_with_system_generated:
+          summary: A Record with System Generated Status
+          description: Example of an A record RRSet with systemGenerated field
+          value:
+            ownerName: a.domain.name.
+            rrtype: A (1)
+            ttl: 300
+            rdata:
+              - 1.2.3.4
+            systemGenerated:
+              - false
+        ns_record_ultra2:
+          summary: NS Record with Ultra2 System Generated
+          description: Example of an NS record RRSet with Ultra2 system generated nameservers
+          value:
+            ownerName: abc.com.
+            rrtype: NS (2)
+            ttl: 86400
+            rdata:
+              - ns1.hostingsvcs.com.
+              - ns2.hostingsvcs.com.
+              - udns1.ultradns.net.
+              - udns2.ultradns.net.
+            systemGenerated:
+              - true
+              - true
+              - true
+              - true
+            ultra2SystemGenerated:
+              - true
+              - true
+              - false
+              - false
     RRSetsList:
       type: object
+      description: |
+        This is returned when retrieving multiple RRSets from the server. It is not used for creating or updating RRSets.
       properties:
-        resultInfo:
-          $ref: '#/components/schemas/ResultInfo'
+        zoneName:
+          type: string
+          description: The FQDN for the zone
+          example: abc.com.
         rrSets:
           type: array
           items:
             $ref: '#/components/schemas/RRSet'
-        zoneName:
-          type: string
-          description: The zone name
-          example: domain.com
+          description: The list of Resource Record Set (RRSet) DTO
+        queryInfo:
+          $ref: '#/components/schemas/QueryInfo'
+        resultInfo:
+          $ref: '#/components/schemas/ResultInfo'
       required:
+        - zoneName
         - rrSets
+        - queryInfo
+        - resultInfo
+      examples:
+        ultra2_response:
+          summary: Ultra2 Enabled Account Response
+          description: Response results for Ultra2 enabled account with NS records
+          value:
+            zoneName: abc.com.
+            rrSets:
+              - ownerName: abc.com.
+                rrtype: NS (2)
+                ttl: 86400
+                rdata:
+                  - ns1.hostingsvcs.com.
+                  - ns2.hostingsvcs.com.
+                  - udns1.ultradns.net.
+                  - udns2.ultradns.net.
+                systemGenerated:
+                  - true
+                  - true
+                  - true
+                  - true
+                ultra2SystemGenerated:
+                  - true
+                  - true
+                  - false
+                  - false
+            queryInfo:
+              q: kind:ALL
+              sort: OWNER
+              reverse: false
+              limit: 50
+            resultInfo:
+              totalCount: 1
+              offset: 0
+              returnedCount: 1
     TokenResponse:
       type: object
       properties:
@@ -2649,6 +3025,28 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorGeneric'
+    Error403:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorGeneric'
+    Error404:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorGeneric'
+    NoContentGeneric:
+      description: No Content
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: {}
+          examples:
+            NoContent:
+              value: {}
     Error400:
       description: Bad Request
       content:
@@ -2685,28 +3083,6 @@ components:
           examples:
             Accepted:
               value: {}
-    Error403:
-      description: Forbidden
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorGeneric'
-    Error404:
-      description: Not Found
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorGeneric'
-    NoContentGeneric:
-      description: No Content
-      content:
-        application/json:
-          schema:
-            type: object
-            properties: {}
-          examples:
-            NoContent:
-              value: {}
   parameters:
     QueryParams:
       name: q
@@ -2714,14 +3090,14 @@ components:
       required: false
       schema:
         type: string
-    Cursor:
-      name: cursor
+    Offset:
+      name: offset
       in: query
-      required: false
       schema:
-        type: string
-      description: |
-        Cursor for pagination. Can be provided after the initial request to fetch the next, previous, first or last page(s) of results.
+        type: integer
+        minimum: 0
+        default: 0
+      description: The position in the list for the first returned element (0 based). The default value is 0.
     Limit:
       name: limit
       in: query
@@ -2731,41 +3107,6 @@ components:
         maximum: 1000
         default: 100
       description: Maximum number of items to return per page
-    Sort:
-      name: sort
-      in: query
-      schema:
-        type: string
-      description: Field to sort results by
-    Reverse:
-      name: reverse
-      in: query
-      schema:
-        type: boolean
-        default: false
-      description: Whether to reverse the sort order
-    Offset:
-      name: offset
-      in: query
-      schema:
-        type: integer
-        minimum: 0
-        default: 0
-      description: The position in the list for the first returned element (0 based). The default value is 0.
-    ZoneName:
-      name: zoneName
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The name of the DNS zone
-    RecordsType:
-      name: records_type
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The DNS record type (e.g., A, CNAME, MX, TXT)
     TaskSort:
       name: sort
       in: query
@@ -2779,6 +3120,13 @@ components:
           - DATE
         default: CODE
       description: The sort column used to order the list. Valid sort fields are CODE, CONTENT_TYPE, EXTENSIONS, HAS_DATA, DATE. The default value is CODE.
+    Reverse:
+      name: reverse
+      in: query
+      schema:
+        type: boolean
+        default: false
+      description: Whether to reverse the sort order
     TaskType:
       name: taskType
       in: query
@@ -2796,3 +3144,102 @@ components:
         type: string
         format: uuid
       description: Task ID from x-task-id header
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      schema:
+        type: string
+      description: |
+        Cursor for pagination. Can be provided after the initial request to fetch the next, previous, first or last page(s) of results.
+    Sort:
+      name: sort
+      in: query
+      schema:
+        type: string
+      description: Field to sort results by
+    ZoneName:
+      name: zoneName
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The name of the DNS zone
+    SystemGeneratedStatus:
+      name: systemGeneratedStatus
+      in: query
+      required: false
+      schema:
+        type: boolean
+        default: false
+      description: |
+        Used to indicate whether the records in rrdata are system generated or not. 
+        Returns the systemGenerated attribute in an RRSet response.
+
+        When set to `true`, the response will include a `systemGenerated` array that corresponds to each record in the `rdata` array, indicating whether each record was system generated or not.
+
+        For Ultra2 enabled accounts, this may also return the `ultra2SystemGenerated` attribute for NS records.
+      example: true
+    RecordType:
+      name: recordType
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: ^(A|AAAA|APEXALIAS|CAA|CNAME|DS|HINFO|HTTPS|MX|NAPTR|NS|PTR|RP|SPF|SRV|SVCB|SSHFP|TLSA|TXT|ANY|[1-9]|[1-9][0-9]|[1-9][0-9][0-9]|[1-5][0-9][0-9][0-9]|6[0-4][0-9][0-9]|65[0-4][0-9]|655[0-2][0-9]|6553[0-5])$
+      description: |
+        The DNS record type. Can be specified as either:
+
+        - **Record name** (e.g., A, TXT, AAAA, SRV)
+        - **Record type number** (e.g., 1, 16, 28, 33)
+        - **ANY** - Special reserved word that returns all RRSets for the specified owner name
+
+        **Supported Record Types:**
+
+        | Record Type | Type ID | Description |
+        |-------------|---------|-------------|
+        | A (IPv4) | 1 | The Address (A) record is the most basic type of syntax used in DNS records, indicating the actual IP address of the domain. Regular DNS addresses are mapped for 32-bit IPv4 addresses. |
+        | AAAA (IPv6) | 28 | The AAAA (quad A) record is also an address record that indicates the actual IP address of the domain. It allows for mapping 128-bit IPv6 addresses. |
+        | Apex Alias | - | The Apex Alias (Alias) record basically prevents your users from having to enter the "www" at the beginning of a URL. Apex Alias allows you to replace an A record with a CNAME record that resolves to another host name. |
+        | CAA (Certification Authority Authorization) | 257 | The Certification Authority Authorization (CAA) record allows domain owners to declare which certificate authorities can issue a certificate for a domain. |
+        | CNAME | 5 | The Canonical Name (CNAME) record makes one domain an alias of another domain. The CNAME record is often used to associate new subdomains with the DNS records of an existing domain. |
+        | Delegation Signer | 43 | The DNS Delegation Signer (DS) record indicates that the delegated zone is digitally signed and contains the hash of the DNSSEC Key Signing Key (KSK). |
+        | HINFO (Host Info) | 13 | The Host Information (HINFO) record identifies the hardware and operating system of a host. |
+        | HTTPS | 65 | The HTTPS record is a variation of the Service Binding (SVCB) record and is designed to facilitate connections to services that use HTTPS by advertising HTTPS-specific details. |
+        | MX (Mail Exchange) | 15 | The Mail Exchange (MX) record contains a list of mail exchange servers that are to be used for the domain. |
+        | NAPTR (Naming Authority Pointer) | 35 | The Naming Authority Pointer (NAPTR) record is most commonly used for applications in Internet telephony, for example, in the mapping of servers and user addresses in the Session Initiation Protocol (SIP). |
+        | NS (Name Server) | 2 | A Name Server (NS) record provides authoritative server information for a (sub) domain. |
+        | PTR (Pointer) | 12 | The Pointer record is used for the Reverse DNS lookup. By using an IP address, you can get the associated domain/hostname. |
+        | RP (Responsible Person) | 17 | The Responsible Person (RP) record identifies the contact information of the person (or group) responsible for a host or zone. |
+        | SPF (Sender Policy Framework) | 99 | The Sender Policy Framework record is a type of TXT record that identifies which mail servers are permitted to send email on behalf of your domain. |
+        | SRV (Service Locator) | 33 | A Service (SRV) record provides information (the location, i.e. hostname and port number) about available network services. |
+        | SVCB Service Binding | 64 | The Service Binding (SVCB) record type is used to provides alternative endpoints that are authoritative for the service, along with parameters associated with each of the endpoints. |
+        | SSH Fingerprint | 44 | The DNS Secure Shell Fingerprint (SSHFP) record provides a way to verify Secure Shell (SSH) host keys using Domain Name System Security (DNSSEC). |
+        | TLSA (TLS Association) | 52 | The Transport Layer Security Authentication (TLSA) record provides communication security across the internet, by using channel encryption. |
+        | TXT (Text) | 16 | The Text (TXT) record lets an administrator insert any text they would like into the DNS record, and it is often used for denoting facts about the domain. |
+      example: A
+    OwnerName:
+      name: ownerName
+      in: path
+      required: true
+      schema:
+        type: string
+      description: |
+        The owner name of the RRSet. Can be either:
+
+        - **Relative Domain Name**: Does not include the zone name (e.g., `test`, `www`, `mail`)
+        - **Fully Qualified Domain Name (FQDN)**: Includes the zone name (e.g., `test.domain.com.`, `www.domain.com.`)
+
+        **Important Notes:**
+
+        - When the owner name is specified as part of the URI, the search will return only the RRSets for the owner name that exactly matches the specified name
+        - Using a query parameter with an owner name is automatically a string-match search; it will return all owner names that contain the specified string
+        - Owner names ending with a dot (.) are considered FQDNs
+        - Owner names without a trailing dot are considered relative to the zone
+
+        **Examples:**
+        - `test` - Relative name (will match `test.domain.com.`)
+        - `test.domain.com.` - FQDN (absolute name)
+        - `www` - Relative name (will match `www.domain.com.`)
+        - `mail.domain.com.` - FQDN (absolute name)
+      example: test

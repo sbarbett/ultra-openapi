@@ -1,0 +1,127 @@
+get:
+  tags:
+    - Records
+  summary: List all RRSets by Type
+  description: |
+    This call allows you to list all RRSets of a particular Record type for a specified zone. This differs from the List all RRSets in a Zone because that call returns RRSets of records based on the kind of set or pool, while this call returns RRSets based on the record type.
+    
+    The Type can be a DNS record name (for example A, TXT, AAAA, SRV), or a number value that corresponds to a resource record type.
+  operationId: listRrsetsByType
+  parameters:
+    - $ref: '../components/parameters/ZoneName.yaml'
+    - $ref: '../components/parameters/RecordType.yaml'
+    - $ref: '../components/parameters/QueryParams.yaml'
+      description: |
+        The query used to construct the list. Query operators are:
+        
+        - **TTL**: Exact match for the TTL value. Only valid for RECORDS RRSets type; ignored for the other kinds of RRSets.
+        - **Owner**: Partial match to an owner name. Valid for all RRSets.
+        - **Value**: Partial match for the rdata for a resource record. Only valid for the RECORDS RRSet type; ignored for other kinds of RRSets.
+        - **Kind** (defaults to ALL): The kind of RRSets or Pools that will be returned. One or more types can be specified if separated by commas. Valid values are:
+          - ALL (returns all kinds)
+          - RECORDS
+          - POOLS (returns all pool kinds)
+          - RD_POOLS
+          - DIR_POOLS
+          - SB_POOLS
+          - TC_POOLS
+        
+        Example: `ttl:300+owner:test+kind:RECORDS`
+      example: "ttl:300+owner:test+kind:RECORDS"
+    - $ref: '../components/parameters/Offset.yaml'
+    - $ref: '../components/parameters/Limit.yaml'
+    - $ref: '../components/parameters/Sort.yaml'
+      description: |
+        The sort column used to define the order of the list. Valid values are:
+        - OWNER (default)
+        - TTL
+        - TYPE (specifies the Record type)
+      example: "OWNER"
+    - $ref: '../components/parameters/Reverse.yaml'
+    - $ref: '../components/parameters/SystemGeneratedStatus.yaml'
+  responses:
+    '200':
+      description: List of RRSets of the specified type in the zone
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/RRSetsList.yaml'
+          examples:
+            List A Records:
+              summary: List all A records in a zone
+              value:
+                zoneName: "example.com."
+                rrSets:
+                  - ownerName: "www.example.com."
+                    rrtype: "A (1)"
+                    ttl: 300
+                    rdata:
+                      - "192.168.1.1"
+                  - ownerName: "mail.example.com."
+                    rrtype: "A (1)"
+                    ttl: 300
+                    rdata:
+                      - "192.168.1.2"
+                queryInfo:
+                  q: "kind:RECORDS"
+                  sort: "OWNER"
+                  reverse: false
+                  limit: 100
+                resultInfo:
+                  totalCount: 2
+                  offset: 0
+                  returnedCount: 2
+            List TXT Records:
+              summary: List all TXT records in a zone
+              value:
+                zoneName: "example.com."
+                rrSets:
+                  - ownerName: "example.com."
+                    rrtype: "TXT (16)"
+                    ttl: 3600
+                    rdata:
+                      - "\"v=spf1 include:_spf.google.com ~all\""
+                  - ownerName: "_dmarc.example.com."
+                    rrtype: "TXT (16)"
+                    ttl: 3600
+                    rdata:
+                      - "\"v=DMARC1; p=quarantine; rua=mailto:dmarc@example.com\""
+                queryInfo:
+                  q: "kind:RECORDS"
+                  sort: "OWNER"
+                  reverse: false
+                  limit: 100
+                resultInfo:
+                  totalCount: 2
+                  offset: 0
+                  returnedCount: 2
+            List MX Records:
+              summary: List all MX records in a zone
+              value:
+                zoneName: "example.com."
+                rrSets:
+                  - ownerName: "example.com."
+                    rrtype: "MX (15)"
+                    ttl: 3600
+                    rdata:
+                      - "10 mail1.example.com."
+                      - "20 mail2.example.com."
+                queryInfo:
+                  q: "kind:RECORDS"
+                  sort: "OWNER"
+                  reverse: false
+                  limit: 100
+                resultInfo:
+                  totalCount: 1
+                  offset: 0
+                  returnedCount: 1
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

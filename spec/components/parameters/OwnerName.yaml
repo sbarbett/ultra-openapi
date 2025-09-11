@@ -1,0 +1,24 @@
+name: ownerName
+in: path
+required: true
+schema:
+  type: string
+description: |
+  The owner name of the RRSet. Can be either:
+  
+  - **Relative Domain Name**: Does not include the zone name (e.g., `test`, `www`, `mail`)
+  - **Fully Qualified Domain Name (FQDN)**: Includes the zone name (e.g., `test.domain.com.`, `www.domain.com.`)
+  
+  **Important Notes:**
+  
+  - When the owner name is specified as part of the URI, the search will return only the RRSets for the owner name that exactly matches the specified name
+  - Using a query parameter with an owner name is automatically a string-match search; it will return all owner names that contain the specified string
+  - Owner names ending with a dot (.) are considered FQDNs
+  - Owner names without a trailing dot are considered relative to the zone
+  
+  **Examples:**
+  - `test` - Relative name (will match `test.domain.com.`)
+  - `test.domain.com.` - FQDN (absolute name)
+  - `www` - Relative name (will match `www.domain.com.`)
+  - `mail.domain.com.` - FQDN (absolute name)
+example: "test"

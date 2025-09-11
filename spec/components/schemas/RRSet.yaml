@@ -1,5 +1,14 @@
 type: object
-description: The RRSet DTO is the basic unit for resource record manipulation in the REST API. An RRSet contains the data for all resource records present at the same owner name (label), and with the same type and class (all records in UltraDNS have IN class).
+description: |
+  The RRSet DTO is the basic unit for resource record manipulation in the REST API. An RRSet contains the data for all resource records present at the same owner name (label), and with the same type and class (all records in UltraDNS have IN class).
+  
+  The UltraDNS REST API enforces the same TTL for all records in an RRSet (with the exception of a directional pool).
+  
+  Rather than trying to specify a custom structure for each different resource record type, the data for all resource records is represented by an "rdata" field. This field's contents map to the data supplied in the BIND presentation format for a resource record.
+  
+  If an RRSet is associated with an UltraDNS pool, the "profile" field is present and contains pool specific attributes.
+  
+  The RRSet DTO is used in the List (GET), Create (POST), and Update (PATCH) RRSets API calls. When a user is submitting an RRSet DTO to the server, the owner name and rrtype are not required, because they are specified by the URI. If present, they will be ignored.
 properties:
   ownerName:
     type: string
@@ -92,3 +101,59 @@ properties:
       description: "rd pool"
       order: "ROUND_ROBIN"
       "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
+
+examples:
+  a_record:
+    summary: A Record Example
+    description: Example of an A record RRSet
+    value:
+      ownerName: "a.domain.name."
+      rrtype: "A (1)"
+      ttl: 300
+      rdata:
+        - "1.2.3.4"
+  
+  null_mx_record:
+    summary: NULL MX Record Example
+    description: Example of a NULL MX record RRSet
+    value:
+      ownerName: "a.domain.name."
+      rrtype: "MX (15)"
+      ttl: 300
+      rdata:
+        - "0 ."
+  
+  a_record_with_system_generated:
+    summary: A Record with System Generated Status
+    description: Example of an A record RRSet with systemGenerated field
+    value:
+      ownerName: "a.domain.name."
+      rrtype: "A (1)"
+      ttl: 300
+      rdata:
+        - "1.2.3.4"
+      systemGenerated:
+        - false
+  
+  ns_record_ultra2:
+    summary: NS Record with Ultra2 System Generated
+    description: Example of an NS record RRSet with Ultra2 system generated nameservers
+    value:
+      ownerName: "abc.com."
+      rrtype: "NS (2)"
+      ttl: 86400
+      rdata:
+        - "ns1.hostingsvcs.com."
+        - "ns2.hostingsvcs.com."
+        - "udns1.ultradns.net."
+        - "udns2.ultradns.net."
+      systemGenerated:
+        - true
+        - true
+        - true
+        - true
+      ultra2SystemGenerated:
+        - true
+        - true
+        - false
+        - false

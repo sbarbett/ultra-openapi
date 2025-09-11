@@ -1,0 +1,268 @@
+get:
+  tags:
+    - Records
+  summary: List all RRSets of a Type for an Owner
+  description: |
+    This call returns a list of RRSets of a specified type for the Owner Name provided in the call.
+    
+    The identified Type can be any of the following:
+    - A DNS record-type name (A, TXT, AAAA, SRV)
+    - A number corresponding to a resource record type (from 1 to 65535)
+    - The special reserved word "ANY", which will return all RRSets for the specified owner name
+    
+    Owner name can be a relative name (does not include the zone name), or an absolute name (includes the zone name).
+    
+    **Important Notes:**
+    - Using a query parameter with an owner name is automatically a string-match search; it will return all owner names that contain the specified string
+    - When the owner name is specified as part of the URI, the search will return only the RRSets for the owner name that exactly matches the specified name
+  operationId: listRrsetsByTypeAndOwner
+  parameters:
+    - $ref: '../components/parameters/ZoneName.yaml'
+    - $ref: '../components/parameters/RecordType.yaml'
+    - $ref: '../components/parameters/OwnerName.yaml'
+    - $ref: '../components/parameters/SystemGeneratedStatus.yaml'
+  responses:
+    '200':
+      description: List of RRSets of the specified type for the specified owner
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/RRSetsList.yaml'
+          examples:
+            List A Records for Owner:
+              summary: List all A records for a specific owner
+              value:
+                zoneName: "domain.name."
+                rrSets:
+                  - ownerName: "test.domain.name."
+                    rrtype: "A (1)"
+                    ttl: 300
+                    rdata:
+                      - "9.8.7.6"
+                queryInfo:
+                  q: "kind:RECORDS"
+                  sort: "OWNER"
+                  reverse: false
+                  limit: 100
+                resultInfo:
+                  totalCount: 1
+                  offset: 0
+                  returnedCount: 1
+            List All Records for Owner:
+              summary: List all RRSets for a specific owner using ANY type
+              value:
+                zoneName: "domain.name."
+                rrSets:
+                  - ownerName: "test.domain.name."
+                    rrtype: "A (1)"
+                    ttl: 300
+                    rdata:
+                      - "9.8.7.6"
+                  - ownerName: "test.domain.name."
+                    rrtype: "TXT (16)"
+                    ttl: 300
+                    rdata:
+                      - "The quick brown fox jumped over the lazy dog"
+                      - "Here is another TXT record in the RRSet"
+                queryInfo:
+                  q: "kind:RECORDS"
+                  sort: "OWNER"
+                  reverse: false
+                  limit: 100
+                resultInfo:
+                  totalCount: 2
+                  offset: 0
+                  returnedCount: 2
+            List Records with System Generated Status:
+              summary: List records with systemGenerated attribute
+              value:
+                zoneName: "domain.name."
+                rrSets:
+                  - ownerName: "test.domain.name."
+                    rrtype: "A (1)"
+                    ttl: 300
+                    rdata:
+                      - "9.8.7.6"
+                    systemGenerated:
+                      - false
+                  - ownerName: "test.domain.name."
+                    rrtype: "TXT (16)"
+                    ttl: 300
+                    rdata:
+                      - "The quick brown fox jumped over the lazy dog"
+                      - "Here is another TXT record in the RRSet"
+                    systemGenerated:
+                      - false
+                      - false
+                queryInfo:
+                  q: "kind:RECORDS"
+                  sort: "OWNER"
+                  reverse: false
+                  limit: 100
+                resultInfo:
+                  totalCount: 2
+                  offset: 0
+                  returnedCount: 2
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+
+post:
+  tags:
+    - Records
+  summary: Create RRSet for an Owner
+  description: |
+    The Create RRSet for an Owner call requires you to send an Resource Record Set (RRSet) DTO with the call. However, the ownerName and rrtype fields are not required because they are specified in the URI. If the DTO you send does include them, they will be ignored.
+  operationId: createRrsetForOwner
+  parameters:
+    - $ref: '../components/parameters/ZoneName.yaml'
+    - $ref: '../components/parameters/RecordType.yaml'
+    - $ref: '../components/parameters/OwnerName.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/RRSet.yaml'
+        examples:
+          A Record:
+            summary: Create an A-type RRSet
+            value:
+              ttl: 300
+              rdata:
+                - "1.2.3.4"
+          AAAA Record:
+            summary: Create an AAAA-type RRSet
+            value:
+              ttl: 300
+              rdata:
+                - "2001:db8::1"
+          MX Record:
+            summary: Create an MX-type RRSet
+            value:
+              ttl: 3600
+              rdata:
+                - "10 mail1.example.com."
+                - "20 mail2.example.com."
+          TXT Record:
+            summary: Create a TXT-type RRSet
+            value:
+              ttl: 3600
+              rdata:
+                - "\"v=spf1 include:_spf.google.com ~all\""
+          CNAME Record:
+            summary: Create a CNAME-type RRSet
+            value:
+              ttl: 300
+              rdata:
+                - "www.example.com."
+          SRV Record:
+            summary: Create an SRV-type RRSet
+            value:
+              ttl: 300
+              rdata:
+                - "1 5 81 test.example.com."
+  responses:
+    '201':
+      $ref: '../components/responses/CreatedGeneric.yaml'
+    '202':
+      $ref: '../components/responses/AcceptedGeneric.yaml'
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+
+put:
+  tags:
+    - Records
+  summary: Update an RRSet
+  description: |
+    This call allows you to update a set of resource records of a particular type (an RRSet) for a specified domain owner.
+    
+    Be sure to specify the TTL and ALL of the record information. Any resource records not included will be removed from the RRSet, and the TTL value specified at the account level for the record type (or global TTL value) will be used.
+  operationId: updateRrset
+  parameters:
+    - $ref: '../components/parameters/ZoneName.yaml'
+    - $ref: '../components/parameters/RecordType.yaml'
+    - $ref: '../components/parameters/OwnerName.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/RRSet.yaml'
+        examples:
+          Update A Record:
+            summary: Update an A-type RRSet with multiple IPs
+            value:
+              ttl: 300
+              rdata:
+                - "1.2.3.4"
+                - "5.6.7.8"
+          Update MX Record:
+            summary: Update an MX-type RRSet with new mail servers
+            value:
+              ttl: 3600
+              rdata:
+                - "10 mail1.example.com."
+                - "20 mail2.example.com."
+                - "30 mail3.example.com."
+          Update TXT Record:
+            summary: Update a TXT-type RRSet with new SPF record
+            value:
+              ttl: 3600
+              rdata:
+                - "\"v=spf1 include:_spf.google.com include:_spf.salesforce.com ~all\""
+          Update CNAME Record:
+            summary: Update a CNAME-type RRSet
+            value:
+              ttl: 300
+              rdata:
+                - "new-target.example.com."
+          Update SRV Record:
+            summary: Update an SRV-type RRSet with new service endpoints
+            value:
+              ttl: 300
+              rdata:
+                - "1 5 81 test1.example.com."
+                - "2 5 81 test2.example.com."
+  responses:
+    '200':
+      description: RRSet updated successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "RRSet updated successfully"
+          examples:
+            Success Response:
+              value:
+                message: "RRSet updated successfully"
+    '202':
+      $ref: '../components/responses/AcceptedGeneric.yaml'
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

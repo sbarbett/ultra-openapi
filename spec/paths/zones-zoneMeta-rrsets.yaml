@@ -1,0 +1,133 @@
+get:
+  tags:
+    - Records
+  summary: List all RRSets in a Zone
+  description: This call provides a list of all RRSets in a zone, or if specific query parameters are used, a list of the RRSets in a zone that match the provided criteria.
+  operationId: listRrsetsInZone
+  parameters:
+    - $ref: '../components/parameters/ZoneName.yaml'
+    - $ref: '../components/parameters/QueryParams.yaml'
+      description: |
+        The query used to construct the list. Query operators are:
+        
+        - **TTL**: Exact match for the TTL value. Only valid for RECORDS RRSets type; ignored for the other kinds of RRSets.
+        - **Owner**: Partial match to an owner name. Valid for all RRSets.
+        - **Value**: Partial match for the rdata for a resource record. Only valid for the RECORDS RRSet type; ignored for other kinds of RRSets.
+        - **Kind** (defaults to ALL): The kind of RRSets or Pools that will be returned. One or more types can be specified if separated by commas. Valid values are:
+          - ALL (returns all kinds)
+          - RECORDS
+          - POOLS (returns all pool kinds)
+          - RD_POOLS
+          - DIR_POOLS
+          - SB_POOLS
+          - TC_POOLS
+        
+        Example: `ttl:300+owner:test+kind:RECORDS`
+      example: "ttl:300+owner:test+kind:RECORDS"
+    - $ref: '../components/parameters/Offset.yaml'
+    - $ref: '../components/parameters/Limit.yaml'
+    - $ref: '../components/parameters/Sort.yaml'
+      description: |
+        The sort column used to define the order of the list. Valid values are:
+        - OWNER (default)
+        - TTL
+        - TYPE (specifies the Record type)
+      example: "TYPE"
+    - $ref: '../components/parameters/Reverse.yaml'
+    - $ref: '../components/parameters/SystemGeneratedStatus.yaml'
+  responses:
+    '200':
+      description: List of RRSets in the zone
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/RRSetsList.yaml'
+          examples:
+            List all RRSets:
+              summary: List all RRSets for a Zone
+              value:
+                zoneName: "primary-example.com."
+                rrSets:
+                  - ownerName: "arecord.primary-example.com."
+                    rrtype: "A (1)"
+                    ttl: 500
+                    rdata:
+                      - "1.1.1.1"
+                  - ownerName: "arecord.primary-example.com1.primary-example.com."
+                    rrtype: "A (1)"
+                    ttl: 500
+                    rdata:
+                      - "1.1.1.1"
+                  - ownerName: "arecord.primarytest.com.primary-example.com."
+                    rrtype: "A (1)"
+                    ttl: 500
+                    rdata:
+                      - "2.2.2.2"
+                  - ownerName: "arecord.primarytest.com.primary-example.com."
+                    rrtype: "AAAA (28)"
+                    ttl: 500
+                    rdata:
+                      - "fdda:5cc1:23:4:0:0:0:1f"
+                queryInfo:
+                  q: "kind:ALL"
+                  sort: "OWNER"
+                  reverse: false
+                  limit: 100
+                resultInfo:
+                  totalCount: 4
+                  offset: 0
+                  returnedCount: 4
+            List RRSets with Query Parameters:
+              summary: List RRSets with Query Parameters and systemGeneratedStatus
+              value:
+                zoneName: "primary-example.com."
+                rrSets:
+                  - ownerName: "srvrecord.primarytest.com.primary-example.com."
+                    rrtype: "SRV (33)"
+                    ttl: 500
+                    rdata:
+                      - "1 5 81 test.primarytest.com."
+                    systemGenerated:
+                      - false
+                      - false
+                  - ownerName: "spfrecord.primarytest.com.primary-example.com."
+                    rrtype: "SPF (99)"
+                    ttl: 500
+                    rdata:
+                      - "\"spfrecorddata\""
+                    systemGenerated:
+                      - false
+                  - ownerName: "rprecord.primarytest.com.primary-example.com."
+                    rrtype: "RP (17)"
+                    ttl: 500
+                    rdata:
+                      - "mail1.primary-example.com. text1.primary-example.com."
+                    systemGenerated:
+                      - false
+                      - true
+                  - ownerName: "ptrrecord.primarytest.com.primary-example.com."
+                    rrtype: "PTR (12)"
+                    ttl: 500
+                    rdata:
+                      - "test1.primarytest.com.primary-example.com."
+                    systemGenerated:
+                      - false
+                queryInfo:
+                  q: "ttl:300+owner:test+kind:RECORDS"
+                  sort: "TYPE"
+                  reverse: true
+                  limit: 100
+                resultInfo:
+                  totalCount: 4
+                  offset: 0
+                  returnedCount: 4
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
