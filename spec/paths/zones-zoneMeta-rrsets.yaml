@@ -131,3 +131,86 @@ get:
       $ref: '../components/responses/Error404.yaml'
     '5XX':
       $ref: '../components/responses/Error5xx.yaml'
+
+patch:
+  tags:
+    - Records
+  summary: Create Zone via BIND File Upload
+  description: |
+    This call creates a Zone by uploading a BIND file containing the zone data. The Zone details must be attached in a BIND file and sent as multipart/form-data.
+    
+    **New Update**: The BIND Upload of zone feature now supports the usage of whitespaces as a hostname in the BIND file. Referring to RFC-1035, newly supported behavior is described as follows - "If an entry for an RR begins with a blank, then the RR is assumed to be owned by the last stated owner. If an RR entry begins with a <domain-name>, then the owner name is reset."
+    
+    **Important Notes:**
+    - Do not add any JSON content or BIND file content as text in the request body
+    - The file must be uploaded using multipart/form-data
+  operationId: createZoneViaBindUpload
+  parameters:
+    - $ref: '../components/parameters/ZoneName.yaml'
+  requestBody:
+    required: true
+    content:
+      multipart/form-data:
+        schema:
+          type: object
+          properties:
+            file:
+              type: string
+              format: binary
+              description: |
+                The BIND file containing zone data. The file should contain DNS records in BIND format.
+                
+                **BIND File Format:**
+                - Each line represents a DNS record
+                - Records can span multiple lines using parentheses
+                - Comments start with semicolon (;)
+                - $ORIGIN directive sets the zone origin
+                - Records without owner name inherit from the last stated owner
+                - Records with owner name reset the owner context
+              example: |
+                ;File created: 12/04/2019 12:07
+                ;Record count: 20
+                $ORIGIN upload-test.com.
+                @    86400    IN    SOA udns1.ultradns.net. BindZone\.testzone.example.biz. (
+                        2019041222    ;Serial
+                        86400        ;Refresh
+                        86400        ;Retry
+                        86400        ;Expire
+                        86400        ;Minimum
+                    )
+                owner3    300    IN    NS    ns1.nameserver.com.
+                @    86400    IN    NS    udns1.ultradns.net.
+                @    86400    IN    NS    udns2.ultradns.net.
+                owner1    100    IN    A    12.12.12.12
+                owner4    400    IN    CNAME    cname1.com.
+                owner13   800    IN    MB    mail2.upload-test.com.
+                owner14   900    IN    WKS    12.12.14.12 6 26
+                owner8    500    IN    PTR    test.addr2.com.
+                owner7    403    IN    HINFO    "32bits" "windows"
+                owner6    402    IN    MX    10 mail2.upload-test.com.
+                owner5    401    IN    TXT    "abcdefghijklmnopqrstabcdefghijklmnopqrst"
+                owner12   700    IN    RP    mail1.addr.arpa. text1.addr.arpa.
+                owner15   1000   IN    KEY    33 44 44 test
+                owner2    200    IN    AAAA    2001:db8:85a3:0:0:8a2e:370:7334
+                owner16   1100   IN    NXT    test1.upload-test.com. SSHFP
+                owner11   602    IN    SRV    1 5 81 test.addr.com.
+                owner9    600    IN    NAPTR    100 6 "u" "E2U+smtp" "!^.*$!mailto:information@addr.com!i" .
+                owner17   1200   IN    SSHFP    32 44 AD
+                owner10   601    IN    SPF    "aaax2rgthhyuiyaaax2rgthhyuiyaaax2rgthhyuiyaaax2rgthhyuiyaaax2rgthhyuiyaaax2rgthhyuiyaaax2rgthhyuiyaaax2rgthhyuiyaaax2rgthhyuiyaaax2rgthhyuiyaaax2rgthhyuiyaaax2rgthhyuiyaaax2rgthhyuiyaaax2rgthhyuiyaaax2rgthhyuiyaaax2rgthhyuiyaaax2rgthhyuiyaaax2rgthhyuiyaaa" "x2rgthhyuiy"
+        encoding:
+          file:
+            contentType: text/plain
+  responses:
+    '202':
+      description: BIND file upload accepted for processing
+      $ref: '../components/responses/AcceptedGeneric.yaml'
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

@@ -383,3 +383,33 @@ patch:
       $ref: '../components/responses/Error404.yaml'
     '5XX':
       $ref: '../components/responses/Error5xx.yaml'
+
+delete:
+  tags:
+    - Records
+  summary: Delete All RRSets for an Owner and Type
+  description: |
+    This call allows you to delete all resource records of a particular type (an RRSet) for a specified domain owner.
+    
+    **Important Note:**
+    The Delete All RRSets call does not allow for the use of ANY as the {type} entry.
+  operationId: deleteAllRrsetsForOwnerAndType
+  parameters:
+    - $ref: "../components/parameters/ZoneName.yaml"
+    - $ref: "../components/parameters/RecordType.yaml"
+    - $ref: "../components/parameters/OwnerName.yaml"
+  responses:
+    "204":
+      description: RRSets deleted successfully
+    "202":
+      $ref: "../components/responses/AcceptedGeneric.yaml"
+    "400":
+      $ref: "../components/responses/Error400.yaml"
+    "401":
+      $ref: "../components/responses/Error401.yaml"
+    "403":
+      $ref: "../components/responses/Error403.yaml"
+    "404":
+      $ref: "../components/responses/Error404.yaml"
+    "5XX":
+      $ref: "../components/responses/Error5xx.yaml"
