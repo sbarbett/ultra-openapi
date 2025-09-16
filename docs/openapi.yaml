@@ -474,16 +474,67 @@ paths:
                     forceImport: true
                     createType: COPY
                     originalZoneName: example.cm.
-              New Primary Uploaded from a File:
-                summary: Create a Primary Zone by uploading a file
-                value:
-                  properties:
-                    name: example.com.
-                    accountName: example
-                    type: PRIMARY
-                  primaryCreateInfo:
-                    forceImport: true
-                    createType: UPLOAD
+          multipart/form-data:
+            description: |
+              Create a zone by uploading a BIND file along with zone creation parameters. Use this when creating a zone from a BIND file upload.
+
+              **Important Notes:**
+              - The `zone` field should contain the zone creation parameters as JSON
+              - The `file` field should contain the BIND file content
+              - Both fields are required for file uploads
+            schema:
+              type: object
+              properties:
+                zone:
+                  type: object
+                  description: |
+                    Zone creation parameters in JSON format. Must include createType: "UPLOAD" for file uploads.
+                  example:
+                    properties:
+                      name: example.com.
+                      accountName: example
+                      type: PRIMARY
+                    primaryCreateInfo:
+                      forceImport: true
+                      createType: UPLOAD
+                    changeComment: Created from BIND file upload
+                file:
+                  type: string
+                  format: binary
+                  description: |
+                    The BIND file containing zone data. The file should contain DNS records in BIND format.
+
+                    **BIND File Format:**
+                    - Each line represents a DNS record
+                    - Records can span multiple lines using parentheses
+                    - Comments start with semicolon (;)
+                    - $ORIGIN directive sets the zone origin
+                    - Records without owner name inherit from the last stated owner
+                    - Records with owner name reset the owner context
+                  example: |
+                    ;File created: 12/04/2019 12:07
+                    ;Record count: 20
+                    $ORIGIN example.com.
+                    @    86400    IN    SOA udns1.ultradns.net. BindZone\.testzone.example.biz. (
+                            2019041222    ;Serial
+                            86400        ;Refresh
+                            86400        ;Retry
+                            86400        ;Expire
+                            86400        ;Minimum
+                        )
+                    @    86400    IN    NS    udns1.ultradns.net.
+                    @    86400    IN    NS    udns2.ultradns.net.
+                    www    300    IN    A    192.168.1.1
+                    mail   300    IN    A    192.168.1.2
+                    @      300    IN    MX   10 mail.example.com.
+              required:
+                - zone
+                - file
+            encoding:
+              zone:
+                contentType: application/json
+              file:
+                contentType: text/plain
       responses:
         '201':
           $ref: '#/components/responses/CreatedGeneric'
