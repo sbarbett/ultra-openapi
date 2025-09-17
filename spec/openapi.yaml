@@ -98,6 +98,7 @@ info:
     | CNAME — Canonical Name                      | 5   |
     | SOA — Start of Authority                    | 6   |
     | PTR — Pointer                               | 12  |
+    | HINFO — Host Information                    | 13  |
     | MX — Mail Exchange                          | 15  |
     | TXT — Text                                  | 16  |
     | RP — Responsible Person                     | 17  |
@@ -105,9 +106,14 @@ info:
     | LOC — Location                              | 29  |
     | SRV — Service Locator                       | 33  |
     | NAPTR — Naming Authority Pointer            | 35  |
+    | DS — Delegation Signer                      | 43  |
     | SSHFP — SSH Fingerprint                     | 44  |
+    | TLSA — TLS Association                      | 52  |
+    | SVCB — Service Binding                      | 64  |
+    | HTTPS — HTTPS Service Binding               | 65  |
     | SPF — Sender Policy Framework               | 99  |
     | CAA — Certification Authority Authorization | 257 |
+    | APEXALIAS — Apex Alias                      | 65282 |
   version: 0.1.2
   license:
     name: Apache 2.0

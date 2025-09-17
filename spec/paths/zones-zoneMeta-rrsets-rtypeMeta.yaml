@@ -6,28 +6,39 @@ get:
     This call allows you to list all RRSets of a particular Record type for a specified zone. This differs from the List all RRSets in a Zone because that call returns RRSets of records based on the kind of set or pool, while this call returns RRSets based on the record type.
     
     The Type can be a DNS record name (for example A, TXT, AAAA, SRV), or a number value that corresponds to a resource record type.
+    
+    ## Query Parameter (q)
+    
+    The `q` parameter allows filtering RRSets using various operators. Multiple operators can be combined using the `+` separator.
+    
+    **Query Operators:**
+    
+    - **TTL**: Exact match for the TTL value. Only valid for RECORDS RRSets type; ignored for other kinds of RRSets.
+    - **Owner**: Partial match to an owner name. Valid for all RRSets.
+    - **Value**: Partial match for the rdata for a resource record. Only valid for the RECORDS RRSet type; ignored for other kinds of RRSets.
+    - **Kind** (defaults to ALL): The kind of RRSets or Pools that will be returned. One or more types can be specified if separated by commas.
+    
+    **Kind Values:**
+    
+    | Value | Meaning |
+    |-------|---------|
+    | ALL | All pools and records (same as RECORDS,POOLS) |
+    | RECORDS | Only resource Records |
+    | POOLS | All Pools |
+    | RD_POOLS | Only RD Pools (Resource Distribution Pools) |
+    | DIR_POOLS | Only Directional Pools |
+    | SB_POOLS | Only Simple Load Balancing Pools |
+    | TC_POOLS | Only Traffic Controller Pools |
+    
+    **Query Examples:**
+    - `ttl:300+owner:test+kind:RECORDS` - Records with TTL 300 and owner containing "test"
+    - `kind:RD_POOLS` - Return all RD Pools of this record type
+    - `owner:mail+kind:POOLS` - All pools with owner containing "mail"
   operationId: listRrsetsByType
   parameters:
     - $ref: '../components/parameters/ZoneName.yaml'
     - $ref: '../components/parameters/RecordType.yaml'
     - $ref: '../components/parameters/QueryParams.yaml'
-      description: |
-        The query used to construct the list. Query operators are:
-        
-        - **TTL**: Exact match for the TTL value. Only valid for RECORDS RRSets type; ignored for the other kinds of RRSets.
-        - **Owner**: Partial match to an owner name. Valid for all RRSets.
-        - **Value**: Partial match for the rdata for a resource record. Only valid for the RECORDS RRSet type; ignored for other kinds of RRSets.
-        - **Kind** (defaults to ALL): The kind of RRSets or Pools that will be returned. One or more types can be specified if separated by commas. Valid values are:
-          - ALL (returns all kinds)
-          - RECORDS
-          - POOLS (returns all pool kinds)
-          - RD_POOLS
-          - DIR_POOLS
-          - SB_POOLS
-          - TC_POOLS
-        
-        Example: `ttl:300+owner:test+kind:RECORDS`
-      example: "ttl:300+owner:test+kind:RECORDS"
     - $ref: '../components/parameters/Offset.yaml'
     - $ref: '../components/parameters/Limit.yaml'
     - $ref: '../components/parameters/Sort.yaml'

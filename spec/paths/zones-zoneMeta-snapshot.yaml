@@ -35,9 +35,9 @@ get:
                     rdata:
                       - "3.4.5.6"
                     profile:
-                      description: "rd pool"
-                      order: "ROUND_ROBIN"
                       "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
+                      order: "ROUND_ROBIN"
+                      description: "rd pool"
                 webForwards:
                   - guid: "090845B113499BEB"
                     requestTo: "abc.com.00-ben-doc-test.com/requestTo.html"

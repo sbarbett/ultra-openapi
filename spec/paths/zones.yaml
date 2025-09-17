@@ -112,30 +112,52 @@ get:
   tags:
     - Zones
   summary: List Zones
-  description: Retrieves all zones in your account. The response returns an array of zone objects, each including details such as zone name, status, default TTL, and name servers.
+  description: |
+    Retrieves all zones in your account. The response returns an array of zone objects, each including details such as zone name, status, default TTL, and name servers.
+    
+    ## Query Parameter (q)
+    
+    The `q` parameter allows filtering zones using various operators. Multiple operators can be combined using the `+` separator.
+    Format: `query_param:value+query_param_2:value`
+    
+    **Query Operators:**
+    
+    - **name**: Name of the zone (allowing for partial string matches)
+    - **zone_type**: Returns zones of an identified type. If not specified, all zone types are returned
+    - **zone_status**: Returns zones with the identified status. Active zones are returned if not specified
+    - **account_name**: Returns zones based upon the account. If not specified, zones of all accounts that the user has access to will be returned
+    - **network**: Only applicable for accounts with the UltraDNS2 feature enabled. Returns zones on specific networks
+    
+    **Zone Type Values:**
+    
+    | Value | Description |
+    |-------|-------------|
+    | ALIAS | Alias zones |
+    | PRIMARY | Primary zones |
+    | SECONDARY | Secondary zones |
+    
+    **Zone Status Values:**
+    
+    | Value | Description |
+    |-------|-------------|
+    | ACTIVE | Active zones only |
+    | SUSPENDED | Suspended zones only |
+    | ALL | All zones regardless of status |
+    
+    **Network Values:**
+    
+    | Value | Description |
+    |-------|-------------|
+    | ultra1 | Standard UltraDNS network |
+    | ultra2 | UltraDNS2 service network |
+    
+    **Query Examples:**
+    - `zone_status:ALL+network:ultra2` - All zones on UltraDNS2 network
+    - `zone_type:PRIMARY+account_name:myaccount` - Primary zones for specific account
+    - `name:example+zone_status:ACTIVE` - Active zones with "example" in the name
   operationId: listZones
   parameters:
     - $ref: '../components/parameters/QueryParams.yaml'
-      description: |
-        The query used to construct the list. Format: `query_param:value+query_param_2:value`
-        
-        Example: `zone_status:ALL+network:ultra2`
-        
-        Query operators are:
-        
-        - **name** - Name of the zone (allowing for partial string matches).
-        - **zone_type** - Returns zones of an identified type. If not specified, all zone types are returned. Valid values are:
-          - ALIAS
-          - PRIMARY
-          - SECONDARY
-        - **zone_status** - Returns zones with the identified status. Active zones are returned if not specified. Valid values are:
-          - ACTIVE
-          - SUSPENDED
-          - ALL
-        - **account_name** - Returns zones based upon the account. If not specified, zones of all of the accounts that the user has access to will be returned.
-        - **network** - Only applicable for those accounts with the UltraDNS2 feature enabled. Returns zones that are either on the UltraDNS (standard) network or are part of the UltraDNS2 service network. Valid values are:
-          - ultra1 (standard UltraDNS)
-          - ultra2
     - $ref: '../components/parameters/Cursor.yaml'
     - $ref: '../components/parameters/Limit.yaml'
     - $ref: '../components/parameters/Sort.yaml'

@@ -55,3 +55,29 @@ examples:
         totalCount: 1
         offset: 0
         returnedCount: 1
+  
+  rd_pool_response:
+    summary: RD Pool Records Response
+    description: Response showing RD Pool records with Resource Distribution profile
+    value:
+      zoneName: "andria.com."
+      rrSets:
+        - ownerName: "redredrobin.andria.com."
+          rrtype: "A (1)"
+          ttl: 86400
+          rdata:
+            - "198.16.1.22"
+            - "192.168.2.56"
+          profile:
+            "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
+            order: "ROUND_ROBIN"
+            description: "T. migratorius"
+      queryInfo:
+        q: "kind:POOLS"
+        sort: "OWNER"
+        reverse: false
+        limit: 100
+      resultInfo:
+        totalCount: 1
+        offset: 0
+        returnedCount: 1

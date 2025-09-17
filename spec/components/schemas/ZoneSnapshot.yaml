@@ -28,9 +28,9 @@ properties:
         rdata:
           - "3.4.5.6"
         profile:
-          description: "rd pool"
-          order: "ROUND_ROBIN"
           "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
+          order: "ROUND_ROBIN"
+          description: "rd pool"
   webForwards:
     type: array
     description: Array of web forward rules in the zone (optional)

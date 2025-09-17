@@ -168,6 +168,33 @@ get:
                   totalCount: 1
                   offset: 0
                   returnedCount: 1
+            List RD Pool A Record:
+              summary: List A record with Resource Distribution Pool
+              description: |
+                Shows an A record configured with an RD Pool profile. The profile contains
+                the pool configuration including ordering method and description.
+              value:
+                zoneName: "andria.com."
+                rrSets:
+                  - ownerName: "redredrobin.andria.com."
+                    rrtype: "A (1)"
+                    ttl: 86400
+                    rdata:
+                      - "198.16.1.22"
+                      - "192.168.2.56"
+                    profile:
+                      "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
+                      order: "ROUND_ROBIN"
+                      description: "T. migratorius"
+                queryInfo:
+                  q: "kind:POOLS"
+                  sort: "OWNER"
+                  reverse: false
+                  limit: 100
+                resultInfo:
+                  totalCount: 1
+                  offset: 0
+                  returnedCount: 1
     '400':
       $ref: '../components/responses/Error400.yaml'
     '401':
@@ -280,6 +307,44 @@ post:
               ttl: 500
               rdata:
                 - "1000 8 1 A94A8FE5CCB19BA61C4C0873D391E987982FBBD3"
+          RD Pool A Record:
+            summary: Create an A-type RRSet with Resource Distribution Pool
+            description: |
+              Resource Distribution (RD) Pool for A records with multiple IP addresses.
+              
+              **Pool Ordering Options:**
+              - **FIXED**: Records appear in the same order all the time
+              - **RANDOM**: Order of the records is random on each request  
+              - **ROUND_ROBIN**: The order of the records changes on each request, in order
+              
+              **Important Constraints:**
+              - RD Pools can only be defined for RRSets of type A (1) or AAAA (28)
+              - Multiple A or AAAA records for a single owner can only be defined if the owner is a pool
+              - It is legal to define an RD Pool with zero or one Rdata records
+            value:
+              ttl: 300
+              rdata:
+                - "1.2.3.4"
+                - "2.4.6.8"
+                - "9.8.7.6"
+              profile:
+                "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
+                order: "RANDOM"
+                description: "This is a great RD Pool"
+          RD Pool AAAA Record:
+            summary: Create an AAAA-type RRSet with Resource Distribution Pool
+            description: |
+              Resource Distribution (RD) Pool for AAAA records with multiple IPv6 addresses using round robin ordering.
+            value:
+              ttl: 300
+              rdata:
+                - "2001:db8::1"
+                - "2001:db8::2"
+                - "2001:db8::3"
+              profile:
+                "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
+                order: "ROUND_ROBIN"
+                description: "IPv6 RD Pool for load balancing"
   responses:
     '201':
       $ref: '../components/responses/CreatedGeneric.yaml'
@@ -350,6 +415,27 @@ put:
               rdata:
                 - "1 5 81 test1.example.com."
                 - "2 5 81 test2.example.com."
+          Update RD Pool A Record:
+            summary: Update an A-type RRSet with Resource Distribution Pool
+            description: |
+              Full update (PUT) of an existing RD Pool. The RD Pool profile must be fully specified.
+              All existing records will be replaced with the provided ones.
+              
+              **Use PUT for:**
+              - Changing the order of records in the RD Pool
+              - Removing records from the RD Pool
+              - Full replacement of the RD Pool configuration
+            value:
+              ttl: 86400
+              rdata:
+                - "206.204.52.32"
+                - "216.12.145.20"
+                - "1.2.3.6"
+                - "1.2.3.5"
+              profile:
+                "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
+                order: "ROUND_ROBIN"
+                description: "www"
   responses:
     '200':
       description: RRSet updated successfully
@@ -392,6 +478,11 @@ patch:
     **Special Case for A and CNAME Records:**
     Since only a single resource record is allowed in an A or CNAME RRSet, if you perform a partial update, you will modify the single resource record.
     
+    **RD Pool Partial Update Behavior:**
+    - For partial updates (PATCH) that do not affect the order or description, the profile section is not required
+    - To add a record to an existing RD Pool, a partial update (PATCH) can be performed
+    - To change the order of records or remove records, use full update (PUT) instead
+    
     **Two Update Methods Supported:**
     1. **Regular PATCH**: Send an RRSet DTO with Content-Type: application/json
     2. **JSON PATCH**: Send JSON Patch DTOs with Content-Type: application/json-patch+json
@@ -411,6 +502,7 @@ patch:
           - If TTL is not specified, existing TTL will be used
           - New rdata entries will be added to existing ones
           - For A and CNAME records, the single record will be modified
+          - For RD Pools, new records can be added without specifying the profile
         schema:
           $ref: '../components/schemas/RRSet.yaml'
         examples:
@@ -431,6 +523,27 @@ patch:
               ttl: 3600
               rdata:
                 - "\"additional TXT record\""
+          Partial Update RD Pool - Add Record:
+            summary: Add a record to an existing RD Pool
+            description: |
+              Add a new record to an existing RD Pool without specifying the profile.
+              The existing pool configuration (order, description) will be preserved.
+            value:
+              rdata:
+                - "10.10.10.1"
+          Partial Update RD Pool - Full Profile:
+            summary: Partially update RD Pool with full profile specification
+            description: |
+              Update RD Pool with complete profile information. This matches the documentation
+              example for partial RD Pool updates.
+            value:
+              ttl: 86400
+              rdata:
+                - "10.10.10.1"
+              profile:
+                "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
+                order: "ROUND_ROBIN"
+                description: "www"
       application/json-patch+json:
         description: |
           JSON PATCH request using RFC 6902 compliant JSON Patch DTOs. Use this for complex partial updates with multiple operations.
@@ -467,6 +580,36 @@ patch:
               - op: "replace"
                 path: "/ttl"
                 value: 7200
+          Update RD Pool Order with JSON Patch:
+            summary: Update RD Pool ordering method using JSON Patch
+            description: |
+              Change the ordering method of an RD Pool from one type to another
+              while preserving other profile settings.
+            value:
+              - op: "replace"
+                path: "/profile/order"
+                value: "FIXED"
+          Add Record to RD Pool with JSON Patch:
+            summary: Add a new IP address to an existing RD Pool
+            description: |
+              Add a new record to an RD Pool without modifying existing records.
+              This demonstrates the PATCH capability for adding records to pools.
+            value:
+              - op: "add"
+                path: "/rdata/-"
+                value: "10.10.10.1"
+          Update RD Pool Profile with JSON Patch:
+            summary: Update multiple RD Pool profile fields using JSON Patch
+            description: |
+              Update both the ordering method and description of an RD Pool
+              in a single JSON Patch operation.
+            value:
+              - op: "replace"
+                path: "/profile/order"
+                value: "RANDOM"
+              - op: "replace"
+                path: "/profile/description"
+                value: "Updated to random distribution for better load balancing"
   responses:
     '200':
       description: RRSet partially updated successfully

@@ -1,0 +1,76 @@
+type: object
+description: |
+  Profile object for UltraDNS pool configurations. Contains pool-specific attributes that define
+  how DNS records should be handled and returned.
+  
+  Different types of profiles have different object layouts and attributes. The profile type is 
+  identified by the "@context" field.
+  
+  **For RD Pool profiles**, the following structure is used:
+  - **@context**: Must be "http://schemas.ultradns.com/RDPool.jsonschema"
+  - **order**: One of FIXED, RANDOM, or ROUND_ROBIN
+  - **description**: Optional description (max 255 characters)
+  
+  **RD Pool Ordering Options:**
+  - **FIXED**: Records appear in the same order all the time
+  - **RANDOM**: Order of the records is random on each request  
+  - **ROUND_ROBIN**: The order of the records changes on each request, in order
+  
+  **Important Constraints for RD Pools:**
+  - RD Pools can only be defined for RRSets of type A (1) or AAAA (28)
+  - Multiple A or AAAA records for a single owner can only be defined if the owner is a pool
+  - It is legal to define an RD Pool with zero or one Rdata records
+properties:
+  "@context":
+    type: string
+    description: URI that uniquely identifies the type of the pool
+    example: "http://schemas.ultradns.com/RDPool.jsonschema"
+  order:
+    type: string
+    description: The order the records will be returned in (for RD Pools)
+    enum:
+      - FIXED
+      - RANDOM
+      - ROUND_ROBIN
+    example: "ROUND_ROBIN"
+  description:
+    type: string
+    maxLength: 255
+    description: |
+      An optional description of the pool.
+      
+      If not specified for RD Pools, the owner name for the RRSet will be used.
+    example: "Load balancing pool for web servers"
+additionalProperties: true
+
+examples:
+  rd_pool_fixed:
+    summary: RD Pool with Fixed Ordering
+    description: RD Pool that returns records in the same order every time
+    value:
+      "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
+      order: "FIXED"
+      description: "Fixed order pool for consistent routing"
+  
+  rd_pool_random:
+    summary: RD Pool with Random Ordering
+    description: RD Pool that returns records in random order on each request
+    value:
+      "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
+      order: "RANDOM"
+      description: "Random distribution for load balancing"
+  
+  rd_pool_round_robin:
+    summary: RD Pool with Round Robin Ordering
+    description: RD Pool that cycles through records in order on each request
+    value:
+      "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
+      order: "ROUND_ROBIN"
+      description: "Round robin distribution pool"
+  
+  minimal_rd_pool:
+    summary: Minimal RD Pool Configuration
+    description: RD Pool with only required fields specified
+    value:
+      "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
+      order: "RANDOM"

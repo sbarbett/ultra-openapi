@@ -92,15 +92,7 @@ properties:
       - false
       - false
   profile:
-    type: object
-    description: |
-      If an RRSet is associated with an UltraDNS pool, the "profile" field is present and contains pool specific attributes.
-      
-      Different types of profiles have different object layouts and attributes.
-    example:
-      description: "rd pool"
-      order: "ROUND_ROBIN"
-      "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
+    $ref: './RRSetProfile.yaml'
 
 examples:
   a_record:
@@ -157,3 +149,34 @@ examples:
         - true
         - false
         - false
+  
+  rd_pool_a_record:
+    summary: A Record with RD Pool Profile
+    description: Example of an A record RRSet with Resource Distribution Pool profile
+    value:
+      ownerName: "redredrobin.andria.com."
+      rrtype: "A (1)"
+      ttl: 86400
+      rdata:
+        - "198.16.1.22"
+        - "192.168.2.56"
+      profile:
+        "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
+        order: "ROUND_ROBIN"
+        description: "T. migratorius"
+  
+  rd_pool_aaaa_record:
+    summary: AAAA Record with RD Pool Profile
+    description: Example of an AAAA record RRSet with Resource Distribution Pool profile using random ordering
+    value:
+      ownerName: "ipv6.example.com."
+      rrtype: "AAAA (28)"
+      ttl: 300
+      rdata:
+        - "2001:db8::1"
+        - "2001:db8::2"
+        - "2001:db8::3"
+      profile:
+        "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
+        order: "RANDOM"
+        description: "IPv6 load balancing pool"
