@@ -1875,6 +1875,71 @@ paths:
                       totalCount: 2
                       offset: 0
                       returnedCount: 2
+                List Apex Alias Record:
+                  summary: List APEXALIAS record for domain apex
+                  description: |
+                    Shows an Apex Alias record configured at the zone apex. Note that the rrtype 
+                    shows "APEXALIAS (65282)" where 65282 is the numeric type code for Apex Alias records.
+                  value:
+                    zoneName: ultratest.biz.
+                    rrSets:
+                      - ownerName: ultratest.biz.
+                        rrtype: APEXALIAS (65282)
+                        ttl: 300
+                        rdata:
+                          - mywebfront.mysecretcdn.com.
+                    queryInfo:
+                      sort: OWNER
+                      reverse: false
+                      limit: 100
+                    resultInfo:
+                      totalCount: 1
+                      offset: 0
+                      returnedCount: 1
+                List SSHFP Record:
+                  summary: List SSHFP record for SSH fingerprint verification
+                  description: |
+                    Shows an SSHFP record used for SSH key verification. The rrtype shows "SSHFP (44)" 
+                    where 44 is the numeric type code for SSHFP records. The rdata contains the algorithm, 
+                    type, and fingerprint values.
+                  value:
+                    zoneName: ultratest.biz.
+                    rrSets:
+                      - ownerName: www.sshfp.com.ultratest.biz.
+                        rrtype: SSHFP (44)
+                        ttl: 100
+                        rdata:
+                          - 1 2 6E657573746172
+                    queryInfo:
+                      sort: OWNER
+                      reverse: false
+                      limit: 100
+                    resultInfo:
+                      totalCount: 1
+                      offset: 0
+                      returnedCount: 1
+                List DS Record:
+                  summary: List DS record for DNSSEC delegation signing
+                  description: |
+                    Shows a DS record used for DNSSEC delegation signing. The rrtype shows "DS (43)" 
+                    where 43 is the numeric type code for DS records. The rdata contains the key tag, 
+                    algorithm, digest type, and digest values.
+                  value:
+                    zoneName: ultratest.biz.
+                    rrSets:
+                      - ownerName: www.ultradstest.com.ultratest.biz.
+                        rrtype: DS (43)
+                        ttl: 800
+                        rdata:
+                          - 1000 8 1 A94A8FE5CCB19BA61C4C0873D391E987982FBBD3
+                    queryInfo:
+                      sort: OWNER
+                      reverse: false
+                      limit: 100
+                    resultInfo:
+                      totalCount: 1
+                      offset: 0
+                      returnedCount: 1
         '400':
           $ref: '#/components/responses/Error400'
         '401':
@@ -1940,6 +2005,52 @@ paths:
                   ttl: 300
                   rdata:
                     - 1 5 81 test.example.com.
+              Apex Alias Record:
+                summary: Create an APEXALIAS-type RRSet for domain apex
+                description: |
+                  Apex Alias provides CNAME functionality at the domain apex. 
+
+                  **Important Constraints:**
+                  - Can only be created at the apex of the domain (ownerName must match zoneName)
+                  - Only one Apex Alias record can be configured per zone
+                  - Cannot be created on signed zones
+                  - Cannot coexist with both A and AAAA records at the zone apex
+                  - pointsTo must be a fully qualified domain name
+                  - pointsTo cannot be the same as the zone apex
+                value:
+                  ttl: 300
+                  rdata:
+                    - mywebfront.mysecretcdn.com.
+              SSHFP Record:
+                summary: Create an SSHFP-type RRSet for SSH fingerprint verification
+                description: |
+                  Secure Shell Fingerprint (SSHFP) record identifies SSH keys associated with a host.
+                  Used for SSH key verification when connecting to SSH servers.
+
+                  **Record Format:** "algorithm type fingerprint"
+                  - **Algorithm**: 1=RSA, 2=DSS, 3=ECDSA, 4=Ed25519
+                  - **Type**: 1=SHA-1, 2=SHA-256 (hash algorithm)
+                  - **Fingerprint**: Hexadecimal representation of the hash result
+                value:
+                  ttl: 100
+                  rdata:
+                    - 1 2 6E657573746172
+              DS Record:
+                summary: Create a DS-type RRSet for DNSSEC delegation signing
+                description: |
+                  Delegation Signer (DS) record is used in DNSSEC to indicate that a delegated zone 
+                  is digitally signed. The DS record is placed in the parent zone and points to a 
+                  DNSKEY record in the child zone.
+
+                  **Record Format:** "keytag algorithm digesttype digest"
+                  - **Key Tag**: Key tag value of the DNSKEY RR (integer)
+                  - **Algorithm**: 8=RSA/SHA-256, 13=ECDSA Curve P-256 with SHA-256
+                  - **Digest Type**: 1=SHA-1, 2=SHA-256
+                  - **Digest**: Hexadecimal string (40 characters for SHA-1, 64 for SHA-256)
+                value:
+                  ttl: 500
+                  rdata:
+                    - 1000 8 1 A94A8FE5CCB19BA61C4C0873D391E987982FBBD3
       responses:
         '201':
           $ref: '#/components/responses/CreatedGeneric'
