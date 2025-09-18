@@ -598,6 +598,29 @@ patch:
               - op: "add"
                 path: "/rdata/-"
                 value: "10.10.10.1"
+          Remove Record from RD Pool with JSON Patch:
+            summary: Remove a specific record from an RD Pool by index
+            description: |
+              Remove a record from an RD Pool using its array index position.
+              You need to know the position of the rdata entry you want to remove.
+              
+              **Important Note:** This is the only way to remove individual records from an RD Pool.
+              The index is 0-based, so `/rdata/0` removes the first record, `/rdata/1` removes the second, etc.
+            value:
+              - op: "remove"
+                path: "/rdata/0"
+          Remove Multiple Records from RD Pool:
+            summary: Remove multiple records from an RD Pool in a single operation
+            description: |
+              Remove multiple records from an RD Pool by specifying their index positions.
+              
+              **Important:** When removing multiple records, remove them in reverse order (highest index first)
+              to avoid index shifting issues. Alternatively, remove them all in one operation as shown.
+            value:
+              - op: "remove"
+                path: "/rdata/2"
+              - op: "remove"
+                path: "/rdata/0"
           Update RD Pool Profile with JSON Patch:
             summary: Update multiple RD Pool profile fields using JSON Patch
             description: |
