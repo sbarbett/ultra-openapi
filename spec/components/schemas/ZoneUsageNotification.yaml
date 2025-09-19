@@ -1,0 +1,19 @@
+type: object
+description: The ZoneUsageNotification DTO represents zone usage notification settings for query volume monitoring
+properties:
+  zone:
+    type: string
+    description: The Zone Name to configure the Query Usage Notification for
+    example: "zonetest.com"
+  threshold:
+    type: integer
+    description: The percentage value that will be used when comparing the last seven-days' worth of queries for the zone. If the query volume exceeds the threshold value, a notification will be sent to the list of configured emails. Valid values are 5, 10, 20, 25, 50, 75, 100.
+    enum: [5, 10, 20, 25, 50, 75, 100]
+    example: 25
+  emailNotification:
+    $ref: './EmailNotification.yaml'
+    description: The specified account settings for email notification
+required:
+  - zone
+  - threshold
+  - emailNotification

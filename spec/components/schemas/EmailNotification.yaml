@@ -1,0 +1,21 @@
+type: object
+description: The EmailNotification DTO represents email notification settings for the account
+properties:
+  enable:
+    type: boolean
+    description: Account setting for enabling/disabling Email pool level notification. The property is not applicable for the SERVICE_NOTIFICATION setting.
+    example: true
+  emails:
+    type: array
+    description: The specified account settings for configuring email Ids for receiving Email notification. Max of five email addresses for the USAGE_NOTIFICATION setting.
+    items:
+      type: string
+      format: email
+    maxItems: 5
+    example:
+      - "admin@example.com"
+      - "notifications@example.com"
+      - "support@example.com"
+required:
+  - enable
+  - emails

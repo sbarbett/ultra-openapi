@@ -1,0 +1,35 @@
+type: object
+description: The SecurityPreferences DTO represents security preferences configuration at the account level
+properties:
+  securityPreferences:
+    type: object
+    description: Security preferences settings for the account
+    properties:
+      requireMFA:
+        type: boolean
+        description: Indicates if the Mandatory Multi-Factor Authentication account-level setting is enabled for the account, requiring users to configure MFA for their account. true = Enabled, false = No (Default)
+        example: false
+      inactivityTimeout:
+        type: integer
+        description: Determines the length of time (in minutes) at which point the session for a user will be timed out. The value of this field will either be 0 or (>= 10 minutes and <= 120 minutes). The value 0 means this preference is not set at the account level and will instead be applied from the user level.
+        example: 40
+        minimum: 0
+        maximum: 120
+      passwordExpiration:
+        type: integer
+        description: Determines the length of time (in days) at which point all users' passwords in the account should be marked as expired. The value of this field will either be 0 or (>= 14 days and <= 365 days). The value 0 means this preference is not set at the account level and will instead be applied from the user level.
+        example: 50
+        minimum: 0
+        maximum: 365
+      inactivityUserLockThreshold:
+        type: integer
+        description: Determines the time (in days) at which point users should be marked as suspended due to inactivity. The value of this field will either be 0 or (>= 60 days and <= 365 days). The value 0 means this preference is not set at the account level and will instead be applied from the user level.
+        example: 0
+        minimum: 0
+        maximum: 365
+    required:
+      - inactivityTimeout
+      - passwordExpiration
+      - inactivityUserLockThreshold
+required:
+  - securityPreferences

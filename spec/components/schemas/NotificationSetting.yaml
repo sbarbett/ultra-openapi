@@ -1,0 +1,14 @@
+type: object
+description: The NotificationSetting DTO represents notification settings configuration for the account
+properties:
+  threshold:
+    type: integer
+    description: The specified threshold value that when met (or exceeded), will trigger system generated emails to be sent to the configured email addresses. This property is not applicable for the SERVICE_NOTIFICATION setting. If specified then it will be ignored.
+    example: 1000
+    minimum: 0
+  emailNotification:
+    $ref: './EmailNotification.yaml'
+    description: The specified account settings for email notification
+required:
+  - threshold
+  - emailNotification

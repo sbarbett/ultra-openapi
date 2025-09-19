@@ -1,0 +1,440 @@
+post:
+  tags:
+    - Account Settings
+  summary: Create Account Setting
+  description: |
+    Create or configure an account level setting. The setting name can be one of the supported account settings parameters.
+    
+    **Request Body by Setting Type:**
+    - **ZONE_TRANSFER_NOTIFICATION, USAGE_NOTIFICATION**: Use NotificationSetting DTO (includes threshold and emailNotification)
+    - **SERVICE_NOTIFICATION, sslCertPreferences**: Use EmailNotification DTO (emails array only)
+    - **ZONE_USAGE_NOTIFICATION**: Use ZoneUsageNotification DTO (includes zone, threshold, and emailNotification)
+    - **PUSH_NOTIFICATIONS**: Use RealtimePushNotification DTO (webhooks array with enable, url, and include properties)
+    - **SECURITY_PREFERENCES**: Use SecurityPreferences DTO (security-related boolean and numeric settings)
+    
+    **Important Notes:**
+    - Since this is a POST function, all account settings and all the fields in the DTOs must be specified, otherwise validation errors will occur.
+    - For the SERVICE_NOTIFICATION setting, only one email address is permitted as part of the request payload.
+    - For the USAGE_NOTIFICATION setting, a maximum of five email addresses can be configured as part of the request payload.
+    - Service Notifications are not applicable for Parent Sub Accounts or Sub Accounts in the Multi-Level Account Management hierarchy.
+  operationId: createAccountSetting
+  parameters:
+    - $ref: '../components/parameters/AccountName.yaml'
+    - $ref: '../components/parameters/SettingName.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          description: Request body structure varies based on the settingName parameter. See operation description for details on which DTO to use for each setting type.
+          additionalProperties: true
+        examples:
+          Service Notification Setting:
+            summary: Create Service Notification setting (only one email allowed)
+            value:
+              emailNotification:
+                emails:
+                  - "test@test.com"
+          Usage Notification Setting:
+            summary: Create Usage Notification setting (up to five emails allowed)
+            value:
+              threshold: 200
+              emailNotification:
+                enable: true
+                emails:
+                  - "test@test.com"
+          Zone Transfer Notification Setting:
+            summary: Create Zone Transfer Notification setting
+            value:
+              threshold: 200
+              emailNotification:
+                enable: true
+                emails:
+                  - "test@test.com"
+          Zone Usage Notification Setting:
+            summary: Create Zone Usage Notification setting
+            value:
+              zone: "zonetest.com"
+              threshold: 25
+              emailNotification:
+                enable: true
+                emails:
+                  - "user@example.com"
+                  - "user2@example.com"
+                  - "distrolist@example.com"
+          Push Notifications Setting:
+            summary: Create Push Notifications setting
+            value:
+              webhooks:
+                - enable: true
+                  url: "https://example.com/webhookOne"
+                  include:
+                    ALL_CHANGES: true
+                - enable: true
+                  url: "https://example.com/webhookTwo"
+                  include:
+                    RECORD_CHANGES: true
+                    DOMAIN_CHANGES: true
+                - enable: true
+                  url: "https://example.com/webhookThree"
+                  include:
+                    AUTHENTICATION_EVENTS: true
+          Security Preferences Setting:
+            summary: Create Security Preferences setting
+            value:
+              securityPreferences:
+                requireMFA: false
+                inactivityTimeout: 40
+                passwordExpiration: 50
+                inactivityUserLockThreshold: 0
+          SSL Certificate Preferences Setting:
+            summary: Create SSL Certificate Preferences setting (email notifications for certificate expiration)
+            value:
+              enable: true
+              emails:
+                - "ssl-admin@example.com"
+                - "security@example.com"
+  responses:
+    '201':
+      $ref: '../components/responses/CreatedGeneric.yaml'
+      description: Account setting created successfully
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+      description: |
+        Bad Request - Invalid data was submitted in the body around any validation error, or invalid email address/count provided
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+      description: |
+        Forbidden - You do not have permission to configure account settings for the specified account, or you are not the Owner or Administrative user for the specified account
+    '409':
+      description: Conflict - Given setting name already exists in the system
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ErrorGeneric.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+
+put:
+  tags:
+    - Account Settings
+  summary: Update Account Setting
+  description: |
+    Update (full replacement) of an existing account level setting. The setting name can be one of the supported account settings parameters.
+    
+    **Request Body by Setting Type:**
+    - **ZONE_TRANSFER_NOTIFICATION, USAGE_NOTIFICATION**: Use NotificationSetting DTO (includes threshold and emailNotification)
+    - **SERVICE_NOTIFICATION, sslCertPreferences**: Use EmailNotification DTO (emails array only)
+    - **ZONE_USAGE_NOTIFICATION**: Use ZoneUsageNotification DTO (includes zone, threshold, and emailNotification)
+    - **PUSH_NOTIFICATIONS**: Use RealtimePushNotification DTO (webhooks array with enable, url, and include properties)
+    - **SECURITY_PREFERENCES**: Use SecurityPreferences DTO (security-related boolean and numeric settings)
+    
+    **Important Notes:**
+    - This is a full replacement operation - all fields in the DTO must be specified.
+    - For the SERVICE_NOTIFICATION setting, only one email address is permitted as part of the request payload.
+    - For the USAGE_NOTIFICATION setting, a maximum of five email addresses can be configured as part of the request payload.
+    - Service Notifications are not applicable for Parent Sub Accounts or Sub Accounts in the Multi-Level Account Management hierarchy.
+  operationId: updateAccountSetting
+  parameters:
+    - $ref: '../components/parameters/AccountName.yaml'
+    - $ref: '../components/parameters/SettingName.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          description: Request body structure varies based on the settingName parameter. See operation description for details on which DTO to use for each setting type.
+          additionalProperties: true
+        examples:
+          Service Notification Setting:
+            summary: Update Service Notification setting (only one email allowed)
+            value:
+              emailNotification:
+                emails:
+                  - "updated-test@test.com"
+          Usage Notification Setting:
+            summary: Update Usage Notification setting (up to five emails allowed)
+            value:
+              threshold: 150
+              emailNotification:
+                enable: true
+                emails:
+                  - "updated-test@test.com"
+          Zone Transfer Notification Setting:
+            summary: Update Zone Transfer Notification setting
+            value:
+              threshold: 100
+              emailNotification:
+                enable: false
+                emails:
+                  - "updated-admin@example.com"
+          Zone Usage Notification Setting:
+            summary: Update Zone Usage Notification setting
+            value:
+              zone: "updated-zone.com"
+              threshold: 50
+              emailNotification:
+                enable: true
+                emails:
+                  - "updated-monitoring@example.com"
+                  - "updated-alerts@example.com"
+          Push Notifications Setting:
+            summary: Update Push Notifications setting
+            value:
+              webhooks:
+                - enable: false
+                  url: "https://example.com/updated-webhook"
+                  include:
+                    RECORD_CHANGES: true
+                    ZONE_EVENTS: true
+          Security Preferences Setting:
+            summary: Update Security Preferences setting
+            value:
+              securityPreferences:
+                inactivityTimeout: 40
+                passwordExpiration: 50
+                inactivityUserLockThreshold: 0
+          SSL Certificate Preferences Setting:
+            summary: Update SSL Certificate Preferences setting (email notifications for certificate expiration)
+            value:
+              enable: false
+              emails:
+                - "updated-ssl-admin@example.com"
+  responses:
+    '200':
+      description: Account setting updated successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Account setting updated successfully"
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+      description: |
+        Bad Request - Invalid data was submitted in the body around any validation error, or invalid email address/count provided
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+      description: |
+        Forbidden - You do not have permission to configure account settings for the specified account, or you are not the Owner or Administrative user for the specified account
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+      description: Account setting not found
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+
+get:
+  tags:
+    - Account Settings
+  summary: Get Account Setting
+  description: |
+    Retrieve the configuration for a specific account level setting. The response structure varies based on the setting type.
+    
+    **Response Body by Setting Type:**
+    - **ZONE_TRANSFER_NOTIFICATION, USAGE_NOTIFICATION**: Returns NotificationSetting DTO (includes threshold and emailNotification)
+    - **SERVICE_NOTIFICATION, sslCertPreferences**: Returns EmailNotification DTO (emails array only)
+    - **ZONE_USAGE_NOTIFICATION**: Returns ZoneUsageNotification DTO (includes zone, threshold, and emailNotification)
+    - **PUSH_NOTIFICATIONS**: Returns RealtimePushNotification DTO (webhooks array with enable, url, and include properties)
+    - **SECURITY_PREFERENCES**: Returns SecurityPreferences DTO (security-related boolean and numeric settings)
+  operationId: getAccountSetting
+  parameters:
+    - $ref: '../components/parameters/AccountName.yaml'
+    - $ref: '../components/parameters/SettingName.yaml'
+  responses:
+    '200':
+      description: Account setting retrieved successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            description: Response structure varies based on the settingName parameter. See operation description for details on which DTO is returned for each setting type.
+            additionalProperties: true
+          examples:
+            Service Notification Setting:
+              summary: Service Notification setting response
+              value:
+                emailNotification:
+                  emails:
+                    - "service-alerts@test.com"
+            Usage Notification Setting:
+              summary: Usage Notification setting response
+              value:
+                threshold: 75
+                emailNotification:
+                  enable: true
+                  emails:
+                    - "usage-alerts@test.com"
+                    - "admin@test.com"
+            Zone Transfer Notification Setting:
+              summary: Zone Transfer Notification setting response
+              value:
+                threshold: 100
+                emailNotification:
+                  enable: true
+                  emails:
+                    - "zone-transfer@test.com"
+            Zone Usage Notification Setting:
+              summary: Zone Usage Notification setting response
+              value:
+                zone: "example.com"
+                threshold: 50
+                emailNotification:
+                  enable: true
+                  emails:
+                    - "zone-monitoring@example.com"
+                    - "alerts@example.com"
+            Push Notifications Setting:
+              summary: Push Notifications setting response
+              value:
+                webhooks:
+                  - enable: true
+                    url: "https://example.com/webhook"
+                    include:
+                      ALL_CHANGES: true
+                  - enable: false
+                    url: "https://backup.example.com/webhook"
+                    include:
+                      RECORD_CHANGES: true
+                      DOMAIN_CHANGES: true
+            Security Preferences Setting:
+              summary: Security Preferences setting response
+              value:
+                securityPreferences:
+                  requireMFA: true
+                  inactivityTimeout: 30
+                  passwordExpiration: 90
+                  inactivityUserLockThreshold: 120
+            SSL Certificate Preferences Setting:
+              summary: SSL Certificate Preferences setting response
+              value:
+                enable: true
+                emails:
+                  - "ssl-admin@example.com"
+                  - "security-team@example.com"
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+      description: |
+        Forbidden - You do not have permission to view account settings for the specified account
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+      description: Account setting not found or not configured
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+
+patch:
+  tags:
+    - Account Settings
+  summary: Partially Update Account Setting
+  description: |
+    Partially update an existing account level setting. Only the specified fields in the DTO need to be included - all other settings will retain their current state.
+    
+    **Supported Setting Types for PATCH:**
+    - **ZONE_TRANSFER_NOTIFICATION, USAGE_NOTIFICATION**: Use NotificationSetting DTO (can update threshold and/or emailNotification)
+    - **ZONE_USAGE_NOTIFICATION**: Use ZoneUsageNotification DTO (can update zone, threshold, and/or emailNotification)
+    - **PUSH_NOTIFICATIONS**: Use RealtimePushNotification DTO (can update individual webhooks)
+    - **SECURITY_PREFERENCES**: Use SecurityPreferences DTO (can update individual security settings)
+    - **sslCertPreferences**: Use EmailNotification DTO (can update enable flag and/or emails)
+    
+    **Important Notes:**
+    - This endpoint is **NOT supported** for the **SERVICE_NOTIFICATION** setting.
+    - Only the fields included in the request body will be updated - omitted fields retain their current values.
+    - For array fields (like emails or webhooks), the entire array must be provided if updating.
+  operationId: partiallyUpdateAccountSetting
+  parameters:
+    - $ref: '../components/parameters/AccountName.yaml'
+    - $ref: '../components/parameters/SettingName.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          description: Request body structure varies based on the settingName parameter. Only include the fields you want to update. See operation description for details on which DTO to use for each setting type.
+          additionalProperties: true
+        examples:
+          Usage Notification - Update Threshold Only:
+            summary: Update only the threshold value for usage notifications
+            value:
+              threshold: 90
+          Usage Notification - Update Emails Only:
+            summary: Update only the email notification settings
+            value:
+              emailNotification:
+                enable: false
+                emails:
+                  - "new-admin@test.com"
+          Zone Transfer Notification - Update Both:
+            summary: Update both threshold and email settings
+            value:
+              threshold: 150
+              emailNotification:
+                enable: true
+                emails:
+                  - "updated-transfer@test.com"
+          Zone Usage Notification - Update Zone Only:
+            summary: Update only the zone being monitored
+            value:
+              zone: "new-zone.com"
+          Push Notifications - Update Single Webhook:
+            summary: Update webhook configuration (replaces entire webhooks array)
+            value:
+              webhooks:
+                - enable: true
+                  url: "https://example.com/updated-webhook"
+                  include:
+                    ZONE_EVENTS: true
+                    RECORD_CHANGES: true
+          Security Preferences - Partial Update:
+            summary: Partially update security preferences (multiple fields)
+            value:
+              securityPreferences:
+                inactivityTimeout: 40
+                passwordExpiration: 50
+                inactivityUserLockThreshold: 0
+          Security Preferences - Single Field Update:
+            summary: Update only one security preference field
+            value:
+              securityPreferences:
+                passwordExpiration: 90
+          SSL Certificate Preferences - Enable Only:
+            summary: Enable SSL certificate notifications without changing emails
+            value:
+              enable: true
+  responses:
+    '200':
+      description: Account setting partially updated successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Account setting updated successfully"
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+      description: |
+        Bad Request - Invalid data was submitted in the body, invalid email address/count, or request submitted for SERVICE_NOTIFICATION setting
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+      description: |
+        Forbidden - You do not have permission to configure account settings for the specified account, or you are not the Owner or Administrative user for the specified account
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+      description: Account setting does not exist in the system
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

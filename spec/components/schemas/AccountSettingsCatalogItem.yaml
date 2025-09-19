@@ -1,0 +1,14 @@
+type: object
+description: The AccountSettingsCatalogItem DTO represents an account level setting item in the catalog
+properties:
+  displayName:
+    type: string
+    description: The display name of account level setting. One of the following account level setting as mentioned in Supported Account Settings table
+    example: "DNS Security Settings"
+  uri:
+    type: string
+    description: The uri for performing the operation of account level setting
+    example: "/accounts/settings/dns-security"
+required:
+  - displayName
+  - uri

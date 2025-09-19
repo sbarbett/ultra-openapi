@@ -179,6 +179,10 @@ paths:
   /zones/{zoneName}/rrsets/{recordType}/{ownerName}:
     $ref: './paths/zones-zoneMeta-rrsets-typeMeta-ownerMeta.yaml'
 
+  # Account Settings endpoints
+  /accounts/{accountName}/settings/{settingName}:
+    $ref: './paths/accounts-accountMeta-settings-settingMeta.yaml'
+
 # Security schemes
 components:
   securitySchemes:
@@ -235,6 +239,20 @@ components:
       $ref: './components/schemas/WebForward.yaml'
     JSONPatch:
       $ref: './components/schemas/JSONPatch.yaml'
+    AccountSettingsCatalogItem:
+      $ref: './components/schemas/AccountSettingsCatalogItem.yaml'
+    AccountSettingsCatalogItemList:
+      $ref: './components/schemas/AccountSettingsCatalogItemList.yaml'
+    EmailNotification:
+      $ref: './components/schemas/EmailNotification.yaml'
+    NotificationSetting:
+      $ref: './components/schemas/NotificationSetting.yaml'
+    ZoneUsageNotification:
+      $ref: './components/schemas/ZoneUsageNotification.yaml'
+    RealtimePushNotification:
+      $ref: './components/schemas/RealtimePushNotification.yaml'
+    SecurityPreferences:
+      $ref: './components/schemas/SecurityPreferences.yaml'
 
 # Tags
 tags:
@@ -260,6 +278,11 @@ tags:
     description: >
       Manage resource record sets (RRSets) within a zone (list, read, upsert via `rdata` and TTL, delete).
       `rdata` uses the BIND presentation format.
+
+  - name: Account Settings
+    description: >
+      Manage account-level settings including notifications, security preferences, and push notifications.
+      Configure various account settings such as zone transfer notifications, usage notifications, and webhook endpoints.
 
 # Global security
 security:

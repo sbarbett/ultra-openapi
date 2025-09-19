@@ -1,0 +1,77 @@
+type: object
+description: The RealtimePushNotification DTO represents push notification settings for real-time webhook notifications
+properties:
+  webhooks:
+    type: array
+    description: Array of webhook configurations for receiving real-time push notifications
+    items:
+      type: object
+      properties:
+        enable:
+          type: boolean
+          description: Determines if the webhook url should be active and receiving real-time push notifications for the configured events, or if it should be disabled
+          example: true
+        url:
+          type: string
+          format: uri
+          description: The Webhook URL Endpoint
+          example: "https://example.com/webhookOne"
+        include:
+          type: object
+          description: The list of channels and events that you wish to receive notifications for
+          properties:
+            ALL_CHANGES:
+              type: boolean
+              description: Receive notifications for all changes
+            DOMAIN_CHANGES:
+              type: boolean
+              description: Receive notifications for domain changes
+            RECORD_CHANGES:
+              type: boolean
+              description: Receive notifications for record changes
+            USER_GROUP_CHANGES:
+              type: boolean
+              description: Receive notifications for user group changes
+            CERTIFICATE_CHANGES:
+              type: boolean
+              description: Receive notifications for certificate changes
+            ALL_EVENTS:
+              type: boolean
+              description: Receive notifications for all events
+            ZONE_EVENTS:
+              type: boolean
+              description: Receive notifications for zone events
+            FAILOVER_EVENT:
+              type: boolean
+              description: Receive notifications for failover events
+            DNSSEC_EVENT:
+              type: boolean
+              description: Receive notifications for DNSSEC events
+            WEBCRS_CERTIFICATE_EVENTS:
+              type: boolean
+              description: Receive notifications for WebCRS certificate events
+            XFR_EVENTS:
+              type: boolean
+              description: Receive notifications for transfer events
+            ZONE_TRANSFER_SUCCESS:
+              type: boolean
+              description: Receive notifications for successful zone transfers
+            ZONE_TRANSFER_FAILURE:
+              type: boolean
+              description: Receive notifications for failed zone transfers
+            AUTHENTICATION_EVENTS:
+              type: boolean
+              description: Receive notifications for authentication events
+            LOGIN_SUCCESS:
+              type: boolean
+              description: Receive notifications for successful logins
+            LOGIN_FAILURE:
+              type: boolean
+              description: Receive notifications for failed logins
+          additionalProperties: false
+      required:
+        - enable
+        - url
+        - include
+required:
+  - webhooks

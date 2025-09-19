@@ -1,0 +1,14 @@
+name: settingName
+in: path
+required: true
+schema:
+  type: string
+  enum:
+    - ZONE_TRANSFER_NOTIFICATION
+    - SERVICE_NOTIFICATION
+    - USAGE_NOTIFICATION
+    - ZONE_USAGE_NOTIFICATION
+    - PUSH_NOTIFICATIONS
+    - SECURITY_PREFERENCES
+    - sslCertPreferences
+description: The name of the account setting to configure

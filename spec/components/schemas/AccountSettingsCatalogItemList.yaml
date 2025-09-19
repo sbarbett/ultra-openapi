@@ -1,0 +1,15 @@
+type: object
+description: The AccountSettingsCatalogItemList DTO contains a list of account settings catalog items for the account
+properties:
+  accountSettingsCatalogItems:
+    type: array
+    description: The specified account settings for the account
+    items:
+      $ref: './AccountSettingsCatalogItem.yaml'
+    example:
+      - displayName: "Zone Transfer Notifications"
+        uri: "/account/{accountName}/settings/ZONE_TRANSFER_NOTIFICATION"
+      - displayName: "DNS Security Settings"
+        uri: "/account/{accountName}/settings/DNS_SECURITY"
+required:
+  - accountSettingsCatalogItems
