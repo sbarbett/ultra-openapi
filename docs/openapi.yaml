@@ -2599,9 +2599,11 @@ paths:
               Security Preferences Setting:
                 summary: Create Security Preferences setting
                 value:
-                  enforceStrongPasswords: true
-                  requireTwoFactorAuth: false
-                  sessionTimeout: 60
+                  securityPreferences:
+                    requireMFA: false
+                    inactivityTimeout: 40
+                    passwordExpiration: 50
+                    inactivityUserLockThreshold: 0
               SSL Certificate Preferences Setting:
                 summary: Create SSL Certificate Preferences setting (email notifications for certificate expiration)
                 value:
@@ -2707,9 +2709,10 @@ paths:
               Security Preferences Setting:
                 summary: Update Security Preferences setting
                 value:
-                  enforceStrongPasswords: false
-                  requireTwoFactorAuth: true
-                  sessionTimeout: 120
+                  securityPreferences:
+                    inactivityTimeout: 40
+                    passwordExpiration: 50
+                    inactivityUserLockThreshold: 0
               SSL Certificate Preferences Setting:
                 summary: Update SSL Certificate Preferences setting (email notifications for certificate expiration)
                 value:
@@ -2818,9 +2821,11 @@ paths:
                 Security Preferences Setting:
                   summary: Security Preferences setting response
                   value:
-                    enforceStrongPasswords: true
-                    requireTwoFactorAuth: false
-                    sessionTimeout: 60
+                    securityPreferences:
+                      requireMFA: true
+                      inactivityTimeout: 30
+                      passwordExpiration: 90
+                      inactivityUserLockThreshold: 120
                 SSL Certificate Preferences Setting:
                   summary: SSL Certificate Preferences setting response
                   value:
@@ -2839,6 +2844,305 @@ paths:
         '404':
           $ref: '#/components/responses/Error404'
           description: Account setting not found or not configured
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+    patch:
+      tags:
+        - Account Settings
+      summary: Partially Update Account Setting
+      description: |
+        Partially update an existing account level setting. Only the specified fields in the DTO need to be included - all other settings will retain their current state.
+
+        **Supported Setting Types for PATCH:**
+        - **ZONE_TRANSFER_NOTIFICATION, USAGE_NOTIFICATION**: Use NotificationSetting DTO (can update threshold and/or emailNotification)
+        - **ZONE_USAGE_NOTIFICATION**: Use ZoneUsageNotification DTO (can update zone, threshold, and/or emailNotification)
+        - **PUSH_NOTIFICATIONS**: Use RealtimePushNotification DTO (can update individual webhooks)
+        - **SECURITY_PREFERENCES**: Use SecurityPreferences DTO (can update individual security settings)
+        - **sslCertPreferences**: Use EmailNotification DTO (can update enable flag and/or emails)
+
+        **Important Notes:**
+        - This endpoint is **NOT supported** for the **SERVICE_NOTIFICATION** setting.
+        - Only the fields included in the request body will be updated - omitted fields retain their current values.
+        - For array fields (like emails or webhooks), the entire array must be provided if updating.
+      operationId: partiallyUpdateAccountSetting
+      parameters:
+        - $ref: '#/components/parameters/AccountName'
+        - $ref: '#/components/parameters/SettingName'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Request body structure varies based on the settingName parameter. Only include the fields you want to update. See operation description for details on which DTO to use for each setting type.
+              additionalProperties: true
+            examples:
+              Usage Notification - Update Threshold Only:
+                summary: Update only the threshold value for usage notifications
+                value:
+                  threshold: 90
+              Usage Notification - Update Emails Only:
+                summary: Update only the email notification settings
+                value:
+                  emailNotification:
+                    enable: false
+                    emails:
+                      - new-admin@test.com
+              Zone Transfer Notification - Update Both:
+                summary: Update both threshold and email settings
+                value:
+                  threshold: 150
+                  emailNotification:
+                    enable: true
+                    emails:
+                      - updated-transfer@test.com
+              Zone Usage Notification - Update Zone Only:
+                summary: Update only the zone being monitored
+                value:
+                  zone: new-zone.com
+              Push Notifications - Update Single Webhook:
+                summary: Update webhook configuration (replaces entire webhooks array)
+                value:
+                  webhooks:
+                    - enable: true
+                      url: https://example.com/updated-webhook
+                      include:
+                        ZONE_EVENTS: true
+                        RECORD_CHANGES: true
+              Security Preferences - Partial Update:
+                summary: Partially update security preferences (multiple fields)
+                value:
+                  securityPreferences:
+                    inactivityTimeout: 40
+                    passwordExpiration: 50
+                    inactivityUserLockThreshold: 0
+              Security Preferences - Single Field Update:
+                summary: Update only one security preference field
+                value:
+                  securityPreferences:
+                    passwordExpiration: 90
+              SSL Certificate Preferences - Enable Only:
+                summary: Enable SSL certificate notifications without changing emails
+                value:
+                  enable: true
+      responses:
+        '200':
+          description: Account setting partially updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Account setting updated successfully
+        '400':
+          $ref: '#/components/responses/Error400'
+          description: |
+            Bad Request - Invalid data was submitted in the body, invalid email address/count, or request submitted for SERVICE_NOTIFICATION setting
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+          description: |
+            Forbidden - You do not have permission to configure account settings for the specified account, or you are not the Owner or Administrative user for the specified account
+        '404':
+          $ref: '#/components/responses/Error404'
+          description: Account setting does not exist in the system
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+  /accounts/{accountName}/settings/PUSH_NOTIFICATIONS/availableChannels:
+    get:
+      tags:
+        - Account Settings
+      summary: Get Available Push Notification Channels
+      description: |
+        Retrieve the list of possible channels and events that can be configured when creating Realtime Push Notifications. This endpoint returns all available notification channels with their metadata, including display names, parent categories, and sample event payloads for testing.
+
+        **Important Notes:**
+        - This endpoint is only available for accounts with push notification capabilities.
+        - The returned channels can be used in the `include` property when creating or updating push notification settings.
+        - Some channels may include `testEventPayload` for testing webhook endpoints.
+      operationId: getAvailablePushNotificationChannels
+      parameters:
+        - $ref: '#/components/parameters/AccountName'
+      responses:
+        '200':
+          description: Available channels retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailableChannelsList'
+              examples:
+                Available Channels Response:
+                  summary: List of available push notification channels
+                  value:
+                    availableChannels:
+                      - id: DOMAIN_CHANGES
+                        name: Domain Changes
+                        parentId: ALL_CHANGES
+                        displayOrder: 1
+                        testEventPayload: '{"objectType": "ZONE", "changeType": "DELETE", "object": "udns-telemetry-test.invalid.", "user": "test-user", "ipAddress": "64.6.64.6", "changeTime": "2021-10-07 06:45:21.467", "account": "accountName", "changeComment": "Test telemetry event", "detail": {"changes": [{"value": "name", "from": "udns-telemetry-test.invalid.", "to": ""}], "extraInfo": {"number_of_records": "2", "type": "Primary", "isTestEvent": "true"}}}'
+                      - id: AUTHENTICATION_EVENTS
+                        name: Authentication Events
+                        parentId: ALL_EVENTS
+                        displayOrder: 3
+                      - id: XFR_EVENTS
+                        name: Zone Transfer Events
+                        parentId: ALL_EVENTS
+                        displayOrder: 2
+                      - id: RECORD_CHANGES
+                        name: Record Changes
+                        parentId: ALL_CHANGES
+                        displayOrder: 2
+                      - id: ZONE_EVENTS
+                        name: Zone Events
+                        parentId: ALL_EVENTS
+                        displayOrder: 1
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+          description: |
+            Forbidden - You are not the Owner or Administrative User for the specified account
+        '404':
+          $ref: '#/components/responses/Error404'
+          description: Push notification channels not available for this account
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+  /accounts/{accountName}/telemetryWebhook/test:
+    post:
+      tags:
+        - Account Settings
+      summary: Test Telemetry Webhook Endpoint
+      description: |
+        Test your Endpoint URL connection prior to configuring Realtime Push Notifications setup. This is the first step in the multi-step configuration process for setting up push notifications.
+
+        **Multi-Step Configuration Process:**
+        1. **Test Endpoint** (this call) - Verify the URL endpoint can be reached
+        2. **Copy telemetryEventId** - Save the returned telemetryEventId value
+        3. **Verify Endpoint** - Use the telemetryEventId to verify the connection response
+        4. **Get Available Channels** (optional) - Retrieve list of configurable channels and events
+        5. **Create Configuration** - Setup your push notification configuration
+
+        **Important Notes:**
+        - A maximum of three Realtime Push Notification configurations can exist per account
+        - Only Owners and Administrative users can configure push notifications
+        - The endpoint URL must be reachable for the test to succeed
+      operationId: testTelemetryWebhookEndpoint
+      parameters:
+        - $ref: '#/components/parameters/AccountName'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RealtimePushNotificationTestConnection'
+            examples:
+              Test Webhook Connection:
+                summary: Test a webhook endpoint URL
+                value:
+                  url: https://example.com/webhook
+                  type: TEST_TELEMETRY_WEBHOOK
+      responses:
+        '200':
+          description: Endpoint test completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RealtimePushNotificationTestResponse'
+              examples:
+                Test Endpoint Response:
+                  summary: Successful webhook endpoint test
+                  value:
+                    telemetryEventId: 3e58c9a7-5e7b-405f-8bf6-b8bad72a32e8
+                    telemetryEventType: TEST_TELEMETRY_WEBHOOK
+                    telemetryEventTime: '2023-06-22 12:13:33.441'
+                    environment: test
+                    accountName: '{accountName}'
+        '400':
+          $ref: '#/components/responses/Error400'
+          description: |
+            Bad Request - Invalid request body or the endpoint URL could not be reached
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+          description: |
+            Forbidden - You are not the Owner or Administrative User for the specified account
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+  /accounts/{accountName}/telemetryWebhook/test/{telemetryId}:
+    get:
+      tags:
+        - Account Settings
+      summary: Verify Telemetry Webhook Endpoint
+      description: |
+        Verify that your Endpoint URL can be reached and returns a Success message. This is step 3 in the multi-step configuration process for setting up push notifications.
+
+        **Multi-Step Configuration Process:**
+        1. **Test Endpoint** - Verify the URL endpoint can be reached
+        2. **Copy telemetryEventId** - Save the returned telemetryEventId value
+        3. **Verify Endpoint** (this call) - Use the telemetryEventId to verify the connection response
+        4. **Get Available Channels** (optional) - Retrieve list of configurable channels and events
+        5. **Create Configuration** - Setup your push notification configuration
+
+        **Response Status Meanings:**
+        - **Unknown**: The test is still pending and has not completed yet
+        - **Success**: The webhook endpoint successfully received and processed the test event
+        - **Failure**: The webhook endpoint returned an error or could not be reached
+
+        **Important Notes:**
+        - Only Owners and Administrative users can verify webhook endpoints
+        - The telemetryId must be from a recent test endpoint call
+        - Verification may take a few moments to complete
+      operationId: verifyTelemetryWebhookEndpoint
+      parameters:
+        - $ref: '#/components/parameters/AccountName'
+        - name: telemetryId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The telemetryEventId from the RealtimePushNotification Test Response DTO
+          example: 3e58c9a7-5e7b-405f-8bf6-b8bad72a32e8
+      responses:
+        '200':
+          description: Verification result retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelemetryWebhookVerificationResponse'
+              examples:
+                Test Still Pending:
+                  summary: Verification is still in progress
+                  value:
+                    status: Unknown
+                Verification Success:
+                  summary: Webhook endpoint verification successful
+                  value:
+                    status: Success
+                    httpStatus: 200 OK
+                Verification Failure:
+                  summary: Webhook endpoint verification failed
+                  value:
+                    status: Failure
+                    httpStatus: 403 FORBIDDEN
+                    message: The receiving server is up but the authentication and/or authorization was expected by your server and was not provided or failed
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+          description: |
+            Forbidden - You are not the Owner or Administrative User for the specified account
+        '404':
+          $ref: '#/components/responses/Error404'
+          description: |
+            Not Found - The telemetryId does not exist or the endpoint URL could not be reached
         5XX:
           $ref: '#/components/responses/Error5xx'
 components:
@@ -4099,27 +4403,167 @@ components:
               - include
       required:
         - webhooks
+    RealtimePushNotificationTestConnection:
+      type: object
+      description: The RealtimePushNotificationTestConnection DTO represents a test connection request for real-time push notification webhooks
+      properties:
+        url:
+          type: string
+          format: uri
+          description: The Endpoint URL you will be sending notifications to
+          example: https://example.com/webhook
+        type:
+          type: string
+          description: Always TEST_TELEMETRY_WEBHOOK
+          enum:
+            - TEST_TELEMETRY_WEBHOOK
+          example: TEST_TELEMETRY_WEBHOOK
+      required:
+        - url
+        - type
+    RealtimePushNotificationTestResponse:
+      type: object
+      description: The RealtimePushNotificationTestResponse DTO represents the response from a test telemetry event for real-time push notification webhooks
+      properties:
+        telemetryEventId:
+          type: string
+          description: The unique ID assigned to the Push Notification event details. Used to verify the endpoint.
+          example: evt_1234567890abcdef
+        telemetryEventType:
+          type: string
+          description: Identifies the type of event(s) that triggered the real-time notification to be sent.
+          example: TEST_TELEMETRY_WEBHOOK
+        telemetryEventTime:
+          type: string
+          format: date-time
+          description: The time at which the event triggered the notification (in UTC).
+          example: '2021-10-07T06:45:21.467Z'
+        environment:
+          type: string
+          description: The environment where the event occurred.
+          example: production
+        accountName:
+          type: string
+          description: The name of the account that the Endpoint URL has been configured for.
+          example: example-account
+      required:
+        - telemetryEventId
+        - telemetryEventType
+        - telemetryEventTime
+        - environment
+        - accountName
+    TelemetryWebhookVerificationResponse:
+      type: object
+      description: The TelemetryWebhookVerificationResponse DTO represents the result of verifying a telemetry webhook endpoint
+      properties:
+        status:
+          type: string
+          description: The verification status of the webhook endpoint
+          enum:
+            - Unknown
+            - Success
+            - Failure
+          example: Success
+        httpStatus:
+          type: string
+          description: The HTTP status code and message returned by the webhook endpoint (only present for Success or Failure status)
+          example: 200 OK
+        message:
+          type: string
+          description: Additional message explaining the failure reason (only present for Failure status)
+          example: The receiving server is up but the authentication and/or authorization was expected by your server and was not provided or failed
+      required:
+        - status
     SecurityPreferences:
       type: object
       description: The SecurityPreferences DTO represents security preferences configuration at the account level
       properties:
-        enforceStrongPasswords:
-          type: boolean
-          description: Enforce strong password requirements for account users
-          example: true
-        requireTwoFactorAuth:
-          type: boolean
-          description: Require two-factor authentication for account users
-          example: false
-        sessionTimeout:
-          type: integer
-          description: Session timeout in minutes
-          example: 30
-          minimum: 5
-          maximum: 1440
+        securityPreferences:
+          type: object
+          description: Security preferences settings for the account
+          properties:
+            requireMFA:
+              type: boolean
+              description: Indicates if the Mandatory Multi-Factor Authentication account-level setting is enabled for the account, requiring users to configure MFA for their account. true = Enabled, false = No (Default)
+              example: false
+            inactivityTimeout:
+              type: integer
+              description: Determines the length of time (in minutes) at which point the session for a user will be timed out. The value of this field will either be 0 or (>= 10 minutes and <= 120 minutes). The value 0 means this preference is not set at the account level and will instead be applied from the user level.
+              example: 40
+              minimum: 0
+              maximum: 120
+            passwordExpiration:
+              type: integer
+              description: Determines the length of time (in days) at which point all users' passwords in the account should be marked as expired. The value of this field will either be 0 or (>= 14 days and <= 365 days). The value 0 means this preference is not set at the account level and will instead be applied from the user level.
+              example: 50
+              minimum: 0
+              maximum: 365
+            inactivityUserLockThreshold:
+              type: integer
+              description: Determines the time (in days) at which point users should be marked as suspended due to inactivity. The value of this field will either be 0 or (>= 60 days and <= 365 days). The value 0 means this preference is not set at the account level and will instead be applied from the user level.
+              example: 0
+              minimum: 0
+              maximum: 365
+          required:
+            - inactivityTimeout
+            - passwordExpiration
+            - inactivityUserLockThreshold
       required:
-        - enforceStrongPasswords
-        - requireTwoFactorAuth
+        - securityPreferences
+    AvailableChannel:
+      type: object
+      description: The AvailableChannel DTO represents a channel/event that can be configured for real-time push notifications
+      properties:
+        id:
+          type: string
+          description: The unique identifier for the channel/event
+          example: DOMAIN_CHANGES
+        name:
+          type: string
+          description: The display name for the channel/event
+          example: Domain Changes
+        parentId:
+          type: string
+          description: The parent channel ID that this channel belongs to
+          example: ALL_CHANGES
+        displayOrder:
+          type: integer
+          description: The order in which this channel should be displayed
+          example: 1
+        testEventPayload:
+          type: string
+          description: JSON string containing a sample event payload for testing this channel
+          example: '{"objectType": "ZONE", "changeType": "DELETE", "object": "udns-telemetry-test.invalid.", "user": "test-user", "ipAddress": "64.6.64.6", "changeTime": "2021-10-07 06:45:21.467", "account": "accountName", "changeComment": "Test telemetry event", "detail": {"changes": [{"value": "name", "from": "udns-telemetry-test.invalid.", "to": ""}], "extraInfo": {"number_of_records": "2", "type": "Primary", "isTestEvent": "true"}}}'
+      required:
+        - id
+        - name
+        - parentId
+        - displayOrder
+    AvailableChannelsList:
+      type: object
+      description: The AvailableChannelsList DTO contains a list of available channels and events for real-time push notifications
+      properties:
+        availableChannels:
+          type: array
+          description: List of available channels and events that can be configured for real-time push notifications
+          items:
+            $ref: '#/components/schemas/AvailableChannel'
+          example:
+            - id: DOMAIN_CHANGES
+              name: Domain Changes
+              parentId: ALL_CHANGES
+              displayOrder: 1
+              testEventPayload: '{"objectType": "ZONE", "changeType": "DELETE", "object": "udns-telemetry-test.invalid.", "user": "test-user", "ipAddress": "64.6.64.6", "changeTime": "2021-10-07 06:45:21.467", "account": "accountName", "changeComment": "Test telemetry event", "detail": {"changes": [{"value": "name", "from": "udns-telemetry-test.invalid.", "to": ""}], "extraInfo": {"number_of_records": "2", "type": "Primary", "isTestEvent": "true"}}}'
+            - id: AUTHENTICATION_EVENTS
+              name: Authentication Events
+              parentId: ALL_EVENTS
+              displayOrder: 3
+            - id: XFR_EVENTS
+              name: Zone Transfer Events
+              parentId: ALL_EVENTS
+              displayOrder: 2
+      required:
+        - availableChannels
     ZoneProperties:
       type: object
       description: The Zone Properties DTO holds the common metadata across all types of zones

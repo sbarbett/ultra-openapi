@@ -1,0 +1,61 @@
+post:
+  tags:
+    - Account Settings
+  summary: Test Telemetry Webhook Endpoint
+  description: |
+    Test your Endpoint URL connection prior to configuring Realtime Push Notifications setup. This is the first step in the multi-step configuration process for setting up push notifications.
+    
+    **Multi-Step Configuration Process:**
+    1. **Test Endpoint** (this call) - Verify the URL endpoint can be reached
+    2. **Copy telemetryEventId** - Save the returned telemetryEventId value
+    3. **Verify Endpoint** - Use the telemetryEventId to verify the connection response
+    4. **Get Available Channels** (optional) - Retrieve list of configurable channels and events
+    5. **Create Configuration** - Setup your push notification configuration
+    
+    **Important Notes:**
+    - A maximum of three Realtime Push Notification configurations can exist per account
+    - Only Owners and Administrative users can configure push notifications
+    - The endpoint URL must be reachable for the test to succeed
+  operationId: testTelemetryWebhookEndpoint
+  parameters:
+    - $ref: '../components/parameters/AccountName.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/RealtimePushNotificationTestConnection.yaml'
+        examples:
+          Test Webhook Connection:
+            summary: Test a webhook endpoint URL
+            value:
+              url: "https://example.com/webhook"
+              type: "TEST_TELEMETRY_WEBHOOK"
+  responses:
+    '200':
+      description: Endpoint test completed successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/RealtimePushNotificationTestResponse.yaml'
+          examples:
+            Test Endpoint Response:
+              summary: Successful webhook endpoint test
+              value:
+                telemetryEventId: "3e58c9a7-5e7b-405f-8bf6-b8bad72a32e8"
+                telemetryEventType: "TEST_TELEMETRY_WEBHOOK"
+                telemetryEventTime: "2023-06-22 12:13:33.441"
+                environment: "test"
+                accountName: "{accountName}"
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+      description: |
+        Bad Request - Invalid request body or the endpoint URL could not be reached
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+      description: |
+        Forbidden - You are not the Owner or Administrative User for the specified account
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

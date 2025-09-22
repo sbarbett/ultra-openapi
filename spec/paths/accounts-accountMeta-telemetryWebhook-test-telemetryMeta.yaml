@@ -1,0 +1,70 @@
+get:
+  tags:
+    - Account Settings
+  summary: Verify Telemetry Webhook Endpoint
+  description: |
+    Verify that your Endpoint URL can be reached and returns a Success message. This is step 3 in the multi-step configuration process for setting up push notifications.
+    
+    **Multi-Step Configuration Process:**
+    1. **Test Endpoint** - Verify the URL endpoint can be reached
+    2. **Copy telemetryEventId** - Save the returned telemetryEventId value
+    3. **Verify Endpoint** (this call) - Use the telemetryEventId to verify the connection response
+    4. **Get Available Channels** (optional) - Retrieve list of configurable channels and events
+    5. **Create Configuration** - Setup your push notification configuration
+    
+    **Response Status Meanings:**
+    - **Unknown**: The test is still pending and has not completed yet
+    - **Success**: The webhook endpoint successfully received and processed the test event
+    - **Failure**: The webhook endpoint returned an error or could not be reached
+    
+    **Important Notes:**
+    - Only Owners and Administrative users can verify webhook endpoints
+    - The telemetryId must be from a recent test endpoint call
+    - Verification may take a few moments to complete
+  operationId: verifyTelemetryWebhookEndpoint
+  parameters:
+    - $ref: '../components/parameters/AccountName.yaml'
+    - name: telemetryId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The telemetryEventId from the RealtimePushNotification Test Response DTO
+      example: "3e58c9a7-5e7b-405f-8bf6-b8bad72a32e8"
+  responses:
+    '200':
+      description: Verification result retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/TelemetryWebhookVerificationResponse.yaml'
+          examples:
+            Test Still Pending:
+              summary: Verification is still in progress
+              value:
+                status: "Unknown"
+            Verification Success:
+              summary: Webhook endpoint verification successful
+              value:
+                status: "Success"
+                httpStatus: "200 OK"
+            Verification Failure:
+              summary: Webhook endpoint verification failed
+              value:
+                status: "Failure"
+                httpStatus: "403 FORBIDDEN"
+                message: "The receiving server is up but the authentication and/or authorization was expected by your server and was not provided or failed"
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+      description: |
+        Forbidden - You are not the Owner or Administrative User for the specified account
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+      description: |
+        Not Found - The telemetryId does not exist or the endpoint URL could not be reached
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

@@ -1,0 +1,18 @@
+type: object
+description: The TelemetryWebhookVerificationResponse DTO represents the result of verifying a telemetry webhook endpoint
+properties:
+  status:
+    type: string
+    description: The verification status of the webhook endpoint
+    enum: ["Unknown", "Success", "Failure"]
+    example: "Success"
+  httpStatus:
+    type: string
+    description: The HTTP status code and message returned by the webhook endpoint (only present for Success or Failure status)
+    example: "200 OK"
+  message:
+    type: string
+    description: Additional message explaining the failure reason (only present for Failure status)
+    example: "The receiving server is up but the authentication and/or authorization was expected by your server and was not provided or failed"
+required:
+  - status

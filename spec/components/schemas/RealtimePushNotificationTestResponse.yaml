@@ -1,0 +1,30 @@
+type: object
+description: The RealtimePushNotificationTestResponse DTO represents the response from a test telemetry event for real-time push notification webhooks
+properties:
+  telemetryEventId:
+    type: string
+    description: The unique ID assigned to the Push Notification event details. Used to verify the endpoint.
+    example: "evt_1234567890abcdef"
+  telemetryEventType:
+    type: string
+    description: Identifies the type of event(s) that triggered the real-time notification to be sent.
+    example: "TEST_TELEMETRY_WEBHOOK"
+  telemetryEventTime:
+    type: string
+    format: date-time
+    description: The time at which the event triggered the notification (in UTC).
+    example: "2021-10-07T06:45:21.467Z"
+  environment:
+    type: string
+    description: The environment where the event occurred.
+    example: "production"
+  accountName:
+    type: string
+    description: The name of the account that the Endpoint URL has been configured for.
+    example: "example-account"
+required:
+  - telemetryEventId
+  - telemetryEventType
+  - telemetryEventTime
+  - environment
+  - accountName

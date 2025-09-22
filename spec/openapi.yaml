@@ -182,6 +182,12 @@ paths:
   # Account Settings endpoints
   /accounts/{accountName}/settings/{settingName}:
     $ref: './paths/accounts-accountMeta-settings-settingMeta.yaml'
+  /accounts/{accountName}/settings/PUSH_NOTIFICATIONS/availableChannels:
+    $ref: './paths/accounts-accountMeta-settings-pushNotifications-availableChannels.yaml'
+  /accounts/{accountName}/telemetryWebhook/test:
+    $ref: './paths/accounts-accountMeta-telemetryWebhook-test.yaml'
+  /accounts/{accountName}/telemetryWebhook/test/{telemetryId}:
+    $ref: './paths/accounts-accountMeta-telemetryWebhook-test-telemetryMeta.yaml'
 
 # Security schemes
 components:
@@ -251,8 +257,18 @@ components:
       $ref: './components/schemas/ZoneUsageNotification.yaml'
     RealtimePushNotification:
       $ref: './components/schemas/RealtimePushNotification.yaml'
+    RealtimePushNotificationTestConnection:
+      $ref: './components/schemas/RealtimePushNotificationTestConnection.yaml'
+    RealtimePushNotificationTestResponse:
+      $ref: './components/schemas/RealtimePushNotificationTestResponse.yaml'
+    TelemetryWebhookVerificationResponse:
+      $ref: './components/schemas/TelemetryWebhookVerificationResponse.yaml'
     SecurityPreferences:
       $ref: './components/schemas/SecurityPreferences.yaml'
+    AvailableChannel:
+      $ref: './components/schemas/AvailableChannel.yaml'
+    AvailableChannelsList:
+      $ref: './components/schemas/AvailableChannelsList.yaml'
 
 # Tags
 tags:

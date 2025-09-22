@@ -1,0 +1,28 @@
+type: object
+description: The AvailableChannel DTO represents a channel/event that can be configured for real-time push notifications
+properties:
+  id:
+    type: string
+    description: The unique identifier for the channel/event
+    example: "DOMAIN_CHANGES"
+  name:
+    type: string
+    description: The display name for the channel/event
+    example: "Domain Changes"
+  parentId:
+    type: string
+    description: The parent channel ID that this channel belongs to
+    example: "ALL_CHANGES"
+  displayOrder:
+    type: integer
+    description: The order in which this channel should be displayed
+    example: 1
+  testEventPayload:
+    type: string
+    description: JSON string containing a sample event payload for testing this channel
+    example: '{"objectType": "ZONE", "changeType": "DELETE", "object": "udns-telemetry-test.invalid.", "user": "test-user", "ipAddress": "64.6.64.6", "changeTime": "2021-10-07 06:45:21.467", "account": "accountName", "changeComment": "Test telemetry event", "detail": {"changes": [{"value": "name", "from": "udns-telemetry-test.invalid.", "to": ""}], "extraInfo": {"number_of_records": "2", "type": "Primary", "isTestEvent": "true"}}}'
+required:
+  - id
+  - name
+  - parentId
+  - displayOrder

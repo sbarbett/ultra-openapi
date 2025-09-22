@@ -1,0 +1,24 @@
+type: object
+description: The AvailableChannelsList DTO contains a list of available channels and events for real-time push notifications
+properties:
+  availableChannels:
+    type: array
+    description: List of available channels and events that can be configured for real-time push notifications
+    items:
+      $ref: './AvailableChannel.yaml'
+    example:
+      - id: "DOMAIN_CHANGES"
+        name: "Domain Changes"
+        parentId: "ALL_CHANGES"
+        displayOrder: 1
+        testEventPayload: '{"objectType": "ZONE", "changeType": "DELETE", "object": "udns-telemetry-test.invalid.", "user": "test-user", "ipAddress": "64.6.64.6", "changeTime": "2021-10-07 06:45:21.467", "account": "accountName", "changeComment": "Test telemetry event", "detail": {"changes": [{"value": "name", "from": "udns-telemetry-test.invalid.", "to": ""}], "extraInfo": {"number_of_records": "2", "type": "Primary", "isTestEvent": "true"}}}'
+      - id: "AUTHENTICATION_EVENTS"
+        name: "Authentication Events"
+        parentId: "ALL_EVENTS"
+        displayOrder: 3
+      - id: "XFR_EVENTS"
+        name: "Zone Transfer Events"
+        parentId: "ALL_EVENTS"
+        displayOrder: 2
+required:
+  - availableChannels

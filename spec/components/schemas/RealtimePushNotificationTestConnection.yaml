@@ -1,0 +1,16 @@
+type: object
+description: The RealtimePushNotificationTestConnection DTO represents a test connection request for real-time push notification webhooks
+properties:
+  url:
+    type: string
+    format: uri
+    description: The Endpoint URL you will be sending notifications to
+    example: "https://example.com/webhook"
+  type:
+    type: string
+    description: Always TEST_TELEMETRY_WEBHOOK
+    enum: ["TEST_TELEMETRY_WEBHOOK"]
+    example: "TEST_TELEMETRY_WEBHOOK"
+required:
+  - url
+  - type

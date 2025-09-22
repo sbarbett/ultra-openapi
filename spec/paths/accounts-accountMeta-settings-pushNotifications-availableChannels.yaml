@@ -1,0 +1,60 @@
+get:
+  tags:
+    - Account Settings
+  summary: Get Available Push Notification Channels
+  description: |
+    Retrieve the list of possible channels and events that can be configured when creating Realtime Push Notifications. This endpoint returns all available notification channels with their metadata, including display names, parent categories, and sample event payloads for testing.
+    
+    **Important Notes:**
+    - This endpoint is only available for accounts with push notification capabilities.
+    - The returned channels can be used in the `include` property when creating or updating push notification settings.
+    - Some channels may include `testEventPayload` for testing webhook endpoints.
+  operationId: getAvailablePushNotificationChannels
+  parameters:
+    - $ref: '../components/parameters/AccountName.yaml'
+  responses:
+    '200':
+      description: Available channels retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/AvailableChannelsList.yaml'
+          examples:
+            Available Channels Response:
+              summary: List of available push notification channels
+              value:
+                availableChannels:
+                  - id: "DOMAIN_CHANGES"
+                    name: "Domain Changes"
+                    parentId: "ALL_CHANGES"
+                    displayOrder: 1
+                    testEventPayload: '{"objectType": "ZONE", "changeType": "DELETE", "object": "udns-telemetry-test.invalid.", "user": "test-user", "ipAddress": "64.6.64.6", "changeTime": "2021-10-07 06:45:21.467", "account": "accountName", "changeComment": "Test telemetry event", "detail": {"changes": [{"value": "name", "from": "udns-telemetry-test.invalid.", "to": ""}], "extraInfo": {"number_of_records": "2", "type": "Primary", "isTestEvent": "true"}}}'
+                  - id: "AUTHENTICATION_EVENTS"
+                    name: "Authentication Events"
+                    parentId: "ALL_EVENTS"
+                    displayOrder: 3
+                  - id: "XFR_EVENTS"
+                    name: "Zone Transfer Events"
+                    parentId: "ALL_EVENTS"
+                    displayOrder: 2
+                  - id: "RECORD_CHANGES"
+                    name: "Record Changes"
+                    parentId: "ALL_CHANGES"
+                    displayOrder: 2
+                  - id: "ZONE_EVENTS"
+                    name: "Zone Events"
+                    parentId: "ALL_EVENTS"
+                    displayOrder: 1
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+      description: |
+        Forbidden - You are not the Owner or Administrative User for the specified account
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+      description: Push notification channels not available for this account
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
