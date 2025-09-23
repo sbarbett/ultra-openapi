@@ -1,0 +1,7 @@
+name: name
+in: path
+required: true
+schema:
+  type: string
+description: Name of the directional group to retrieve.
+example: accountGeoGroup

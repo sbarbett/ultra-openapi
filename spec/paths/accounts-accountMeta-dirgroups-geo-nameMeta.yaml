@@ -1,0 +1,239 @@
+parameters:
+  - $ref: '../components/parameters/AccountName.yaml'
+  - $ref: '../components/parameters/DirGroupName.yaml'
+
+get:
+  tags:
+    - Directional
+  summary: Get Account-Level GeoIP Directional Group
+  description: Retrieve a single account-level GeoIP directional group by name for the specified account.
+  operationId: getAccountGeoIpDirectionalGroup
+  responses:
+    '200':
+      description: Account-level GeoIP directional group returned successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/AccountLevelGeoIpGroup.yaml'
+          examples:
+            Default:
+              summary: Account-level GeoIP group
+              value:
+                name: accountGeoGroup
+                description: geo sample
+                codes:
+                  - FR
+                  - GB
+                  - RU
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+
+post:
+  tags:
+    - Directional
+  summary: Create Account-Level GeoIP Directional Group
+  description: Create a new account-level GeoIP directional group for the specified account.
+  operationId: createAccountGeoIpDirectionalGroup
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/AccountLevelGeoIpGroup.yaml'
+        examples:
+          Default:
+            summary: Account-level GeoIP group create payload
+            value:
+              name: accountGeoGroup
+              description: geo sample
+              codes:
+                - FR
+                - GB
+                - RU
+  responses:
+    '201':
+      $ref: '../components/responses/CreatedGeneric.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+
+put:
+  tags:
+    - Directional
+  summary: Update Account-Level GeoIP Directional Group
+  description: Update an existing account-level GeoIP directional group. Returns a success message when the update finishes immediately or a task identifier when processed asynchronously.
+  operationId: updateAccountGeoIpDirectionalGroup
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/AccountLevelGeoIpGroup.yaml'
+        examples:
+          Default:
+            summary: Account-level GeoIP group update payload
+            value:
+              name: accountGeoGroup
+              description: geo sample
+              codes:
+                - FR
+                - GB
+                - RU
+  responses:
+    '200':
+      description: Account-level GeoIP directional group updated successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Successful
+          examples:
+            Successful:
+              value:
+                message: Successful
+    '202':
+      description: Update accepted and scheduled for asynchronous processing
+      headers:
+        X-Task-Id:
+          description: Task ID for tracking the update progress
+          schema:
+            type: string
+            example: task-12345
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Pending
+          examples:
+            Pending:
+              value:
+                message: Pending
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+
+patch:
+  tags:
+    - Directional
+  summary: Partially Update Account-Level GeoIP Directional Group
+  description: Apply a partial update to an existing account-level GeoIP directional group. Returns a success message when the update finishes immediately or a task identifier when processed asynchronously.
+  operationId: patchAccountGeoIpDirectionalGroup
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/AccountLevelGeoIpGroup.yaml'
+        examples:
+          Default:
+            summary: Account-level GeoIP group patch payload
+            value:
+              name: accountGeoGroup
+              description: Updated description
+              codes:
+                - FR
+                - GB
+                - RU
+  responses:
+    '200':
+      description: Account-level GeoIP directional group updated successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Successful
+          examples:
+            Successful:
+              value:
+                message: Successful
+    '202':
+      description: Update accepted and scheduled for asynchronous processing
+      headers:
+        X-Task-Id:
+          description: Task ID for tracking the update progress
+          schema:
+            type: string
+            example: task-12345
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Pending
+          examples:
+            Pending:
+              value:
+                message: Pending
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+
+delete:
+  tags:
+    - Directional
+  summary: Delete Account-Level GeoIP Directional Group
+  description: Delete an existing account-level GeoIP directional group. Returns immediately when the delete completes or a task identifier when processed asynchronously.
+  operationId: deleteAccountGeoIpDirectionalGroup
+  responses:
+    '202':
+      description: Delete accepted and scheduled for asynchronous processing
+      headers:
+        X-Task-Id:
+          description: Task ID for tracking the delete progress
+          schema:
+            type: string
+            example: task-12345
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Pending
+          examples:
+            Pending:
+              value:
+                message: Pending
+    '204':
+      description: GeoIP directional group deleted successfully
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

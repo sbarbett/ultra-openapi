@@ -191,6 +191,16 @@ paths:
   /accounts/{accountName}/telemetryWebhook/test/{telemetryId}:
     $ref: './paths/accounts-accountMeta-telemetryWebhook-test-telemetryMeta.yaml'
 
+  # Directional endpoints
+  /accounts/{accountName}/dirgroups/geo:
+    $ref: './paths/accounts-accountMeta-dirgroups-geo.yaml'
+  /accounts/{accountName}/dirgroups/geo/{name}:
+    $ref: './paths/accounts-accountMeta-dirgroups-geo-nameMeta.yaml'
+  /accounts/{accountName}/dirgroups/ip:
+    $ref: './paths/accounts-accountMeta-dirgroups-ip.yaml'
+  /accounts/{accountName}/dirgroups/ip/{name}:
+    $ref: './paths/accounts-accountMeta-dirgroups-ip-nameMeta.yaml'
+
 # Security schemes
 components:
   securitySchemes:
@@ -251,6 +261,16 @@ components:
       $ref: './components/schemas/AccountSettingsCatalogItem.yaml'
     AccountSettingsCatalogItemList:
       $ref: './components/schemas/AccountSettingsCatalogItemList.yaml'
+    AccountLevelGeoIpGroup:
+      $ref: './components/schemas/AccountLevelGeoIpGroup.yaml'
+    AccountLevelGeoIpGroupList:
+      $ref: './components/schemas/AccountLevelGeoIpGroupList.yaml'
+    AccountLevelSourceIpGroup:
+      $ref: './components/schemas/AccountLevelSourceIpGroup.yaml'
+    AccountLevelSourceIpGroupList:
+      $ref: './components/schemas/AccountLevelSourceIpGroupList.yaml'
+    DirectionalSourceIp:
+      $ref: './components/schemas/DirectionalSourceIp.yaml'
     EmailNotification:
       $ref: './components/schemas/EmailNotification.yaml'
     NotificationSetting:

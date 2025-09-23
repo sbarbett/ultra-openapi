@@ -3183,6 +3183,607 @@ paths:
             Not Found - The telemetryId does not exist or the endpoint URL could not be reached
         5XX:
           $ref: '#/components/responses/Error5xx'
+  /accounts/{accountName}/dirgroups/geo:
+    get:
+      tags:
+        - Directional
+      summary: List Account-Level GeoIP Directional Groups
+      description: |
+        Retrieve the account-level GeoIP directional groups configured for the specified account. Use query parameters to filter by group name, control pagination, and adjust ordering. The `sort` parameter supports the value `NAME` for alphabetical sorting.
+      operationId: listAccountGeoIpDirectionalGroups
+      parameters:
+        - $ref: '#/components/parameters/AccountName'
+        - $ref: '#/components/parameters/QueryParams'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Reverse'
+      responses:
+        '200':
+          description: Account-level GeoIP directional groups returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountLevelGeoIpGroupList'
+              examples:
+                Default:
+                  summary: Account-level GeoIP groups list
+                  value:
+                    accountName: myAccount
+                    geoGroups:
+                      - name: accountGeoGroup
+                        description: geo sample
+                        codes:
+                          - FR
+                          - GB
+                          - RU
+                      - name: accountGeoGroup2
+                        codes:
+                          - US-NY
+                    queryInfo:
+                      q: ''
+                      sort: NAME
+                      reverse: false
+                      limit: 100
+                    resultInfo:
+                      totalCount: 2
+                      offset: 0
+                      returnedCount: 2
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+  /accounts/{accountName}/dirgroups/geo/{name}:
+    parameters:
+      - $ref: '#/components/parameters/AccountName'
+      - $ref: '#/components/parameters/DirGroupName'
+    get:
+      tags:
+        - Directional
+      summary: Get Account-Level GeoIP Directional Group
+      description: Retrieve a single account-level GeoIP directional group by name for the specified account.
+      operationId: getAccountGeoIpDirectionalGroup
+      responses:
+        '200':
+          description: Account-level GeoIP directional group returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountLevelGeoIpGroup'
+              examples:
+                Default:
+                  summary: Account-level GeoIP group
+                  value:
+                    name: accountGeoGroup
+                    description: geo sample
+                    codes:
+                      - FR
+                      - GB
+                      - RU
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+    post:
+      tags:
+        - Directional
+      summary: Create Account-Level GeoIP Directional Group
+      description: Create a new account-level GeoIP directional group for the specified account.
+      operationId: createAccountGeoIpDirectionalGroup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountLevelGeoIpGroup'
+            examples:
+              Default:
+                summary: Account-level GeoIP group create payload
+                value:
+                  name: accountGeoGroup
+                  description: geo sample
+                  codes:
+                    - FR
+                    - GB
+                    - RU
+      responses:
+        '201':
+          $ref: '#/components/responses/CreatedGeneric'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+    put:
+      tags:
+        - Directional
+      summary: Update Account-Level GeoIP Directional Group
+      description: Update an existing account-level GeoIP directional group. Returns a success message when the update finishes immediately or a task identifier when processed asynchronously.
+      operationId: updateAccountGeoIpDirectionalGroup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountLevelGeoIpGroup'
+            examples:
+              Default:
+                summary: Account-level GeoIP group update payload
+                value:
+                  name: accountGeoGroup
+                  description: geo sample
+                  codes:
+                    - FR
+                    - GB
+                    - RU
+      responses:
+        '200':
+          description: Account-level GeoIP directional group updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Successful
+              examples:
+                Successful:
+                  value:
+                    message: Successful
+        '202':
+          description: Update accepted and scheduled for asynchronous processing
+          headers:
+            X-Task-Id:
+              description: Task ID for tracking the update progress
+              schema:
+                type: string
+                example: task-12345
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Pending
+              examples:
+                Pending:
+                  value:
+                    message: Pending
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+    patch:
+      tags:
+        - Directional
+      summary: Partially Update Account-Level GeoIP Directional Group
+      description: Apply a partial update to an existing account-level GeoIP directional group. Returns a success message when the update finishes immediately or a task identifier when processed asynchronously.
+      operationId: patchAccountGeoIpDirectionalGroup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountLevelGeoIpGroup'
+            examples:
+              Default:
+                summary: Account-level GeoIP group patch payload
+                value:
+                  name: accountGeoGroup
+                  description: Updated description
+                  codes:
+                    - FR
+                    - GB
+                    - RU
+      responses:
+        '200':
+          description: Account-level GeoIP directional group updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Successful
+              examples:
+                Successful:
+                  value:
+                    message: Successful
+        '202':
+          description: Update accepted and scheduled for asynchronous processing
+          headers:
+            X-Task-Id:
+              description: Task ID for tracking the update progress
+              schema:
+                type: string
+                example: task-12345
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Pending
+              examples:
+                Pending:
+                  value:
+                    message: Pending
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+    delete:
+      tags:
+        - Directional
+      summary: Delete Account-Level GeoIP Directional Group
+      description: Delete an existing account-level GeoIP directional group. Returns immediately when the delete completes or a task identifier when processed asynchronously.
+      operationId: deleteAccountGeoIpDirectionalGroup
+      responses:
+        '202':
+          description: Delete accepted and scheduled for asynchronous processing
+          headers:
+            X-Task-Id:
+              description: Task ID for tracking the delete progress
+              schema:
+                type: string
+                example: task-12345
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Pending
+              examples:
+                Pending:
+                  value:
+                    message: Pending
+        '204':
+          description: GeoIP directional group deleted successfully
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+  /accounts/{accountName}/dirgroups/ip:
+    get:
+      tags:
+        - Directional
+      summary: List Account-Level SourceIP Directional Groups
+      description: |
+        Retrieve the account-level SourceIP directional groups configured for the specified account. Use query parameters to filter by group name, control pagination, and adjust ordering. The `sort` parameter supports the value `NAME` for alphabetical sorting.
+      operationId: listAccountSourceIpDirectionalGroups
+      parameters:
+        - $ref: '#/components/parameters/AccountName'
+        - $ref: '#/components/parameters/QueryParams'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Reverse'
+      responses:
+        '200':
+          description: Account-level SourceIP directional groups returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountLevelSourceIpGroupList'
+              examples:
+                Default:
+                  summary: Account-level SourceIP groups list
+                  value:
+                    accountName: myAccount
+                    ipGroups:
+                      - name: accountIPGroup
+                        description: Another sample
+                        ips:
+                          - start: 1.1.1.1
+                            end: 2.2.2.2
+                          - address: 4.3.2.1
+                      - name: accountIPGroup2
+                        ips:
+                          - cidr: 10.10.10.10/30
+                    queryInfo:
+                      q: ''
+                      sort: NAME
+                      reverse: false
+                      limit: 100
+                    resultInfo:
+                      totalCount: 2
+                      offset: 0
+                      returnedCount: 2
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+  /accounts/{accountName}/dirgroups/ip/{name}:
+    parameters:
+      - $ref: '#/components/parameters/AccountName'
+      - $ref: '#/components/parameters/DirGroupName'
+    get:
+      tags:
+        - Directional
+      summary: Get Account-Level SourceIP Directional Group
+      description: Retrieve a single account-level SourceIP directional group by name for the specified account.
+      operationId: getAccountSourceIpDirectionalGroup
+      responses:
+        '200':
+          description: Account-level SourceIP directional group returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountLevelSourceIpGroup'
+              examples:
+                Default:
+                  summary: Account-level SourceIP group
+                  value:
+                    name: accountIPGroup
+                    description: Another sample
+                    ips:
+                      - start: 1.1.1.1
+                        end: 2.2.2.2
+                      - address: 4.3.2.1
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+    post:
+      tags:
+        - Directional
+      summary: Create Account-Level SourceIP Directional Group
+      description: Create a new account-level SourceIP directional group for the specified account.
+      operationId: createAccountSourceIpDirectionalGroup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountLevelSourceIpGroup'
+            examples:
+              Default:
+                summary: Account-level SourceIP group create payload
+                value:
+                  name: accountIPGroup
+                  description: Another sample
+                  ips:
+                    - start: 1.1.1.1
+                      end: 2.2.2.2
+                    - address: 4.3.2.1
+      responses:
+        '201':
+          $ref: '#/components/responses/CreatedGeneric'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+    put:
+      tags:
+        - Directional
+      summary: Update Account-Level SourceIP Directional Group
+      description: Update an existing account-level SourceIP directional group. Returns a success message when the update finishes immediately or a task identifier when processed asynchronously.
+      operationId: updateAccountSourceIpDirectionalGroup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountLevelSourceIpGroup'
+            examples:
+              Default:
+                summary: Account-level SourceIP group update payload
+                value:
+                  name: accountIPGroup
+                  description: Another sample
+                  ips:
+                    - start: 1.1.1.1
+                      end: 2.2.2.2
+                    - address: 4.3.2.1
+      responses:
+        '200':
+          description: Account-level SourceIP directional group updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Successful
+              examples:
+                Successful:
+                  value:
+                    message: Successful
+        '202':
+          description: Update accepted and scheduled for asynchronous processing
+          headers:
+            X-Task-Id:
+              description: Task ID for tracking the update progress
+              schema:
+                type: string
+                example: task-12345
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Pending
+              examples:
+                Pending:
+                  value:
+                    message: Pending
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+    patch:
+      tags:
+        - Directional
+      summary: Partially Update Account-Level SourceIP Directional Group
+      description: |
+        Apply a partial update to an existing account-level SourceIP directional group. Submit either a partial group payload (`application/json`) or JSON Patch operations (`application/json-patch+json`). Returns a success message when the update finishes immediately or a task identifier when processed asynchronously.
+      operationId: patchAccountSourceIpDirectionalGroup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountLevelSourceIpGroup'
+            examples:
+              Default:
+                summary: Account-level SourceIP group patch payload
+                value:
+                  name: accountIPGroup
+                  description: Updated description
+                  ips:
+                    - start: 1.1.1.1
+                      end: 2.2.2.2
+                    - address: 4.3.2.1
+          application/json-patch+json:
+            description: JSON Patch operations formatted per RFC 6902 to update SourceIP entries.
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/JSONPatch'
+            examples:
+              Bulk Remove And Add SourceIP Entries:
+                summary: Remove existing CIDR entries and add replacements using JSON Patch
+                value:
+                  - op: remove
+                    path: /ips/4.4.4.4%2F32
+                  - op: remove
+                    path: /ips/2.2.2.2%2F32
+                  - op: add
+                    path: /ips/-
+                    value:
+                      cidr: 2.2.2.2/32
+                  - op: add
+                    path: /ips/-
+                    value:
+                      cidr: 4.4.4.4/32
+      responses:
+        '200':
+          description: Account-level SourceIP directional group updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Successful
+              examples:
+                Successful:
+                  value:
+                    message: Successful
+        '202':
+          description: Update accepted and scheduled for asynchronous processing
+          headers:
+            X-Task-Id:
+              description: Task ID for tracking the update progress
+              schema:
+                type: string
+                example: task-12345
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Pending
+              examples:
+                Pending:
+                  value:
+                    message: Pending
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+    delete:
+      tags:
+        - Directional
+      summary: Delete Account-Level SourceIP Directional Group
+      description: Delete an existing account-level SourceIP directional group. Returns immediately when the delete completes or a task identifier when processed asynchronously.
+      operationId: deleteAccountSourceIpDirectionalGroup
+      responses:
+        '202':
+          description: Delete accepted and scheduled for asynchronous processing
+          headers:
+            X-Task-Id:
+              description: Task ID for tracking the delete progress
+              schema:
+                type: string
+                example: task-12345
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Pending
+              examples:
+                Pending:
+                  value:
+                    message: Pending
+        '204':
+          description: SourceIP directional group deleted successfully
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
 components:
   securitySchemes:
     oauth2:
@@ -4299,6 +4900,201 @@ components:
               uri: /account/{accountName}/settings/DNS_SECURITY
       required:
         - accountSettingsCatalogItems
+    AccountLevelGeoIpGroup:
+      type: object
+      description: Account-level GeoIP grouping configuration and associated location codes
+      properties:
+        name:
+          type: string
+          description: The name of the GeoIP group; required when returned in responses and ignored on create or update where it is part of the URI.
+          example: accountGeoGroup
+        description:
+          type: string
+          description: Optional description that clarifies the purpose of the GeoIP group.
+          example: A sample group
+        codes:
+          type: array
+          description: The GeoIP location codes included in this group.
+          items:
+            type: string
+          example:
+            - Z6
+            - RU
+      required:
+        - name
+        - codes
+    AccountLevelGeoIpGroupList:
+      type: object
+      description: |
+        Returned when listing account-level GeoIP directional groups. Not used for creating or updating groups.
+      properties:
+        accountName:
+          type: string
+          description: Account name that owns the GeoIP groups.
+          example: myAccount
+        geoGroups:
+          type: array
+          description: Collection of GeoIP groups that matched the list query.
+          items:
+            $ref: '#/components/schemas/AccountLevelGeoIpGroup'
+          minItems: 0
+        queryInfo:
+          $ref: '#/components/schemas/QueryInfo'
+        resultInfo:
+          $ref: '#/components/schemas/ResultInfo'
+      required:
+        - accountName
+        - geoGroups
+        - queryInfo
+        - resultInfo
+      example:
+        accountName: myAccount
+        geoGroups:
+          - name: accountGeoGroup
+            description: geo sample
+            codes:
+              - FR
+              - GB
+              - RU
+          - name: accountGeoGroup2
+            codes:
+              - US-NY
+        queryInfo:
+          q: ''
+          sort: name
+          reverse: false
+          limit: 100
+        resultInfo:
+          totalCount: 2
+          offset: 0
+          returnedCount: 2
+    AccountLevelSourceIpGroup:
+      type: object
+      description: Account-level source IP grouping configuration and associated IPv4 entries for directional DNS.
+      properties:
+        name:
+          type: string
+          description: The name of the SourceIP group; required in responses and ignored on create or update where it is specified in the URI.
+          example: accountIPGroup
+        description:
+          type: string
+          description: Optional description that clarifies the purpose of the SourceIP group.
+          example: Another sample
+        ips:
+          type: array
+          description: Collection of IPv4 entries that this SourceIP group evaluates.
+          items:
+            $ref: '#/components/schemas/DirectionalSourceIp'
+          minItems: 1
+      required:
+        - name
+        - ips
+      example:
+        name: accountIPGroup
+        description: Another sample
+        ips:
+          - start: 1.1.1.1
+            end: 2.2.2.2
+          - address: 4.3.2.1
+    AccountLevelSourceIpGroupList:
+      type: object
+      description: |
+        Returned when listing account-level SourceIP directional groups. Not used for creating or updating groups.
+      properties:
+        accountName:
+          type: string
+          description: Account name that owns the SourceIP groups.
+          example: myAccount
+        ipGroups:
+          type: array
+          description: Collection of SourceIP groups that matched the list query.
+          items:
+            $ref: '#/components/schemas/AccountLevelSourceIpGroup'
+          minItems: 0
+        queryInfo:
+          $ref: '#/components/schemas/QueryInfo'
+        resultInfo:
+          $ref: '#/components/schemas/ResultInfo'
+      required:
+        - accountName
+        - ipGroups
+        - queryInfo
+        - resultInfo
+      example:
+        accountName: myAccount
+        ipGroups:
+          - name: accountIPGroup
+            description: Another sample
+            ips:
+              - start: 1.1.1.1
+                end: 2.2.2.2
+              - address: 4.3.2.1
+          - name: accountIPGroup2
+            ips:
+              - cidr: 10.10.10.10/30
+        queryInfo:
+          q: ''
+          sort: name
+          reverse: false
+          limit: 100
+        resultInfo:
+          totalCount: 2
+          offset: 0
+          returnedCount: 2
+    DirectionalSourceIp:
+      type: object
+      description: Defines an IPv4 source entry for directional DNS based on a range, CIDR block, or single address.
+      properties:
+        start:
+          type: string
+          format: ipv4
+          description: The starting IPv4 address for a directional range. Must be paired with `end`.
+          example: 1.1.1.1
+        end:
+          type: string
+          format: ipv4
+          description: The ending IPv4 address for a directional range. Must be paired with `start`.
+          example: 2.2.2.2
+        cidr:
+          type: string
+          description: IPv4 CIDR notation that represents the directional address range.
+          example: 192.0.2.0/24
+        address:
+          type: string
+          format: ipv4
+          description: A single IPv4 address that belongs to the directional group.
+          example: 4.3.2.1
+      additionalProperties: false
+      oneOf:
+        - required:
+            - start
+            - end
+          not:
+            anyOf:
+              - required:
+                  - cidr
+              - required:
+                  - address
+        - required:
+            - cidr
+          not:
+            anyOf:
+              - required:
+                  - start
+              - required:
+                  - end
+              - required:
+                  - address
+        - required:
+            - address
+          not:
+            anyOf:
+              - required:
+                  - start
+              - required:
+                  - end
+              - required:
+                  - cidr
     EmailNotification:
       type: object
       description: The EmailNotification DTO represents email notification settings for the account
@@ -5241,3 +6037,11 @@ components:
           - SECURITY_PREFERENCES
           - sslCertPreferences
       description: The name of the account setting to configure
+    DirGroupName:
+      name: name
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Name of the directional group to retrieve.
+      example: accountGeoGroup

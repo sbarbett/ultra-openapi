@@ -1,0 +1,262 @@
+parameters:
+  - $ref: '../components/parameters/AccountName.yaml'
+  - $ref: '../components/parameters/DirGroupName.yaml'
+
+get:
+  tags:
+    - Directional
+  summary: Get Account-Level SourceIP Directional Group
+  description: Retrieve a single account-level SourceIP directional group by name for the specified account.
+  operationId: getAccountSourceIpDirectionalGroup
+  responses:
+    '200':
+      description: Account-level SourceIP directional group returned successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/AccountLevelSourceIpGroup.yaml'
+          examples:
+            Default:
+              summary: Account-level SourceIP group
+              value:
+                name: accountIPGroup
+                description: Another sample
+                ips:
+                  - start: 1.1.1.1
+                    end: 2.2.2.2
+                  - address: 4.3.2.1
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+
+post:
+  tags:
+    - Directional
+  summary: Create Account-Level SourceIP Directional Group
+  description: Create a new account-level SourceIP directional group for the specified account.
+  operationId: createAccountSourceIpDirectionalGroup
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/AccountLevelSourceIpGroup.yaml'
+        examples:
+          Default:
+            summary: Account-level SourceIP group create payload
+            value:
+              name: accountIPGroup
+              description: Another sample
+              ips:
+                - start: 1.1.1.1
+                  end: 2.2.2.2
+                - address: 4.3.2.1
+  responses:
+    '201':
+      $ref: '../components/responses/CreatedGeneric.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+
+put:
+  tags:
+    - Directional
+  summary: Update Account-Level SourceIP Directional Group
+  description: Update an existing account-level SourceIP directional group. Returns a success message when the update finishes immediately or a task identifier when processed asynchronously.
+  operationId: updateAccountSourceIpDirectionalGroup
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/AccountLevelSourceIpGroup.yaml'
+        examples:
+          Default:
+            summary: Account-level SourceIP group update payload
+            value:
+              name: accountIPGroup
+              description: Another sample
+              ips:
+                - start: 1.1.1.1
+                  end: 2.2.2.2
+                - address: 4.3.2.1
+  responses:
+    '200':
+      description: Account-level SourceIP directional group updated successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Successful
+          examples:
+            Successful:
+              value:
+                message: Successful
+    '202':
+      description: Update accepted and scheduled for asynchronous processing
+      headers:
+        X-Task-Id:
+          description: Task ID for tracking the update progress
+          schema:
+            type: string
+            example: task-12345
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Pending
+          examples:
+            Pending:
+              value:
+                message: Pending
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+
+patch:
+  tags:
+    - Directional
+  summary: Partially Update Account-Level SourceIP Directional Group
+  description: |
+    Apply a partial update to an existing account-level SourceIP directional group. Submit either a partial group payload (`application/json`) or JSON Patch operations (`application/json-patch+json`). Returns a success message when the update finishes immediately or a task identifier when processed asynchronously.
+  operationId: patchAccountSourceIpDirectionalGroup
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/AccountLevelSourceIpGroup.yaml'
+        examples:
+          Default:
+            summary: Account-level SourceIP group patch payload
+            value:
+              name: accountIPGroup
+              description: Updated description
+              ips:
+                - start: 1.1.1.1
+                  end: 2.2.2.2
+                - address: 4.3.2.1
+      application/json-patch+json:
+        description: JSON Patch operations formatted per RFC 6902 to update SourceIP entries.
+        schema:
+          type: array
+          items:
+            $ref: '../components/schemas/JSONPatch.yaml'
+        examples:
+          Bulk Remove And Add SourceIP Entries:
+            summary: Remove existing CIDR entries and add replacements using JSON Patch
+            value:
+              - op: remove
+                path: "/ips/4.4.4.4%2F32"
+              - op: remove
+                path: "/ips/2.2.2.2%2F32"
+              - op: add
+                path: "/ips/-"
+                value:
+                  cidr: 2.2.2.2/32
+              - op: add
+                path: "/ips/-"
+                value:
+                  cidr: 4.4.4.4/32
+  responses:
+    '200':
+      description: Account-level SourceIP directional group updated successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Successful
+          examples:
+            Successful:
+              value:
+                message: Successful
+    '202':
+      description: Update accepted and scheduled for asynchronous processing
+      headers:
+        X-Task-Id:
+          description: Task ID for tracking the update progress
+          schema:
+            type: string
+            example: task-12345
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Pending
+          examples:
+            Pending:
+              value:
+                message: Pending
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+
+delete:
+  tags:
+    - Directional
+  summary: Delete Account-Level SourceIP Directional Group
+  description: Delete an existing account-level SourceIP directional group. Returns immediately when the delete completes or a task identifier when processed asynchronously.
+  operationId: deleteAccountSourceIpDirectionalGroup
+  responses:
+    '202':
+      description: Delete accepted and scheduled for asynchronous processing
+      headers:
+        X-Task-Id:
+          description: Task ID for tracking the delete progress
+          schema:
+            type: string
+            example: task-12345
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Pending
+          examples:
+            Pending:
+              value:
+                message: Pending
+    '204':
+      description: SourceIP directional group deleted successfully
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
