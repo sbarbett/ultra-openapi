@@ -1,0 +1,22 @@
+type: object
+description: Account-level GeoIP grouping configuration and associated location codes
+properties:
+  name:
+    type: string
+    description: The name of the GeoIP group; required when returned in responses and ignored on create or update where it is part of the URI.
+    example: accountGeoGroup
+  description:
+    type: string
+    description: Optional description that clarifies the purpose of the GeoIP group.
+    example: A sample group
+  codes:
+    type: array
+    description: The GeoIP location codes included in this group.
+    items:
+      type: string
+    example:
+      - Z6
+      - RU
+required:
+  - name
+  - codes

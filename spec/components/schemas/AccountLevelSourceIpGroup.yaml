@@ -1,0 +1,27 @@
+type: object
+description: Account-level source IP grouping configuration and associated IPv4 entries for directional DNS.
+properties:
+  name:
+    type: string
+    description: The name of the SourceIP group; required in responses and ignored on create or update where it is specified in the URI.
+    example: accountIPGroup
+  description:
+    type: string
+    description: Optional description that clarifies the purpose of the SourceIP group.
+    example: Another sample
+  ips:
+    type: array
+    description: Collection of IPv4 entries that this SourceIP group evaluates.
+    items:
+      $ref: ./DirectionalSourceIp.yaml
+    minItems: 1
+required:
+  - name
+  - ips
+example:
+  name: accountIPGroup
+  description: Another sample
+  ips:
+    - start: 1.1.1.1
+      end: 2.2.2.2
+    - address: 4.3.2.1

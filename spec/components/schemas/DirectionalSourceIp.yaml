@@ -1,0 +1,53 @@
+type: object
+description: Defines an IPv4 source entry for directional DNS based on a range, CIDR block, or single address.
+properties:
+  start:
+    type: string
+    format: ipv4
+    description: The starting IPv4 address for a directional range. Must be paired with `end`.
+    example: 1.1.1.1
+  end:
+    type: string
+    format: ipv4
+    description: The ending IPv4 address for a directional range. Must be paired with `start`.
+    example: 2.2.2.2
+  cidr:
+    type: string
+    description: IPv4 CIDR notation that represents the directional address range.
+    example: 192.0.2.0/24
+  address:
+    type: string
+    format: ipv4
+    description: A single IPv4 address that belongs to the directional group.
+    example: 4.3.2.1
+additionalProperties: false
+oneOf:
+  - required:
+      - start
+      - end
+    not:
+      anyOf:
+        - required:
+            - cidr
+        - required:
+            - address
+  - required:
+      - cidr
+    not:
+      anyOf:
+        - required:
+            - start
+        - required:
+            - end
+        - required:
+            - address
+  - required:
+      - address
+    not:
+      anyOf:
+        - required:
+            - start
+        - required:
+            - end
+        - required:
+            - cidr

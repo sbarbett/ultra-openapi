@@ -1,0 +1,44 @@
+type: object
+description: |
+  Returned when listing account-level SourceIP directional groups. Not used for creating or updating groups.
+properties:
+  accountName:
+    type: string
+    description: Account name that owns the SourceIP groups.
+    example: myAccount
+  ipGroups:
+    type: array
+    description: Collection of SourceIP groups that matched the list query.
+    items:
+      $ref: ./AccountLevelSourceIpGroup.yaml
+    minItems: 0
+  queryInfo:
+    $ref: ./QueryInfo.yaml
+  resultInfo:
+    $ref: ./ResultInfo.yaml
+required:
+  - accountName
+  - ipGroups
+  - queryInfo
+  - resultInfo
+example:
+  accountName: myAccount
+  ipGroups:
+    - name: accountIPGroup
+      description: Another sample
+      ips:
+        - start: 1.1.1.1
+          end: 2.2.2.2
+        - address: 4.3.2.1
+    - name: accountIPGroup2
+      ips:
+        - cidr: 10.10.10.10/30
+  queryInfo:
+    q: ""
+    sort: name
+    reverse: false
+    limit: 100
+  resultInfo:
+    totalCount: 2
+    offset: 0
+    returnedCount: 2

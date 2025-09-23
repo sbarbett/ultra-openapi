@@ -1,0 +1,44 @@
+type: object
+description: |
+  Returned when listing account-level GeoIP directional groups. Not used for creating or updating groups.
+properties:
+  accountName:
+    type: string
+    description: Account name that owns the GeoIP groups.
+    example: myAccount
+  geoGroups:
+    type: array
+    description: Collection of GeoIP groups that matched the list query.
+    items:
+      $ref: ./AccountLevelGeoIpGroup.yaml
+    minItems: 0
+  queryInfo:
+    $ref: ./QueryInfo.yaml
+  resultInfo:
+    $ref: ./ResultInfo.yaml
+required:
+  - accountName
+  - geoGroups
+  - queryInfo
+  - resultInfo
+example:
+  accountName: myAccount
+  geoGroups:
+    - name: accountGeoGroup
+      description: geo sample
+      codes:
+        - FR
+        - GB
+        - RU
+    - name: accountGeoGroup2
+      codes:
+        - US-NY
+  queryInfo:
+    q: ""
+    sort: name
+    reverse: false
+    limit: 100
+  resultInfo:
+    totalCount: 2
+    offset: 0
+    returnedCount: 2
