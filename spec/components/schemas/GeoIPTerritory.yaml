@@ -1,0 +1,24 @@
+type: object
+description: Details for a GeoIP territory including name, code, type, and numeric identifier.
+properties:
+  name:
+    type: string
+    description: Human-readable name of the territory.
+    example: Antarctica
+  code:
+    type: string
+    description: GeoIP code assigned to the territory.
+    example: ANT
+  type:
+    type: string
+    description: Classification of the territory. Values include `Territory`, `Region`, `Country`, and `State`.
+    example: Region
+  id:
+    type: integer
+    description: Internal numeric identifier for the territory.
+    example: 333
+required:
+  - name
+  - code
+  - type
+  - id

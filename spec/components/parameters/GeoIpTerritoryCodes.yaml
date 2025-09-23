@@ -1,0 +1,10 @@
+description: Comma-separated list of GeoIP territory codes to retrieve.
+name: codes
+in: query
+schema:
+  type: string
+  description: |
+    Provide one or more GeoIP territory identifiers separated by commas. Use an empty string to return
+    top-level territories (continents only). A territory identifier can be a continent code (e.g., `NAM`) or a
+    combination of continent and ISO-3166 country code separated by a dash (e.g., `NAM-MX`).
+  example: "ANT,EUR-AD"

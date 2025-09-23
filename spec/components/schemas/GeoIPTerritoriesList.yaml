@@ -1,0 +1,18 @@
+type: array
+description: |
+  Array of GeoIP territory result sets. Each item corresponds to the list of territories returned for
+  a code supplied in the `codes` query parameter. When a single code (including an empty string) is
+  provided, the response contains a single array of territories.
+items:
+  type: array
+  items:
+    $ref: './GeoIPTerritory.yaml'
+example:
+  - - name: "North America"
+      code: "NAM"
+      type: "Region"
+      id: 338
+    - name: "South America"
+      code: "SAM"
+      type: "Region"
+      id: 337

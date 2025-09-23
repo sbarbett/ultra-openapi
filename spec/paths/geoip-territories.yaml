@@ -1,0 +1,121 @@
+get:
+  tags:
+    - Directional
+  summary: List GeoIP Territories
+  description: |
+    Retrieve GeoIP territories for the supplied `codes` query parameter. Each comma-separated entry in
+    `codes` returns a corresponding list of territories. Provide an empty string to receive only
+    top-level territories (continents) and special classifications.
+    
+    **GeoIP code guidance:**
+    - Continents and countries follow ISO-3166 (alpha-2) standards; U.S. and Canadian subdivisions align with ISO-3166-2:US and ISO-3166-2:CA.
+    - Directional pools resolve using the most specific match first (state or province, then country, then continent).
+    - Territory names are localized where applicable (for example, Italy's Tuscany appears as `Toscana`).
+    - The API also accepts supplemental codes (for example, `A1` Anonymous Proxy or `NAM` North America) for regions that do not map directly to ISO entries.
+  operationId: listGeoIpTerritories
+  parameters:
+    - $ref: '../components/parameters/GeoIpTerritoryCodes.yaml'
+  responses:
+    '200':
+      description: GeoIP territories returned successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/GeoIPTerritoriesList.yaml'
+          examples:
+            Empty String Codes:
+              summary: Return top-level territories with an empty string
+              value:
+                - - name: "Anonymous Proxy"
+                    code: "A1"
+                    type: "Country"
+                    id: 315
+                  - name: "Satellite Provider"
+                    code: "A2"
+                    type: "Country"
+                    id: 316
+                  - name: "Unknown / Uncategorized IPs"
+                    code: "A3"
+                    type: "Country"
+                    id: 331
+                  - name: "North America"
+                    code: "NAM"
+                    type: "Region"
+                    id: 338
+                  - name: "South America"
+                    code: "SAM"
+                    type: "Region"
+                    id: 337
+                  - name: "Europe"
+                    code: "EUR"
+                    type: "Region"
+                    id: 336
+                  - name: "Africa"
+                    code: "AFR"
+                    type: "Region"
+                    id: 332
+                  - name: "Asia"
+                    code: "ASI"
+                    type: "Region"
+                    id: 334
+                  - name: "Australia / Oceania"
+                    code: "OCN"
+                    type: "Region"
+                    id: 335
+                  - name: "Antarctica"
+                    code: "ANT"
+                    type: "Region"
+                    id: 333
+            Multiple Codes:
+              summary: Return territories for multiple codes
+              value:
+                - - name: "Antarctica"
+                    code: "AQ"
+                    type: "Country"
+                    id: 330
+                  - name: "Bouvet Island"
+                    code: "BV"
+                    type: "Country"
+                    id: 297
+                  - name: "French Southern Territories"
+                    code: "TF"
+                    type: "Country"
+                    id: 298
+                - - name: "Andorra La Vella"
+                    code: "07"
+                    type: "State"
+                    id: 351
+                  - name: "Canillo"
+                    code: "02"
+                    type: "State"
+                    id: 346
+                  - name: "Encamp"
+                    code: "03"
+                    type: "State"
+                    id: 347
+                  - name: "Escaldes-Engordany"
+                    code: "08"
+                    type: "State"
+                    id: 352
+                  - name: "La Massana"
+                    code: "04"
+                    type: "State"
+                    id: 348
+                  - name: "Ordino"
+                    code: "05"
+                    type: "State"
+                    id: 349
+                  - name: "Sant Julia De Loria"
+                    code: "06"
+                    type: "State"
+                    id: 350
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

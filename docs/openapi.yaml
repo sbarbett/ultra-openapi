@@ -2174,6 +2174,101 @@ paths:
                     '@context': http://schemas.ultradns.com/RDPool.jsonschema
                     order: ROUND_ROBIN
                     description: IPv6 RD Pool for load balancing
+              Directional Pool with GeoIP:
+                summary: Create a Directional Pool using GeoIP groups
+                description: |
+                  Configure a Directional pool so that the first record responds to traffic from Asia or Africa
+                  while the second record targets the Antarctica code using an existing pool-level GeoIP group.
+                value:
+                  rdata:
+                    - txt1
+                    - txt2
+                  profile:
+                    '@context': http://schemas.ultradns.com/DirPool.jsonschema
+                    rdataInfo:
+                      - geoInfo:
+                          name: gr1
+                          codes:
+                            - ASI
+                            - AFR
+                      - geoInfo:
+                          name: gr1
+                          isExistingGroupFromPool: true
+                          codes:
+                            - ANT
+              Directional Pool with ignoreECS:
+                summary: Create a Directional Pool with ECS disabled
+                description: |
+                  Demonstrates how to disable EDNS Client Subnet processing for the pool while reusing
+                  the same GeoIP group for a secondary record.
+                value:
+                  rdata:
+                    - txt1
+                    - txt2
+                  profile:
+                    '@context': http://schemas.ultradns.com/DirPool.jsonschema
+                    ignoreECS: true
+                    rdataInfo:
+                      - geoInfo:
+                          name: gr1
+                          codes:
+                            - ASI
+                            - AFR
+                      - geoInfo:
+                          name: gr1
+                          isExistingGroupFromPool: true
+                          codes:
+                            - ANT
+              Directional Pool with Global Group:
+                summary: Create a Directional Pool that reuses a global GeoIP group
+                description: |
+                  Adds a global directional group to multiple records. The first record covers users not
+                  explicitly configured while the remaining records reuse the same account-level GeoIP group.
+                value:
+                  rdata:
+                    - 1 11 12 target1.com
+                    - 2 2 2 target2.com
+                    - 3 2 2 target3.com
+                  profile:
+                    '@context': http://schemas.ultradns.com/DirPool.jsonschema
+                    description: srv
+                    rdataInfo:
+                      - allNonConfigured: true
+                        ttl: 86400
+                        type: SRV
+                      - geoInfo:
+                          name: groupName
+                          isAccountLevel: true
+                        ttl: 86400
+                        type: SRV
+                      - geoInfo:
+                          name: groupName
+                          isAccountLevel: true
+                          isExistingGroupFromPool: true
+                        ttl: 86400
+                        type: SRV
+              Directional Pool with GeoIP and Source IP:
+                summary: Create a Directional Pool combining GeoIP and Source IP filters
+                description: |
+                  Shows how to target traffic that matches both a GeoIP region and a Source IP range while
+                  providing an all non-configured fallback record.
+                value:
+                  rdata:
+                    - 1.1.1.1
+                    - 2.2.2.2
+                  profile:
+                    '@context': http://schemas.ultradns.com/DirPool.jsonschema
+                    rdataInfo:
+                      - allNonConfigured: true
+                      - geoInfo:
+                          name: br
+                          codes:
+                            - BR
+                        ipInfo:
+                          name: some Ips
+                          ips:
+                            - start: 200.20.0.1
+                              end: 200.20.0.10
       responses:
         '201':
           $ref: '#/components/responses/CreatedGeneric'
@@ -2264,6 +2359,51 @@ paths:
                     '@context': http://schemas.ultradns.com/RDPool.jsonschema
                     order: ROUND_ROBIN
                     description: www
+              Update Directional Pool with GeoIP:
+                summary: Update a Directional Pool with multiple GeoIP groups
+                description: |
+                  Replaces the directional pool configuration to serve different responses based on
+                  GeoIP groups. Records omitted from `rdata` will be deleted as part of the update.
+                value:
+                  rdata:
+                    - txt1
+                    - txt2
+                  profile:
+                    '@context': http://schemas.ultradns.com/DirPool.jsonschema
+                    rdataInfo:
+                      - geoInfo:
+                          name: gr1
+                          codes:
+                            - ASI
+                            - AFR
+                      - geoInfo:
+                          name: gr2
+                          codes:
+                            - ANT
+                            - EUR
+              Update Directional Pool with ignoreECS:
+                summary: Update a Directional Pool while enabling ignoreECS
+                description: |
+                  Shows how to enable the `ignoreECS` flag during a full directional pool update,
+                  replacing all existing directional records and GeoIP assignments.
+                value:
+                  rdata:
+                    - txt1
+                    - txt2
+                  profile:
+                    '@context': http://schemas.ultradns.com/DirPool.jsonschema
+                    ignoreECS: true
+                    rdataInfo:
+                      - geoInfo:
+                          name: gr1
+                          codes:
+                            - ASI
+                            - AFR
+                      - geoInfo:
+                          name: gr2
+                          codes:
+                            - ANT
+                            - EUR
       responses:
         '200':
           description: RRSet updated successfully
@@ -2371,6 +2511,43 @@ paths:
                     '@context': http://schemas.ultradns.com/RDPool.jsonschema
                     order: ROUND_ROBIN
                     description: www
+              Partial Update Directional Pool with GeoIP:
+                summary: Update a Directional Pool with GeoIP force overlap enabled
+                description: |
+                  Adjust the GeoIP coverage within a directional pool and enable `forceOverlap` so any
+                  overlapping codes move from other records to this one during the update.
+                value:
+                  rdata:
+                    - txt2
+                  profile:
+                    '@context': http://schemas.ultradns.com/DirPool.jsonschema
+                    rdataInfo:
+                      - geoInfo:
+                          name: gr2
+                          codes:
+                            - ANT
+                            - EUR
+                            - ASI
+                          forceOverlap: true
+              Partial Update Directional Pool with ignoreECS:
+                summary: Update a Directional Pool to toggle ECS handling
+                description: |
+                  Demonstrates a directional pool partial update that flips the `ignoreECS` flag while
+                  redefining GeoIP codes with force overlap enabled for the targeted record.
+                value:
+                  rdata:
+                    - txt2
+                  profile:
+                    '@context': http://schemas.ultradns.com/DirPool.jsonschema
+                    ignoreECS: false
+                    rdataInfo:
+                      - geoInfo:
+                          name: gr2
+                          codes:
+                            - ANT
+                            - EUR
+                            - ASI
+                          forceOverlap: true
           application/json-patch+json:
             description: |
               JSON PATCH request using RFC 6902 compliant JSON Patch DTOs. Use this for complex partial updates with multiple operations.
@@ -3827,6 +4004,128 @@ paths:
           $ref: '#/components/responses/Error404'
         5XX:
           $ref: '#/components/responses/Error5xx'
+  /geoip/territories:
+    get:
+      tags:
+        - Directional
+      summary: List GeoIP Territories
+      description: |
+        Retrieve GeoIP territories for the supplied `codes` query parameter. Each comma-separated entry in
+        `codes` returns a corresponding list of territories. Provide an empty string to receive only
+        top-level territories (continents) and special classifications.
+
+        **GeoIP code guidance:**
+        - Continents and countries follow ISO-3166 (alpha-2) standards; U.S. and Canadian subdivisions align with ISO-3166-2:US and ISO-3166-2:CA.
+        - Directional pools resolve using the most specific match first (state or province, then country, then continent).
+        - Territory names are localized where applicable (for example, Italy's Tuscany appears as `Toscana`).
+        - The API also accepts supplemental codes (for example, `A1` Anonymous Proxy or `NAM` North America) for regions that do not map directly to ISO entries.
+      operationId: listGeoIpTerritories
+      parameters:
+        - $ref: '#/components/parameters/GeoIpTerritoryCodes'
+      responses:
+        '200':
+          description: GeoIP territories returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeoIPTerritoriesList'
+              examples:
+                Empty String Codes:
+                  summary: Return top-level territories with an empty string
+                  value:
+                    - - name: Anonymous Proxy
+                        code: A1
+                        type: Country
+                        id: 315
+                      - name: Satellite Provider
+                        code: A2
+                        type: Country
+                        id: 316
+                      - name: Unknown / Uncategorized IPs
+                        code: A3
+                        type: Country
+                        id: 331
+                      - name: North America
+                        code: NAM
+                        type: Region
+                        id: 338
+                      - name: South America
+                        code: SAM
+                        type: Region
+                        id: 337
+                      - name: Europe
+                        code: EUR
+                        type: Region
+                        id: 336
+                      - name: Africa
+                        code: AFR
+                        type: Region
+                        id: 332
+                      - name: Asia
+                        code: ASI
+                        type: Region
+                        id: 334
+                      - name: Australia / Oceania
+                        code: OCN
+                        type: Region
+                        id: 335
+                      - name: Antarctica
+                        code: ANT
+                        type: Region
+                        id: 333
+                Multiple Codes:
+                  summary: Return territories for multiple codes
+                  value:
+                    - - name: Antarctica
+                        code: AQ
+                        type: Country
+                        id: 330
+                      - name: Bouvet Island
+                        code: BV
+                        type: Country
+                        id: 297
+                      - name: French Southern Territories
+                        code: TF
+                        type: Country
+                        id: 298
+                    - - name: Andorra La Vella
+                        code: '07'
+                        type: State
+                        id: 351
+                      - name: Canillo
+                        code: '02'
+                        type: State
+                        id: 346
+                      - name: Encamp
+                        code: '03'
+                        type: State
+                        id: 347
+                      - name: Escaldes-Engordany
+                        code: '08'
+                        type: State
+                        id: 352
+                      - name: La Massana
+                        code: '04'
+                        type: State
+                        id: 348
+                      - name: Ordino
+                        code: '05'
+                        type: State
+                        id: 349
+                      - name: Sant Julia De Loria
+                        code: '06'
+                        type: State
+                        id: 350
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
 components:
   securitySchemes:
     oauth2:
@@ -5138,6 +5437,50 @@ components:
                   - end
               - required:
                   - cidr
+    GeoIPTerritory:
+      type: object
+      description: Details for a GeoIP territory including name, code, type, and numeric identifier.
+      properties:
+        name:
+          type: string
+          description: Human-readable name of the territory.
+          example: Antarctica
+        code:
+          type: string
+          description: GeoIP code assigned to the territory.
+          example: ANT
+        type:
+          type: string
+          description: Classification of the territory. Values include `Territory`, `Region`, `Country`, and `State`.
+          example: Region
+        id:
+          type: integer
+          description: Internal numeric identifier for the territory.
+          example: 333
+      required:
+        - name
+        - code
+        - type
+        - id
+    GeoIPTerritoriesList:
+      type: array
+      description: |
+        Array of GeoIP territory result sets. Each item corresponds to the list of territories returned for
+        a code supplied in the `codes` query parameter. When a single code (including an empty string) is
+        provided, the response contains a single array of territories.
+      items:
+        type: array
+        items:
+          $ref: '#/components/schemas/GeoIPTerritory'
+      example:
+        - - name: North America
+            code: NAM
+            type: Region
+            id: 338
+          - name: South America
+            code: SAM
+            type: Region
+            id: 337
     EmailNotification:
       type: object
       description: The EmailNotification DTO represents email notification settings for the account
@@ -6088,3 +6431,14 @@ components:
         type: string
       description: Name of the directional group to retrieve.
       example: accountGeoGroup
+    GeoIpTerritoryCodes:
+      description: Comma-separated list of GeoIP territory codes to retrieve.
+      name: codes
+      in: query
+      schema:
+        type: string
+        description: |
+          Provide one or more GeoIP territory identifiers separated by commas. Use an empty string to return
+          top-level territories (continents only). A territory identifier can be a continent code (e.g., `NAM`) or a
+          combination of continent and ISO-3166 country code separated by a dash (e.g., `NAM-MX`).
+        example: ANT,EUR-AD

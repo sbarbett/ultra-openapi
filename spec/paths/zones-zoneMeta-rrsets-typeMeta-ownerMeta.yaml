@@ -345,6 +345,101 @@ post:
                 "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
                 order: "ROUND_ROBIN"
                 description: "IPv6 RD Pool for load balancing"
+          Directional Pool with GeoIP:
+            summary: Create a Directional Pool using GeoIP groups
+            description: |
+              Configure a Directional pool so that the first record responds to traffic from Asia or Africa
+              while the second record targets the Antarctica code using an existing pool-level GeoIP group.
+            value:
+              rdata:
+                - "txt1"
+                - "txt2"
+              profile:
+                "@context": "http://schemas.ultradns.com/DirPool.jsonschema"
+                rdataInfo:
+                  - geoInfo:
+                      name: "gr1"
+                      codes:
+                        - "ASI"
+                        - "AFR"
+                  - geoInfo:
+                      name: "gr1"
+                      isExistingGroupFromPool: true
+                      codes:
+                        - "ANT"
+          Directional Pool with ignoreECS:
+            summary: Create a Directional Pool with ECS disabled
+            description: |
+              Demonstrates how to disable EDNS Client Subnet processing for the pool while reusing
+              the same GeoIP group for a secondary record.
+            value:
+              rdata:
+                - "txt1"
+                - "txt2"
+              profile:
+                "@context": "http://schemas.ultradns.com/DirPool.jsonschema"
+                ignoreECS: true
+                rdataInfo:
+                  - geoInfo:
+                      name: "gr1"
+                      codes:
+                        - "ASI"
+                        - "AFR"
+                  - geoInfo:
+                      name: "gr1"
+                      isExistingGroupFromPool: true
+                      codes:
+                        - "ANT"
+          Directional Pool with Global Group:
+            summary: Create a Directional Pool that reuses a global GeoIP group
+            description: |
+              Adds a global directional group to multiple records. The first record covers users not
+              explicitly configured while the remaining records reuse the same account-level GeoIP group.
+            value:
+              rdata:
+                - "1 11 12 target1.com"
+                - "2 2 2 target2.com"
+                - "3 2 2 target3.com"
+              profile:
+                "@context": "http://schemas.ultradns.com/DirPool.jsonschema"
+                description: "srv"
+                rdataInfo:
+                  - allNonConfigured: true
+                    ttl: 86400
+                    type: "SRV"
+                  - geoInfo:
+                      name: "groupName"
+                      isAccountLevel: true
+                    ttl: 86400
+                    type: "SRV"
+                  - geoInfo:
+                      name: "groupName"
+                      isAccountLevel: true
+                      isExistingGroupFromPool: true
+                    ttl: 86400
+                    type: "SRV"
+          Directional Pool with GeoIP and Source IP:
+            summary: Create a Directional Pool combining GeoIP and Source IP filters
+            description: |
+              Shows how to target traffic that matches both a GeoIP region and a Source IP range while
+              providing an all non-configured fallback record.
+            value:
+              rdata:
+                - "1.1.1.1"
+                - "2.2.2.2"
+              profile:
+                "@context": "http://schemas.ultradns.com/DirPool.jsonschema"
+                rdataInfo:
+                  - allNonConfigured: true
+                  - geoInfo:
+                      name: "br"
+                      codes:
+                        - "BR"
+                    ipInfo:
+                      name: "some Ips"
+                      ips:
+                        - start: "200.20.0.1"
+                          end: "200.20.0.10"
   responses:
     '201':
       $ref: '../components/responses/CreatedGeneric.yaml'
@@ -436,6 +531,51 @@ put:
                 "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
                 order: "ROUND_ROBIN"
                 description: "www"
+          Update Directional Pool with GeoIP:
+            summary: Update a Directional Pool with multiple GeoIP groups
+            description: |
+              Replaces the directional pool configuration to serve different responses based on
+              GeoIP groups. Records omitted from `rdata` will be deleted as part of the update.
+            value:
+              rdata:
+                - "txt1"
+                - "txt2"
+              profile:
+                "@context": "http://schemas.ultradns.com/DirPool.jsonschema"
+                rdataInfo:
+                  - geoInfo:
+                      name: "gr1"
+                      codes:
+                        - "ASI"
+                        - "AFR"
+                  - geoInfo:
+                      name: "gr2"
+                      codes:
+                        - "ANT"
+                        - "EUR"
+          Update Directional Pool with ignoreECS:
+            summary: Update a Directional Pool while enabling ignoreECS
+            description: |
+              Shows how to enable the `ignoreECS` flag during a full directional pool update,
+              replacing all existing directional records and GeoIP assignments.
+            value:
+              rdata:
+                - "txt1"
+                - "txt2"
+              profile:
+                "@context": "http://schemas.ultradns.com/DirPool.jsonschema"
+                ignoreECS: true
+                rdataInfo:
+                  - geoInfo:
+                      name: "gr1"
+                      codes:
+                        - "ASI"
+                        - "AFR"
+                  - geoInfo:
+                      name: "gr2"
+                      codes:
+                        - "ANT"
+                        - "EUR"
   responses:
     '200':
       description: RRSet updated successfully
@@ -544,6 +684,43 @@ patch:
                 "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
                 order: "ROUND_ROBIN"
                 description: "www"
+          Partial Update Directional Pool with GeoIP:
+            summary: Update a Directional Pool with GeoIP force overlap enabled
+            description: |
+              Adjust the GeoIP coverage within a directional pool and enable `forceOverlap` so any
+              overlapping codes move from other records to this one during the update.
+            value:
+              rdata:
+                - "txt2"
+              profile:
+                "@context": "http://schemas.ultradns.com/DirPool.jsonschema"
+                rdataInfo:
+                  - geoInfo:
+                      name: "gr2"
+                      codes:
+                        - "ANT"
+                        - "EUR"
+                        - "ASI"
+                      forceOverlap: true
+          Partial Update Directional Pool with ignoreECS:
+            summary: Update a Directional Pool to toggle ECS handling
+            description: |
+              Demonstrates a directional pool partial update that flips the `ignoreECS` flag while
+              redefining GeoIP codes with force overlap enabled for the targeted record.
+            value:
+              rdata:
+                - "txt2"
+              profile:
+                "@context": "http://schemas.ultradns.com/DirPool.jsonschema"
+                ignoreECS: false
+                rdataInfo:
+                  - geoInfo:
+                      name: "gr2"
+                      codes:
+                        - "ANT"
+                        - "EUR"
+                        - "ASI"
+                      forceOverlap: true
       application/json-patch+json:
         description: |
           JSON PATCH request using RFC 6902 compliant JSON Patch DTOs. Use this for complex partial updates with multiple operations.

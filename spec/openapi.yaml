@@ -200,6 +200,8 @@ paths:
     $ref: './paths/accounts-accountMeta-dirgroups-ip.yaml'
   /accounts/{accountName}/dirgroups/ip/{name}:
     $ref: './paths/accounts-accountMeta-dirgroups-ip-nameMeta.yaml'
+  /geoip/territories:
+    $ref: './paths/geoip-territories.yaml'
 
 # Security schemes
 components:
@@ -271,6 +273,10 @@ components:
       $ref: './components/schemas/AccountLevelSourceIpGroupList.yaml'
     DirectionalSourceIp:
       $ref: './components/schemas/DirectionalSourceIp.yaml'
+    GeoIPTerritory:
+      $ref: './components/schemas/GeoIPTerritory.yaml'
+    GeoIPTerritoriesList:
+      $ref: './components/schemas/GeoIPTerritoriesList.yaml'
     EmailNotification:
       $ref: './components/schemas/EmailNotification.yaml'
     NotificationSetting:
