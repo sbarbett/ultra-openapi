@@ -2989,6 +2989,49 @@ paths:
           description: Account setting does not exist in the system
         5XX:
           $ref: '#/components/responses/Error5xx'
+    delete:
+      tags:
+        - Account Settings
+      summary: Delete Account Setting
+      description: |
+        Delete an existing account level setting. This permanently removes the configuration for the specified setting.
+
+        **Supported Setting Types for DELETE:**
+        - **ZONE_TRANSFER_NOTIFICATION**: Delete zone transfer notification settings
+        - **USAGE_NOTIFICATION**: Delete usage notification settings
+        - **ZONE_USAGE_NOTIFICATION**: Delete zone usage notification settings
+        - **PUSH_NOTIFICATIONS**: Delete push notification settings
+        - **SECURITY_PREFERENCES**: Delete security preferences settings
+        - **sslCertPreferences**: Delete SSL certificate preferences settings
+
+        **Important Notes:**
+        - This endpoint is **NOT supported** for the **SERVICE_NOTIFICATION** setting.
+        - **Security Preferences**: Cannot be deleted. To disable, set all Security Preferences DTO values to 0.
+        - Only Owners and Administrative users can delete account settings.
+        - This operation is permanent and cannot be undone.
+      operationId: deleteAccountSetting
+      parameters:
+        - $ref: '#/components/parameters/AccountName'
+        - $ref: '#/components/parameters/SettingName'
+      responses:
+        '204':
+          $ref: '#/components/responses/NoContentGeneric'
+          description: Account setting deleted successfully
+        '400':
+          $ref: '#/components/responses/Error400'
+          description: |
+            Bad Request - Request submitted for SERVICE_NOTIFICATION setting or Security Preferences cannot be deleted
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+          description: |
+            Forbidden - You do not have permission to delete account settings for the specified account, or you are not the Owner or Administrative user for the specified account
+        '404':
+          $ref: '#/components/responses/Error404'
+          description: Account setting does not exist in the system
+        5XX:
+          $ref: '#/components/responses/Error5xx'
   /accounts/{accountName}/settings/PUSH_NOTIFICATIONS/availableChannels:
     get:
       tags:
