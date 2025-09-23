@@ -1,0 +1,53 @@
+get:
+  tags:
+    - Directional
+  summary: List Account-Level GeoIP Directional Groups
+  description: |
+    Retrieve the account-level GeoIP directional groups configured for the specified account. Use query parameters to filter by group name, control pagination, and adjust ordering. The `sort` parameter supports the value `NAME` for alphabetical sorting.
+  operationId: listAccountGeoIpDirectionalGroups
+  parameters:
+    - $ref: '../components/parameters/AccountName.yaml'
+    - $ref: '../components/parameters/QueryParams.yaml'
+    - $ref: '../components/parameters/Offset.yaml'
+    - $ref: '../components/parameters/Limit.yaml'
+    - $ref: '../components/parameters/Sort.yaml'
+    - $ref: '../components/parameters/Reverse.yaml'
+  responses:
+    '200':
+      description: Account-level GeoIP directional groups returned successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/AccountLevelGeoIpGroupList.yaml'
+          examples:
+            Default:
+              summary: Account-level GeoIP groups list
+              value:
+                accountName: myAccount
+                geoGroups:
+                  - name: accountGeoGroup
+                    description: geo sample
+                    codes:
+                      - FR
+                      - GB
+                      - RU
+                  - name: accountGeoGroup2
+                    codes:
+                      - US-NY
+                queryInfo:
+                  q: ""
+                  sort: NAME
+                  reverse: false
+                  limit: 100
+                resultInfo:
+                  totalCount: 2
+                  offset: 0
+                  returnedCount: 2
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

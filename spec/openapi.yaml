@@ -302,6 +302,10 @@ tags:
       Manage account-level settings including notifications, security preferences, and push notifications.
       Configure various account settings such as zone transfer notifications, usage notifications, and webhook endpoints.
 
+  - name: Directional
+    description: >
+      Manage directional DNS configuration including GeoIP and SourceIP groups at the account level.
+
 # Global security
 security:
 - oauth2: []

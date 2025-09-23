@@ -1,0 +1,53 @@
+get:
+  tags:
+    - Directional
+  summary: List Account-Level SourceIP Directional Groups
+  description: |
+    Retrieve the account-level SourceIP directional groups configured for the specified account. Use query parameters to filter by group name, control pagination, and adjust ordering. The `sort` parameter supports the value `NAME` for alphabetical sorting.
+  operationId: listAccountSourceIpDirectionalGroups
+  parameters:
+    - $ref: '../components/parameters/AccountName.yaml'
+    - $ref: '../components/parameters/QueryParams.yaml'
+    - $ref: '../components/parameters/Offset.yaml'
+    - $ref: '../components/parameters/Limit.yaml'
+    - $ref: '../components/parameters/Sort.yaml'
+    - $ref: '../components/parameters/Reverse.yaml'
+  responses:
+    '200':
+      description: Account-level SourceIP directional groups returned successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/AccountLevelSourceIpGroupList.yaml'
+          examples:
+            Default:
+              summary: Account-level SourceIP groups list
+              value:
+                accountName: myAccount
+                ipGroups:
+                  - name: accountIPGroup
+                    description: Another sample
+                    ips:
+                      - start: 1.1.1.1
+                        end: 2.2.2.2
+                      - address: 4.3.2.1
+                  - name: accountIPGroup2
+                    ips:
+                      - cidr: 10.10.10.10/30
+                queryInfo:
+                  q: ""
+                  sort: NAME
+                  reverse: false
+                  limit: 100
+                resultInfo:
+                  totalCount: 2
+                  offset: 0
+                  returnedCount: 2
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
