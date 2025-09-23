@@ -180,6 +180,8 @@ paths:
     $ref: './paths/zones-zoneMeta-rrsets-typeMeta-ownerMeta.yaml'
 
   # Account Settings endpoints
+  /accounts/{accountName}/settings:
+    $ref: './paths/accounts-accountMeta-settings.yaml'
   /accounts/{accountName}/settings/{settingName}:
     $ref: './paths/accounts-accountMeta-settings-settingMeta.yaml'
   /accounts/{accountName}/settings/PUSH_NOTIFICATIONS/availableChannels:

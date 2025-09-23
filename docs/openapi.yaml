@@ -2513,6 +2513,41 @@ paths:
           $ref: '#/components/responses/Error404'
         5XX:
           $ref: '#/components/responses/Error5xx'
+  /accounts/{accountName}/settings:
+    get:
+      tags:
+        - Account Settings
+      summary: List Account Settings Catalog
+      description: |
+        Retrieve the catalog of supported account level settings for the specified account. Each item in the catalog includes the human-readable display name along with the URI for managing that setting.
+      operationId: listAccountSettingsCatalog
+      parameters:
+        - $ref: '#/components/parameters/AccountName'
+      responses:
+        '200':
+          description: Account settings catalog retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSettingsCatalogItemList'
+              examples:
+                Default:
+                  summary: Example account settings catalog response
+                  value:
+                    accountSettingsCatalogItems:
+                      - displayName: Zone Transfer Notifications
+                        uri: /accounts/example/settings/ZONE_TRANSFER_NOTIFICATION
+                      - displayName: Usage Notifications
+                        uri: /accounts/example/settings/USAGE_NOTIFICATION
+                      - displayName: Security Preferences
+                        uri: /accounts/example/settings/SECURITY_PREFERENCES
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+          description: Forbidden - You do not have permission to read account settings for the specified account
+        5XX:
+          $ref: '#/components/responses/Error5xx'
   /accounts/{accountName}/settings/{settingName}:
     post:
       tags:
