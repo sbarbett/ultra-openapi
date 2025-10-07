@@ -8,6 +8,9 @@ description: |
   
   If an RRSet is associated with an UltraDNS pool, the "profile" field is present and contains pool specific attributes.
   
+  For Service Binding (SVCB/HTTPS) records, the optional "serviceBinding" field exposes a structured view of
+  SvcPriority, TargetName, and ordered SvcParams in addition to the traditional BIND formatted rdata strings.
+  
   The RRSet DTO is used in the List (GET), Create (POST), and Update (PATCH) RRSets API calls. When a user is submitting an RRSet DTO to the server, the owner name and rrtype are not required, because they are specified by the URI. If present, they will be ignored.
 properties:
   ownerName:
@@ -93,6 +96,8 @@ properties:
       - false
   profile:
     $ref: './RRSetProfile.yaml'
+  serviceBinding:
+    $ref: './ServiceBinding.yaml'
 
 examples:
   a_record:
@@ -180,3 +185,37 @@ examples:
         "@context": "http://schemas.ultradns.com/RDPool.jsonschema"
         order: "RANDOM"
         description: "IPv6 load balancing pool"
+  
+  svcb_alias_record:
+    summary: SVCB Record in Alias Mode
+    description: Example of an SVCB record that aliases the owner name to another service endpoint.
+    value:
+      ownerName: "svc.example.com."
+      rrtype: "SVCB (64)"
+      ttl: 300
+      rdata:
+        - "0 target.example.com."
+      serviceBinding:
+        svcPriority: 0
+        targetName: "target.example.com."
+        svcParams: []
+  
+  https_service_record:
+    summary: HTTPS Record in Service Mode
+    description: Example of an HTTPS record that provides alternative endpoints and protocol hints.
+    value:
+      ownerName: "www.example.com."
+      rrtype: "HTTPS (65)"
+      ttl: 300
+      rdata:
+        - "1 . alpn=h3,h3-29,h2 ipv4hint=104.16.132.229,104.16.33.229 ipv6hint=2606:4700::6810:84e5,2606:4700::6810:85e5"
+      serviceBinding:
+        svcPriority: 1
+        targetName: "."
+        svcParams:
+          - name: "alpn"
+            value: "h3,h3-29,h2"
+          - name: "ipv4hint"
+            value: "104.16.132.229,104.16.33.229"
+          - name: "ipv6hint"
+            value: "2606:4700::6810:84e5,2606:4700::6810:85e5"

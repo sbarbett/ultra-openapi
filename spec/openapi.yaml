@@ -235,6 +235,10 @@ components:
       $ref: './components/schemas/RRSet.yaml'
     RRSetsList:
       $ref: './components/schemas/RRSetsList.yaml'
+    ServiceBinding:
+      $ref: './components/schemas/ServiceBinding.yaml'
+    ServiceBindingParams:
+      $ref: './components/schemas/ServiceBindingParams.yaml'
     TokenResponse:
       $ref: './components/schemas/TokenResponse.yaml'
     ErrorGeneric:

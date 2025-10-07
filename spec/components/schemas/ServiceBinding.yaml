@@ -1,0 +1,31 @@
+type: object
+description: |
+  Structured Service Binding (SVCB and HTTPS) DTO that complements the RRSet payload. Use this
+  object to provide or inspect the SvcPriority, TargetName, and ordered SvcParams associated with
+  Service Binding records.
+properties:
+  svcPriority:
+    type: integer
+    minimum: 0
+    maximum: 65535
+    description: |
+      Priority of the Service Binding record. A value of 0 places the record in Alias mode (alias to
+      another name). Non-zero values indicate Service mode and must be greater than 0.
+    example: 1
+  targetName:
+    type: string
+    description: |
+      Fully qualified domain name of the alias target (Alias mode) or service endpoint (Service mode).
+      A single period (".") denotes the owner name (null target).
+    example: "svc1.example.net."
+  svcParams:
+    type: array
+    description: |
+      Ordered list of Service Binding parameters. Parameters are optional in Alias mode and required
+      when operating in Service mode. Each parameter appears once and must follow the numeric SvcParam
+      ordering rules from RFC 9460.
+    items:
+      $ref: './ServiceBindingParams.yaml'
+required:
+  - svcPriority
+  - targetName

@@ -1,0 +1,33 @@
+type: object
+description: |
+  Represents a single Service Binding parameter (SvcParam) for SVCB (64) and HTTPS (65) records.
+  Each parameter captures a supported key and the value supplied for that key in the order it
+  appears on the wire.
+properties:
+  name:
+    type: string
+    description: |
+      Name of the Service Binding parameter. Keys must be unique within the list and appear in
+      strictly increasing order according to their numeric SvcParamKey.
+    anyOf:
+      - enum:
+          - mandatory
+          - alpn
+          - no-default-alpn
+          - port
+          - ipv4hint
+          - ipv6hint
+          - ech
+          - dohpath
+      - pattern: '^key[0-9]{4}$'
+    example: "alpn"
+  value:
+    type: string
+    description: |
+      Value assigned to the Service Binding parameter. Values are formatted exactly as they appear
+      in BIND presentation, for example comma-separated protocol identifiers or IP hints. Clients
+      must interpret the value according to the parameter name.
+    example: "h3,h3-29,h2"
+required:
+  - name
+  - value
