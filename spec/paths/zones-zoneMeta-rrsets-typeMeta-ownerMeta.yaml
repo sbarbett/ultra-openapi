@@ -258,6 +258,27 @@ post:
                     value: "104.16.132.229,104.16.33.229"
                   - name: "ipv6hint"
                     value: "2606:4700::6810:84e5,2606:4700::6810:85e5"
+          CAA Record:
+            summary: Create a CAA record for certificate authority authorization
+            description: |
+              Creates a Certification Authority Authorization (CAA) record that allows domain name holders
+              to authorize specific certificate authorities to issue certificates for the domain. CAA records
+              help prevent unauthorized certificate issuance and provide additional security controls.
+              
+              **CAA Record Format:** "flags tag value"
+              - **Flags**: Unsigned integer 0-255 (0=non-critical, 1=critical)
+              - **Tag**: issue, issuewild, issuemail, issuevmc, or iodef
+              - **Value**: Domain name or URL depending on tag type
+              
+              **Common Tags:**
+              - **issue**: Authorizes CA to issue certificates
+              - **issuewild**: Authorizes CA to issue wildcard certificates  
+              - **iodef**: URL for reporting invalid certificate requests
+            value:
+              ttl: 300
+              rdata:
+                - "0 issue \"ca.example.net\""
+                - "0 iodef \"mailto:security@example.com\""
           A Record:
             summary: Create an A-type RRSet
             value:

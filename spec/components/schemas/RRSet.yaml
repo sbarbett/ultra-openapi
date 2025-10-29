@@ -219,3 +219,14 @@ examples:
             value: "104.16.132.229,104.16.33.229"
           - name: "ipv6hint"
             value: "2606:4700::6810:84e5,2606:4700::6810:85e5"
+  
+  caa_record:
+    summary: CAA Record for Certificate Authority Authorization
+    description: Example of a CAA record that authorizes specific certificate authorities and provides incident reporting.
+    value:
+      ownerName: "example.com."
+      rrtype: "CAA (257)"
+      ttl: 300
+      rdata:
+        - "0 issue \"ca.example.net\""
+        - "0 iodef \"mailto:security@example.com\""
