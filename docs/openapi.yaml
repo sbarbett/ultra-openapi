@@ -146,6 +146,9 @@ tags:
   - name: Records
     description: |
       Manage resource record sets (RRSets) within a zone (list, read, upsert via `rdata` and TTL, delete). `rdata` uses the BIND presentation format.
+  - name: SiteBacker & Traffic Controller
+    description: |
+      Manage SiteBacker (SB) and Traffic Controller (TC) pools, including probe alerts and pool-specific operations.
   - name: Account Settings
     description: |
       Manage account-level settings including notifications, security preferences, and push notifications. Configure various account settings such as zone transfer notifications, usage notifications, and webhook endpoints.
@@ -1749,8 +1752,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/RRSetsList'
               examples:
-                List TLSA Records (from documentation):
-                  summary: List TLSA records (per UltraDNS TLSA docs)
+                List TLSA Records:
+                  summary: List TLSA records
                   description: Example response for TLSA type showing two rdata entries.
                   value:
                     zoneName: 0-a-accounttest.com.
@@ -2073,8 +2076,143 @@ paths:
             schema:
               $ref: '#/components/schemas/RRSet'
             examples:
-              TLSA Record (from documentation):
-                summary: Create a TLSA record (per UltraDNS TLSA docs)
+              SiteBacker Pool (A with CNAME mix):
+                summary: Create an A-type RRSet with SiteBacker Pool
+                description: |
+                  Creates a SiteBacker pool for an A-type RRSet. Demonstrates mixed A/CNAME records,
+                  per-record rdataInfo metadata, and optional backupRecords. `status` fields are
+                  response-only and are omitted from the request payload.
+                value:
+                  ttl: 120
+                  rdata:
+                    - 7.7.7.7
+                    - testrd.dollytest6.com.
+                    - testsf.dollytest6.com.
+                    - testslb1.dollytest6.com.
+                    - testtc.dollytest6.com.
+                    - xyz.com.
+                  profile:
+                    '@context': http://schemas.ultradns.com/SBPool.jsonschema
+                    description: testsb.dollytest6.com.
+                    runProbes: true
+                    actOnProbes: true
+                    order: ROUND_ROBIN
+                    maxActive: 1
+                    maxServed: 1
+                    rdataInfo:
+                      - state: NORMAL
+                        runProbes: true
+                        priority: 1
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        threshold: 1
+                        availableToServe: false
+                        type: A
+                      - state: NORMAL
+                        runProbes: true
+                        priority: 1
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        threshold: 1
+                        availableToServe: false
+                        type: RD
+                      - state: NORMAL
+                        runProbes: true
+                        priority: 1
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        threshold: 1
+                        availableToServe: false
+                        type: SF
+                      - state: NORMAL
+                        runProbes: true
+                        priority: 1
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        threshold: 1
+                        availableToServe: false
+                        type: SLB
+                      - state: NORMAL
+                        runProbes: true
+                        priority: 1
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        threshold: 1
+                        availableToServe: true
+                        type: TC
+                      - state: NORMAL
+                        runProbes: true
+                        priority: 1
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        threshold: 1
+                        availableToServe: false
+                        type: CNAME
+                    backupRecords:
+                      - rdata: 4.4.4.4
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        availableToServe: false
+              Traffic Controller Pool:
+                summary: Create an A-type RRSet with Traffic Controller Pool
+                description: |
+                  Creates a Traffic Controller pool for an A-type RRSet. Demonstrates per-record weights
+                  and a single backupRecord. `order` and `maxServed` are not applicable to TC pools.
+                value:
+                  ttl: 300
+                  rdata:
+                    - 1.2.3.4
+                    - a.domain.name.
+                    - 9.8.7.6
+                    - 30.40.50.60
+                  profile:
+                    '@context': http://schemas.ultradns.com/TCPool.jsonschema
+                    description: STRING
+                    runProbes: true
+                    actOnProbes: true
+                    maxToLB: 3
+                    failureThreshold: 0
+                    rdataInfo:
+                      - state: NORMAL
+                        runProbes: true
+                        priority: 1
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        threshold: 1
+                        weight: 2
+                        availableToServe: true
+                        type: RD
+                      - state: NORMAL
+                        runProbes: true
+                        priority: 2
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        threshold: 1
+                        weight: 2
+                        availableToServe: true
+                        type: A
+                      - state: NORMAL
+                        runProbes: true
+                        priority: 3
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        threshold: 1
+                        weight: 2
+                        availableToServe: true
+                        type: SF
+                      - state: NORMAL
+                        runProbes: true
+                        priority: 4
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        threshold: 1
+                        weight: 2
+                        availableToServe: true
+                        type: SLB
+                    backupRecord:
+                      rdata: 9.8.7.6
+              TLSA Record:
+                summary: Create a TLSA record
                 description: |
                   Creates a TLSA record using the documented example payload.
                   Body must include an RRSet DTO; TLSA values are provided in BIND rdata format.
@@ -2395,6 +2533,83 @@ paths:
                   rdata:
                     - 1.2.3.4
                     - 5.6.7.8
+              Update SiteBacker Pool:
+                summary: Update an A-type RRSet with SiteBacker Pool
+                description: |
+                  Full update (PUT) of a SiteBacker pool. Replaces the entire RRSet and profile.
+                  Demonstrates mixed A/CNAME records, per-record rdataInfo, and backupRecords.
+                value:
+                  ttl: 120
+                  rdata:
+                    - 7.7.7.7
+                    - testrd.example.com.
+                    - testsf.example.com.
+                    - testslb1.example.com.
+                    - testtc.example.com.
+                    - xyz.example.com.
+                  profile:
+                    '@context': http://schemas.ultradns.com/SBPool.jsonschema
+                    description: SB pool for www
+                    runProbes: true
+                    actOnProbes: true
+                    order: ROUND_ROBIN
+                    maxActive: 1
+                    maxServed: 1
+                    failureThreshold: 0
+                    rdataInfo:
+                      - state: NORMAL
+                        runProbes: true
+                        priority: 1
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        threshold: 1
+                        availableToServe: true
+                        type: A
+                      - state: NORMAL
+                        runProbes: true
+                        priority: 1
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        threshold: 1
+                        availableToServe: true
+                        type: RD
+                      - state: NORMAL
+                        runProbes: true
+                        priority: 1
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        threshold: 1
+                        availableToServe: true
+                        type: SF
+                      - state: NORMAL
+                        runProbes: true
+                        priority: 1
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        threshold: 1
+                        availableToServe: true
+                        type: SLB
+                      - state: NORMAL
+                        runProbes: true
+                        priority: 1
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        threshold: 1
+                        availableToServe: true
+                        type: TC
+                      - state: NORMAL
+                        runProbes: true
+                        priority: 1
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        threshold: 1
+                        availableToServe: true
+                        type: CNAME
+                    backupRecords:
+                      - rdata: 4.4.4.4
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        availableToServe: false
               Update MX Record:
                 summary: Update an MX-type RRSet with new mail servers
                 value:
@@ -2422,6 +2637,64 @@ paths:
                   rdata:
                     - 1 5 81 test1.example.com.
                     - 2 5 81 test2.example.com.
+              Update Traffic Controller Pool:
+                summary: Update an A-type RRSet with Traffic Controller Pool
+                description: |
+                  Full update (PUT) of a Traffic Controller pool. Replaces the entire RRSet and profile.
+                  Demonstrates per-record weights and a single backupRecord.
+                value:
+                  ttl: 300
+                  rdata:
+                    - 1.2.3.4
+                    - a.domain.name.
+                    - 9.8.7.6
+                    - 30.40.50.60
+                  profile:
+                    '@context': http://schemas.ultradns.com/TCPool.jsonschema
+                    description: STRING
+                    runProbes: true
+                    actOnProbes: true
+                    maxToLB: 3
+                    failureThreshold: 0
+                    rdataInfo:
+                      - state: NORMAL
+                        runProbes: true
+                        priority: 1
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        threshold: 1
+                        weight: 2
+                        availableToServe: true
+                        type: RD
+                      - state: NORMAL
+                        runProbes: true
+                        priority: 2
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        threshold: 1
+                        weight: 2
+                        availableToServe: true
+                        type: A
+                      - state: NORMAL
+                        runProbes: true
+                        priority: 3
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        threshold: 1
+                        weight: 2
+                        availableToServe: true
+                        type: SF
+                      - state: NORMAL
+                        runProbes: true
+                        priority: 4
+                        failoverDelay: 0
+                        restorationDelay: 0
+                        threshold: 1
+                        weight: 2
+                        availableToServe: true
+                        type: SLB
+                    backupRecord:
+                      rdata: 9.8.7.6
               Update RD Pool A Record:
                 summary: Update an A-type RRSet with Resource Distribution Pool
                 description: |
@@ -2645,6 +2918,40 @@ paths:
               items:
                 $ref: '#/components/schemas/JSONPatch'
             examples:
+              Update SiteBacker Pool with JSON Patch:
+                summary: Update SiteBacker profile fields and rdataInfo
+                description: |
+                  Demonstrates updating SiteBacker pool parameters and per-record metadata. Updates
+                  `failureThreshold`, changes record 0 priority, and defines backupRecords.
+                value:
+                  - op: replace
+                    path: /profile/failureThreshold
+                    value: 2
+                  - op: replace
+                    path: /profile/rdataInfo/0/priority
+                    value: 2
+                  - op: add
+                    path: /profile/backupRecords
+                    value:
+                      - rdata: 4.4.4.4
+                        failoverDelay: 0
+                        restorationDelay: 0
+              Update Traffic Controller Pool with JSON Patch:
+                summary: Update Traffic Controller profile fields and weights
+                description: |
+                  Demonstrates updating Traffic Controller pool `maxToLB`, adjusting the weight of the
+                  first record, and setting a backupRecord.
+                value:
+                  - op: replace
+                    path: /profile/maxToLB
+                    value: 3
+                  - op: replace
+                    path: /profile/rdataInfo/0/weight
+                    value: 4
+                  - op: add
+                    path: /profile/backupRecord
+                    value:
+                      rdata: 9.8.7.6
               Update MX Records with JSON Patch:
                 summary: Update specific values within MX records using double indexing
                 value:
@@ -2769,6 +3076,61 @@ paths:
           description: RRSets deleted successfully
         '400':
           $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+  /zones/{zoneName}/rrsets/A/{ownerName}/alerts:
+    get:
+      tags:
+        - SiteBacker & Traffic Controller
+      summary: Get Probe Alerts
+      description: |
+        Returns probing alerts for the specified SiteBacker or Traffic Controller pool.
+        This endpoint lists probe results that triggered alerts for the owner.
+      operationId: getProbeAlerts
+      parameters:
+        - $ref: '#/components/parameters/ZoneName'
+        - $ref: '#/components/parameters/OwnerName'
+      responses:
+        '200':
+          description: Alert data returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertDataList'
+              examples:
+                example:
+                  summary: Example probe alerts response
+                  value:
+                    alerts:
+                      - status: Active
+                        ownerName: host1.example-zone.com.
+                        poolRecord: 172.16.8.1
+                        alertDate: '2014-04-01T08:05:42Z'
+                        probeStatus: FAILED
+                        probeType: DNS
+                        failoverOccurred: true
+                      - status: Active
+                        ownerName: h.testzone.com.
+                        poolRecord: 1.2.3.4
+                        alertDate: '2014-04-01T17:24:33Z'
+                        probeStatus: FAILED
+                        probeType: HTTP
+                        failoverOccurred: true
+                    queryInfo:
+                      q: ''
+                      sort: alertDate
+                      reverse: false
+                      limit: 100
+                    resultInfo:
+                      totalCount: 2
+                      offset: 0
+                      returnedCount: 2
         '401':
           $ref: '#/components/responses/Error401'
         '403':
@@ -6389,6 +6751,108 @@ components:
           value:
             '@context': http://schemas.ultradns.com/RDPool.jsonschema
             order: RANDOM
+    AlertData:
+      type: object
+      description: |
+        Alert Data DTO returned by the /alerts API. Represents a probing error/alert
+        for a specific pool record and owner.
+      properties:
+        poolRecord:
+          type: string
+          description: The pool record that triggered the alert.
+          example: 1.2.3.4
+        probeType:
+          type: string
+          description: The name of the probe type.
+          example: HTTP
+        probeStatus:
+          type: string
+          description: Status determined by the probe.
+          enum:
+            - OK
+            - WARNING
+            - CRITICAL
+            - FAILED
+          example: OK
+        alertDate:
+          type: string
+          format: date-time
+          description: The date the alert occurred (ISO 8601 format).
+          example: '2025-01-15T13:45:30Z'
+        failoverOccurred:
+          type: boolean
+          description: Flag to indicate if failover occurred.
+          example: true
+        ownerName:
+          type: string
+          description: The ownerName of the pool that alerted.
+          example: www.example.com.
+        status:
+          type: string
+          description: Status of the probe.
+          enum:
+            - Active
+            - Inactive
+          example: Active
+      additionalProperties: false
+      examples:
+        http_failover:
+          summary: HTTP probe failure with failover
+          value:
+            poolRecord: 1.2.3.4
+            probeType: HTTP
+            probeStatus: CRITICAL
+            alertDate: '2025-01-15T13:45:30Z'
+            failoverOccurred: true
+            ownerName: www.example.com.
+            status: Active
+    AlertDataList:
+      type: object
+      description: |
+        Container for a list of Alert Data DTOs returned by the /alerts API.
+      properties:
+        alerts:
+          type: array
+          description: List of alert entries for the current user.
+          items:
+            $ref: '#/components/schemas/AlertData'
+        queryInfo:
+          $ref: '#/components/schemas/QueryInfo'
+        resultInfo:
+          $ref: '#/components/schemas/ResultInfo'
+      required:
+        - alerts
+        - queryInfo
+        - resultInfo
+      additionalProperties: false
+      examples:
+        sample:
+          summary: Example alert list
+          value:
+            alerts:
+              - status: Active
+                ownerName: host1.example-zone.com.
+                poolRecord: 172.16.8.1
+                alertDate: '2014-04-01T08:05:42Z'
+                probeStatus: FAILED
+                probeType: DNS
+                failoverOccurred: true
+              - status: Active
+                ownerName: h.testzone.com.
+                poolRecord: 1.2.3.4
+                alertDate: '2014-04-01T17:24:33Z'
+                probeStatus: FAILED
+                probeType: HTTP
+                failoverOccurred: true
+            queryInfo:
+              q: ''
+              sort: alertDate
+              reverse: false
+              limit: 100
+            resultInfo:
+              totalCount: 2
+              offset: 0
+              returnedCount: 2
   responses:
     Error401:
       description: Unauthorized
