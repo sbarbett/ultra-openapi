@@ -1749,6 +1749,26 @@ paths:
               schema:
                 $ref: '#/components/schemas/RRSetsList'
               examples:
+                List TLSA Records (from documentation):
+                  summary: List TLSA records (per UltraDNS TLSA docs)
+                  description: Example response for TLSA type showing two rdata entries.
+                  value:
+                    zoneName: 0-a-accounttest.com.
+                    rrSets:
+                      - ownerName: _1._tcp.test1.0-a-accounttest.com.
+                        rrtype: TLSA (52)
+                        ttl: 20
+                        rdata:
+                          - 0 0 0 12345678
+                          - 0 0 0 123ba45679
+                    queryInfo:
+                      sort: OWNER
+                      reverse: false
+                      limit: 100
+                    resultInfo:
+                      totalCount: 1
+                      offset: 0
+                      returnedCount: 1
                 List A Records:
                   summary: List all A records in a zone
                   value:
@@ -2053,6 +2073,15 @@ paths:
             schema:
               $ref: '#/components/schemas/RRSet'
             examples:
+              TLSA Record (from documentation):
+                summary: Create a TLSA record (per UltraDNS TLSA docs)
+                description: |
+                  Creates a TLSA record using the documented example payload.
+                  Body must include an RRSet DTO; TLSA values are provided in BIND rdata format.
+                value:
+                  ttl: 300
+                  rdata:
+                    - 1 0 0 82003ba34942dc74
               SVCB Alias Record:
                 summary: Create an SVCB record in Alias mode
                 description: |

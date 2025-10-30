@@ -58,6 +58,26 @@ get:
           schema:
             $ref: '../components/schemas/RRSetsList.yaml'
           examples:
+            List TLSA Records:
+              summary: List TLSA records
+              description: Example response for TLSA type showing two rdata entries.
+              value:
+                zoneName: "0-a-accounttest.com."
+                rrSets:
+                  - ownerName: "_1._tcp.test1.0-a-accounttest.com."
+                    rrtype: "TLSA (52)"
+                    ttl: 20
+                    rdata:
+                      - "0 0 0 12345678"
+                      - "0 0 0 123ba45679"
+                queryInfo:
+                  sort: "OWNER"
+                  reverse: false
+                  limit: 100
+                resultInfo:
+                  totalCount: 1
+                  offset: 0
+                  returnedCount: 1
             List A Records:
               summary: List all A records in a zone
               value:

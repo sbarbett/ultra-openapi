@@ -1,0 +1,77 @@
+type: object
+description: |
+  TLSA (Transport Layer Security Authentication) DTO for DNS-based authentication of TLS certificates.
+  
+  The TLSA record provides a way to authenticate TLS certificates using DNS, allowing domain owners to specify which certificates are valid for their domain.
+  
+  The TLSA record contains three integer fields (Certification Usage, Field-Selector, Matching Type) followed by the Certificate Association Data.
+properties:
+  certificationUsage:
+    type: integer
+    minimum: 0
+    maximum: 3
+    description: |
+      The first integer displayed. Describes the type of Certificate to be used.
+      
+      Valid values are:
+      - 0 - Specify CA certificate/public key for certificate to certify end server. Certificate might not have the basic Constraints extension present.
+      - 1 - Specify CA certificate/public key for certificate to certify end server. Service certificate constraint.
+      - 2 - Specify CA certificate/public key for certificate to certify end server. Trust anchor assertion.
+      - 3 - Domain-issued certificate (same as 1, with no PKIX validation is tested).
+    example: 3
+  fieldSelector:
+    type: integer
+    minimum: 0
+    maximum: 1
+    description: |
+      The second integer displayed. Describes the type of selector to be used.
+      
+      Valid values are:
+      - 0 - Full certificate of the Certificate Binary structure.
+      - 1 - SubjectPublicKeyInfo
+    example: 1
+  matchingType:
+    type: integer
+    minimum: 0
+    maximum: 2
+    description: |
+      The third integer displayed. Describes the type of matching to be used.
+      
+      Valid values are:
+      - 0 - Exact match on selected content.
+      - 1 - SHA-256 hash of selected content.
+      - 2 - SHA-512 hash of selected content.
+    example: 1
+  certificateAssociationData:
+    type: string
+    pattern: '^[0-9a-fA-F\s]+$'
+    description: |
+      The string of hexadecimal characters that describes certificate associated data.
+      
+      The certificate-association-data must be represented as a string of hexadecimal characters. 
+      Whitespace is allowed within the string of hexadecimal characters.
+    example: "d2abde240d7cd3ee6b4b28c54df034b97983a1d16e8a410e4561cb106618e971"
+required:
+  - certificationUsage
+  - fieldSelector
+  - matchingType
+  - certificateAssociationData
+
+examples:
+  tlsa_ca_certificate:
+    summary: TLSA CA Certificate Example
+    description: Example of a TLSA record for CA certificate authentication
+    value:
+      certificationUsage: 0
+      fieldSelector: 0
+      matchingType: 1
+      certificateAssociationData: "d2abde240d7cd3ee6b4b28c54df034b97983a1d16e8a410e4561cb106618e971"
+  
+  tlsa_public_key:
+    summary: TLSA Public Key Example
+    description: Example of a TLSA record for public key authentication
+    value:
+      certificationUsage: 3
+      fieldSelector: 1
+      matchingType: 2
+      certificateAssociationData: "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"

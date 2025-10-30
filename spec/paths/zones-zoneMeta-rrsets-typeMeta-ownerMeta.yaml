@@ -224,6 +224,15 @@ post:
         schema:
           $ref: '../components/schemas/RRSet.yaml'
         examples:
+          TLSA Record:
+            summary: Create a TLSA record
+            description: |
+              Creates a TLSA record using the documented example payload.
+              Body must include an RRSet DTO; TLSA values are provided in BIND rdata format.
+            value:
+              ttl: 300
+              rdata:
+                - "1 0 0 82003ba34942dc74"
           SVCB Alias Record:
             summary: Create an SVCB record in Alias mode
             description: |
