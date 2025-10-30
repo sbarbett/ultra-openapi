@@ -1,0 +1,38 @@
+type: object
+description: |
+  Backup record definition for SiteBacker pools. Served when all primary records fail.
+properties:
+  rdata:
+    type: string
+    description: The IPv4 address or CNAME for the backup record.
+    example: "4.4.4.4"
+  failoverDelay:
+    type: integer
+    minimum: 0
+    maximum: 30
+    description: Minutes to wait after failure before activating backup records.
+    default: 0
+  restorationDelay:
+    type: integer
+    nullable: true
+    minimum: 0
+    maximum: 30
+    description: |
+      Minutes to wait before failing back to primaries once healthy. If omitted,
+      inherits the value of `failoverDelay`.
+  availableToServe:
+    type: boolean
+    description: Indicates whether the backup record is available to serve.
+    default: true
+
+additionalProperties: false
+
+examples:
+  a_backup:
+    summary: A backup record
+    value:
+      rdata: "4.4.4.4"
+      failoverDelay: 0
+      restorationDelay: 0
+      availableToServe: false
+

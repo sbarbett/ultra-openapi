@@ -1,0 +1,118 @@
+type: object
+description: |
+  Traffic Controller Pool profile attached to an `RRSet.profile` when using Traffic Controller.
+  Similar to SiteBacker but always serves a single record at a time and supports weighted
+  load balancing via per-record `weight` on `rdataInfo`.
+
+  Identified by `@context: "http://schemas.ultradns.com/TCPool.jsonschema"`.
+properties:
+  "@context":
+    type: string
+    description: URI that uniquely identifies the type of the pool (Traffic Controller)
+    example: "http://schemas.ultradns.com/TCPool.jsonschema"
+  description:
+    type: string
+    maxLength: 255
+    description: An optional description of the Traffic Controller pool.
+    example: "TC pool for api"
+  runProbes:
+    type: boolean
+    description: Indicates whether or not the probes are run for this pool.
+    default: true
+  actOnProbes:
+    type: boolean
+    description: |
+      Indicates whether or not pool records will be enabled (true) or disabled (false)
+      when probes are run.
+    default: true
+  maxToLB:
+    type: integer
+    minimum: 0
+    description: |
+      Maximum number of pool records to include in load balancing. Maximum value is the
+      number of pool records. If not specified, defaults to 0.
+    example: 3
+  failureThreshold:
+    type: integer
+    nullable: true
+    minimum: 0
+    description: |
+      The minimum number of priority records that must fail for the pool to be labeled
+      "FAILED". If 0 or null, the failure-threshold logic is disabled.
+    example: 0
+  status:
+    type: string
+    description: |
+      Returned for Traffic Controller GET calls. One of OK, WARNING, CRITICAL, FAILED.
+    enum:
+      - OK
+      - WARNING
+      - CRITICAL
+      - FAILED
+    readOnly: true
+  rdataInfo:
+    type: array
+    description: |
+      One entry for each entry in `rdata`. Metadata for each record in the same list order.
+      For Traffic Controller pools, `weight` controls traffic share and must be an even
+      integer from 2–100.
+    items:
+      $ref: './SiteBackerRDataInfo.yaml'
+  backupRecord:
+    description: |
+      Single backup record served if all other records fail. Optional.
+    allOf:
+      - $ref: './SiteBackerBackupRecord.yaml'
+
+additionalProperties: false
+
+examples:
+  full:
+    summary: Traffic Controller profile with rdataInfo and backupRecord
+    value:
+      "@context": "http://schemas.ultradns.com/TCPool.jsonschema"
+      description: "STRING"
+      runProbes: true
+      actOnProbes: true
+      maxToLB: 3
+      failureThreshold: 0
+      rdataInfo:
+        - state: NORMAL
+          runProbes: true
+          priority: 1
+          failoverDelay: 0
+          restorationDelay: 0
+          threshold: 1
+          weight: 2
+          availableToServe: true
+          type: RD
+        - state: NORMAL
+          runProbes: true
+          priority: 2
+          failoverDelay: 0
+          restorationDelay: 0
+          threshold: 1
+          weight: 2
+          availableToServe: true
+          type: A
+        - state: NORMAL
+          runProbes: true
+          priority: 3
+          failoverDelay: 0
+          restorationDelay: 0
+          threshold: 1
+          weight: 2
+          availableToServe: true
+          type: SF
+        - state: NORMAL
+          runProbes: true
+          priority: 4
+          failoverDelay: 0
+          restorationDelay: 0
+          threshold: 1
+          weight: 2
+          availableToServe: true
+          type: SLB
+      backupRecord:
+        rdata: "9.8.7.6"
+

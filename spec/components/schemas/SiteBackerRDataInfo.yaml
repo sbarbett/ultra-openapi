@@ -1,0 +1,82 @@
+type: object
+description: |
+  Per-record metadata for entries in `RRSet.rdata` when using a SiteBacker pool.
+  Items appear in the same order as the corresponding rdata strings.
+properties:
+  state:
+    type: string
+    description: The current state of the pool record.
+    enum:
+      - NORMAL
+      - ACTIVE
+      - INACTIVE
+    default: NORMAL
+  runProbes:
+    type: boolean
+    description: Indicates whether or not probes are run for this pool record.
+    default: true
+  priority:
+    type: integer
+    description: Indicates the serving preference for this pool record.
+    example: 1
+  failoverDelay:
+    type: integer
+    minimum: 0
+    maximum: 30
+    description: |
+      Minutes to wait after detecting failure before activating secondary records.
+      Defaults to 0 (immediate activation).
+    default: 0
+  restorationDelay:
+    type: integer
+    nullable: true
+    minimum: 0
+    maximum: 30
+    description: |
+      Minutes to wait before failing back once the previously failed record is healthy.
+      If omitted, inherits the `failoverDelay` value.
+  threshold:
+    type: integer
+    description: Number of probes that must agree before the record state changes.
+    example: 1
+  weight:
+    type: integer
+    minimum: 2
+    maximum: 100
+    description: |
+      Determines traffic share for Traffic Controller pools. Even integers 2–100.
+      Ignored if present in SiteBacker POST/PUT/PATCH.
+  availableToServe:
+    type: boolean
+    description: Indicates if the record is active and available to serve.
+    default: true
+    readOnly: true
+  status:
+    type: string
+    description: Returned for SiteBacker/Traffic Controller GET calls.
+    enum:
+      - OK
+      - WARNING
+      - CRITICAL
+      - FAILED
+    readOnly: true
+  type:
+    type: string
+    description: Abbreviated record/pool type for the record entry.
+    example: A
+
+additionalProperties: false
+
+examples:
+  example_a:
+    summary: A record metadata
+    value:
+      state: NORMAL
+      runProbes: true
+      priority: 1
+      failoverDelay: 0
+      restorationDelay: 0
+      threshold: 1
+      availableToServe: true
+      type: A
+

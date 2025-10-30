@@ -1,0 +1,55 @@
+get:
+  tags:
+    - SiteBacker & Traffic Controller
+  summary: Get Probe Alerts
+  description: |
+    Returns probing alerts for the specified SiteBacker or Traffic Controller pool.
+    This endpoint lists probe results that triggered alerts for the owner.
+  operationId: getProbeAlerts
+  parameters:
+    - $ref: '../components/parameters/ZoneName.yaml'
+    - $ref: '../components/parameters/OwnerName.yaml'
+  responses:
+    '200':
+      description: Alert data returned successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/AlertDataList.yaml'
+          examples:
+            example:
+              summary: Example probe alerts response
+              value:
+                alerts:
+                  - status: "Active"
+                    ownerName: "host1.example-zone.com."
+                    poolRecord: "172.16.8.1"
+                    alertDate: "2014-04-01T08:05:42Z"
+                    probeStatus: "FAILED"
+                    probeType: "DNS"
+                    failoverOccurred: true
+                  - status: "Active"
+                    ownerName: "h.testzone.com."
+                    poolRecord: "1.2.3.4"
+                    alertDate: "2014-04-01T17:24:33Z"
+                    probeStatus: "FAILED"
+                    probeType: "HTTP"
+                    failoverOccurred: true
+                queryInfo:
+                  q: ""
+                  sort: "alertDate"
+                  reverse: false
+                  limit: 100
+                resultInfo:
+                  totalCount: 2
+                  offset: 0
+                  returnedCount: 2
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+

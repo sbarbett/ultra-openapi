@@ -178,6 +178,8 @@ paths:
     $ref: './paths/zones-zoneMeta-rrsets-rtypeMeta.yaml'
   /zones/{zoneName}/rrsets/{recordType}/{ownerName}:
     $ref: './paths/zones-zoneMeta-rrsets-typeMeta-ownerMeta.yaml'
+  /zones/{zoneName}/rrsets/A/{ownerName}/alerts:
+    $ref: './paths/zones-zoneMeta-rrsets-typeMeta-ownerMeta-alerts.yaml'
 
   # Account Settings endpoints
   /accounts/{accountName}/settings:
@@ -326,6 +328,10 @@ tags:
     description: >
       Manage resource record sets (RRSets) within a zone (list, read, upsert via `rdata` and TTL, delete).
       `rdata` uses the BIND presentation format.
+      
+  - name: SiteBacker & Traffic Controller
+    description: >
+      Manage SiteBacker (SB) and Traffic Controller (TC) pools, including probe alerts and pool-specific operations.
 
   - name: Account Settings
     description: >

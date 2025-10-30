@@ -1,0 +1,50 @@
+type: object
+description: |
+  Container for a list of Alert Data DTOs returned by the /alerts API.
+properties:
+  alerts:
+    type: array
+    description: List of alert entries for the current user.
+    items:
+      $ref: './AlertData.yaml'
+  queryInfo:
+    $ref: './QueryInfo.yaml'
+  resultInfo:
+    $ref: './ResultInfo.yaml'
+
+required:
+  - alerts
+  - queryInfo
+  - resultInfo
+
+additionalProperties: false
+
+examples:
+  sample:
+    summary: Example alert list
+    value:
+      alerts:
+        - status: "Active"
+          ownerName: "host1.example-zone.com."
+          poolRecord: "172.16.8.1"
+          alertDate: "2014-04-01T08:05:42Z"
+          probeStatus: "FAILED"
+          probeType: "DNS"
+          failoverOccurred: true
+        - status: "Active"
+          ownerName: "h.testzone.com."
+          poolRecord: "1.2.3.4"
+          alertDate: "2014-04-01T17:24:33Z"
+          probeStatus: "FAILED"
+          probeType: "HTTP"
+          failoverOccurred: true
+      queryInfo:
+        q: ""
+        sort: "alertDate"
+        reverse: false
+        limit: 100
+      resultInfo:
+        totalCount: 2
+        offset: 0
+        returnedCount: 2
+

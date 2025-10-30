@@ -224,6 +224,141 @@ post:
         schema:
           $ref: '../components/schemas/RRSet.yaml'
         examples:
+          SiteBacker Pool (A with CNAME mix):
+            summary: Create an A-type RRSet with SiteBacker Pool
+            description: |
+              Creates a SiteBacker pool for an A-type RRSet. Demonstrates mixed A/CNAME records,
+              per-record rdataInfo metadata, and optional backupRecords. `status` fields are
+              response-only and are omitted from the request payload.
+            value:
+              ttl: 120
+              rdata:
+                - "7.7.7.7"
+                - "testrd.dollytest6.com."
+                - "testsf.dollytest6.com."
+                - "testslb1.dollytest6.com."
+                - "testtc.dollytest6.com."
+                - "xyz.com."
+              profile:
+                "@context": "http://schemas.ultradns.com/SBPool.jsonschema"
+                description: "testsb.dollytest6.com."
+                runProbes: true
+                actOnProbes: true
+                order: "ROUND_ROBIN"
+                maxActive: 1
+                maxServed: 1
+                rdataInfo:
+                  - state: "NORMAL"
+                    runProbes: true
+                    priority: 1
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    threshold: 1
+                    availableToServe: false
+                    type: "A"
+                  - state: "NORMAL"
+                    runProbes: true
+                    priority: 1
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    threshold: 1
+                    availableToServe: false
+                    type: "RD"
+                  - state: "NORMAL"
+                    runProbes: true
+                    priority: 1
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    threshold: 1
+                    availableToServe: false
+                    type: "SF"
+                  - state: "NORMAL"
+                    runProbes: true
+                    priority: 1
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    threshold: 1
+                    availableToServe: false
+                    type: "SLB"
+                  - state: "NORMAL"
+                    runProbes: true
+                    priority: 1
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    threshold: 1
+                    availableToServe: true
+                    type: "TC"
+                  - state: "NORMAL"
+                    runProbes: true
+                    priority: 1
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    threshold: 1
+                    availableToServe: false
+                    type: "CNAME"
+                backupRecords:
+                  - rdata: "4.4.4.4"
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    availableToServe: false
+          Traffic Controller Pool:
+            summary: Create an A-type RRSet with Traffic Controller Pool
+            description: |
+              Creates a Traffic Controller pool for an A-type RRSet. Demonstrates per-record weights
+              and a single backupRecord. `order` and `maxServed` are not applicable to TC pools.
+            value:
+              ttl: 300
+              rdata:
+                - "1.2.3.4"
+                - "a.domain.name."
+                - "9.8.7.6"
+                - "30.40.50.60"
+              profile:
+                "@context": "http://schemas.ultradns.com/TCPool.jsonschema"
+                description: "STRING"
+                runProbes: true
+                actOnProbes: true
+                maxToLB: 3
+                failureThreshold: 0
+                rdataInfo:
+                  - state: NORMAL
+                    runProbes: true
+                    priority: 1
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    threshold: 1
+                    weight: 2
+                    availableToServe: true
+                    type: RD
+                  - state: NORMAL
+                    runProbes: true
+                    priority: 2
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    threshold: 1
+                    weight: 2
+                    availableToServe: true
+                    type: A
+                  - state: NORMAL
+                    runProbes: true
+                    priority: 3
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    threshold: 1
+                    weight: 2
+                    availableToServe: true
+                    type: SF
+                  - state: NORMAL
+                    runProbes: true
+                    priority: 4
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    threshold: 1
+                    weight: 2
+                    availableToServe: true
+                    type: SLB
+                backupRecord:
+                  rdata: "9.8.7.6"
           TLSA Record:
             summary: Create a TLSA record
             description: |
@@ -547,6 +682,83 @@ put:
               rdata:
                 - "1.2.3.4"
                 - "5.6.7.8"
+          Update SiteBacker Pool:
+            summary: Update an A-type RRSet with SiteBacker Pool
+            description: |
+              Full update (PUT) of a SiteBacker pool. Replaces the entire RRSet and profile.
+              Demonstrates mixed A/CNAME records, per-record rdataInfo, and backupRecords.
+            value:
+              ttl: 120
+              rdata:
+                - "7.7.7.7"
+                - "testrd.example.com."
+                - "testsf.example.com."
+                - "testslb1.example.com."
+                - "testtc.example.com."
+                - "xyz.example.com."
+              profile:
+                "@context": "http://schemas.ultradns.com/SBPool.jsonschema"
+                description: "SB pool for www"
+                runProbes: true
+                actOnProbes: true
+                order: "ROUND_ROBIN"
+                maxActive: 1
+                maxServed: 1
+                failureThreshold: 0
+                rdataInfo:
+                  - state: NORMAL
+                    runProbes: true
+                    priority: 1
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    threshold: 1
+                    availableToServe: true
+                    type: A
+                  - state: NORMAL
+                    runProbes: true
+                    priority: 1
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    threshold: 1
+                    availableToServe: true
+                    type: RD
+                  - state: NORMAL
+                    runProbes: true
+                    priority: 1
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    threshold: 1
+                    availableToServe: true
+                    type: SF
+                  - state: NORMAL
+                    runProbes: true
+                    priority: 1
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    threshold: 1
+                    availableToServe: true
+                    type: SLB
+                  - state: NORMAL
+                    runProbes: true
+                    priority: 1
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    threshold: 1
+                    availableToServe: true
+                    type: TC
+                  - state: NORMAL
+                    runProbes: true
+                    priority: 1
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    threshold: 1
+                    availableToServe: true
+                    type: CNAME
+                backupRecords:
+                  - rdata: "4.4.4.4"
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    availableToServe: false
           Update MX Record:
             summary: Update an MX-type RRSet with new mail servers
             value:
@@ -574,6 +786,64 @@ put:
               rdata:
                 - "1 5 81 test1.example.com."
                 - "2 5 81 test2.example.com."
+          Update Traffic Controller Pool:
+            summary: Update an A-type RRSet with Traffic Controller Pool
+            description: |
+              Full update (PUT) of a Traffic Controller pool. Replaces the entire RRSet and profile.
+              Demonstrates per-record weights and a single backupRecord.
+            value:
+              ttl: 300
+              rdata:
+                - "1.2.3.4"
+                - "a.domain.name."
+                - "9.8.7.6"
+                - "30.40.50.60"
+              profile:
+                "@context": "http://schemas.ultradns.com/TCPool.jsonschema"
+                description: "STRING"
+                runProbes: true
+                actOnProbes: true
+                maxToLB: 3
+                failureThreshold: 0
+                rdataInfo:
+                  - state: NORMAL
+                    runProbes: true
+                    priority: 1
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    threshold: 1
+                    weight: 2
+                    availableToServe: true
+                    type: RD
+                  - state: NORMAL
+                    runProbes: true
+                    priority: 2
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    threshold: 1
+                    weight: 2
+                    availableToServe: true
+                    type: A
+                  - state: NORMAL
+                    runProbes: true
+                    priority: 3
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    threshold: 1
+                    weight: 2
+                    availableToServe: true
+                    type: SF
+                  - state: NORMAL
+                    runProbes: true
+                    priority: 4
+                    failoverDelay: 0
+                    restorationDelay: 0
+                    threshold: 1
+                    weight: 2
+                    availableToServe: true
+                    type: SLB
+                backupRecord:
+                  rdata: "9.8.7.6"
           Update RD Pool A Record:
             summary: Update an A-type RRSet with Resource Distribution Pool
             description: |
@@ -798,6 +1068,40 @@ patch:
           items:
             $ref: '../components/schemas/JSONPatch.yaml'
         examples:
+          Update SiteBacker Pool with JSON Patch:
+            summary: Update SiteBacker profile fields and rdataInfo
+            description: |
+              Demonstrates updating SiteBacker pool parameters and per-record metadata. Updates
+              `failureThreshold`, changes record 0 priority, and defines backupRecords.
+            value:
+              - op: "replace"
+                path: "/profile/failureThreshold"
+                value: 2
+              - op: "replace"
+                path: "/profile/rdataInfo/0/priority"
+                value: 2
+              - op: "add"
+                path: "/profile/backupRecords"
+                value:
+                  - rdata: "4.4.4.4"
+                    failoverDelay: 0
+                    restorationDelay: 0
+          Update Traffic Controller Pool with JSON Patch:
+            summary: Update Traffic Controller profile fields and weights
+            description: |
+              Demonstrates updating Traffic Controller pool `maxToLB`, adjusting the weight of the
+              first record, and setting a backupRecord.
+            value:
+              - op: "replace"
+                path: "/profile/maxToLB"
+                value: 3
+              - op: "replace"
+                path: "/profile/rdataInfo/0/weight"
+                value: 4
+              - op: "add"
+                path: "/profile/backupRecord"
+                value:
+                  rdata: "9.8.7.6"
           Update MX Records with JSON Patch:
             summary: Update specific values within MX records using double indexing
             value:

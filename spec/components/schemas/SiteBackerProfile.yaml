@@ -1,0 +1,125 @@
+type: object
+description: |
+  SiteBacker Pool profile attached to an `RRSet.profile` when using SiteBacker.
+  Defines behavior for probing, serving order, max active/served limits, failure
+  threshold semantics, and optional backup records.
+
+  Identified by `@context: "http://schemas.ultradns.com/SBPool.jsonschema"`.
+properties:
+  "@context":
+    type: string
+    description: URI that uniquely identifies the type of the pool (SiteBacker)
+    example: "http://schemas.ultradns.com/SBPool.jsonschema"
+  description:
+    type: string
+    maxLength: 255
+    description: An optional description of the SiteBacker pool.
+    example: "Primary SB pool for www"
+  runProbes:
+    type: boolean
+    description: Indicates whether or not the probes are run for this pool.
+    default: true
+  actOnProbes:
+    type: boolean
+    description: |
+      Indicates whether or not pool records will be enabled (true) or disabled (false)
+      when probes are run.
+    default: true
+  order:
+    type: string
+    description: |
+      Indicates the order of the records returned by the resolver for the SiteBacker pool.
+    enum:
+      - FIXED
+      - RANDOM
+      - ROUND_ROBIN
+    default: ROUND_ROBIN
+    example: ROUND_ROBIN
+  maxActive:
+    type: integer
+    minimum: 1
+    description: |
+      Specifies the maximum number of active servers in a pool and determines when
+      SiteBacker takes backup servers offline. If not specified, defaults to 1.
+    example: 1
+  failureThreshold:
+    type: integer
+    nullable: true
+    minimum: 0
+    description: |
+      The minimum number of priority records that must fail for a pool to be labeled
+      "FAILED". If 0 or null, the failure-threshold logic is disabled.
+    example: 4
+  maxServed:
+    type: integer
+    minimum: 1
+    description: |
+      Determines the number of record answers for each query. Value from 1 to maxActive.
+      If not specified, defaults to maxActive.
+    example: 1
+  status:
+    type: string
+    description: |
+      Returned for SiteBacker GET calls. One of OK, WARNING, CRITICAL, FAILED.
+    enum:
+      - OK
+      - WARNING
+      - CRITICAL
+      - FAILED
+    readOnly: true
+  rdataInfo:
+    type: array
+    description: |
+      One entry for each entry in `rdata`. Metadata for each record in the same list order.
+    items:
+      $ref: './SiteBackerRDataInfo.yaml'
+  backupRecords:
+    type: array
+    description: |
+      List of backup records served if all other records fail. One or more A records or a
+      single CNAME record.
+    items:
+      $ref: './SiteBackerBackupRecord.yaml'
+
+additionalProperties: false
+
+examples:
+  minimal:
+    summary: Minimal SiteBacker profile
+    value:
+      "@context": "http://schemas.ultradns.com/SBPool.jsonschema"
+      order: ROUND_ROBIN
+  full:
+    summary: Full SiteBacker profile with rdataInfo and backupRecords
+    value:
+      "@context": "http://schemas.ultradns.com/SBPool.jsonschema"
+      description: "testsb.dollytest6.com."
+      runProbes: true
+      actOnProbes: true
+      order: ROUND_ROBIN
+      maxActive: 1
+      maxServed: 1
+      status: OK
+      rdataInfo:
+        - state: NORMAL
+          runProbes: true
+          priority: 1
+          failoverDelay: 0
+          restorationDelay: 0
+          threshold: 1
+          availableToServe: false
+          type: A
+        - state: NORMAL
+          runProbes: true
+          priority: 1
+          failoverDelay: 0
+          restorationDelay: 0
+          threshold: 1
+          availableToServe: false
+          type: CNAME
+      backupRecords:
+        - rdata: "4.4.4.4"
+          failoverDelay: 0
+          restorationDelay: 0
+          availableToServe: false
+

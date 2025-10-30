@@ -1,0 +1,57 @@
+type: object
+description: |
+  Alert Data DTO returned by the /alerts API. Represents a probing error/alert
+  for a specific pool record and owner.
+properties:
+  poolRecord:
+    type: string
+    description: The pool record that triggered the alert.
+    example: "1.2.3.4"
+  probeType:
+    type: string
+    description: The name of the probe type.
+    example: "HTTP"
+  probeStatus:
+    type: string
+    description: Status determined by the probe.
+    enum:
+      - OK
+      - WARNING
+      - CRITICAL
+      - FAILED
+    example: OK
+  alertDate:
+    type: string
+    format: date-time
+    description: The date the alert occurred (ISO 8601 format).
+    example: "2025-01-15T13:45:30Z"
+  failoverOccurred:
+    type: boolean
+    description: Flag to indicate if failover occurred.
+    example: true
+  ownerName:
+    type: string
+    description: The ownerName of the pool that alerted.
+    example: "www.example.com."
+  status:
+    type: string
+    description: Status of the probe.
+    enum:
+      - Active
+      - Inactive
+    example: Active
+
+additionalProperties: false
+
+examples:
+  http_failover:
+    summary: HTTP probe failure with failover
+    value:
+      poolRecord: "1.2.3.4"
+      probeType: "HTTP"
+      probeStatus: "CRITICAL"
+      alertDate: "2025-01-15T13:45:30Z"
+      failoverOccurred: true
+      ownerName: "www.example.com."
+      status: "Active"
+
