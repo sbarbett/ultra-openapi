@@ -1,0 +1,46 @@
+type: object
+description: |
+  Container for a list of SiteBacker Agents. Used to return all supported agents
+  for an account.
+properties:
+  agents:
+    type: array
+    description: List of all the supported SiteBacker Agents.
+    items:
+      $ref: './SiteBackerAgent.yaml'
+
+required:
+  - agents
+
+additionalProperties: false
+
+examples:
+  all_agents:
+    summary: All supported SiteBacker agents
+    value:
+      agents:
+        - name: "North America Central"
+          location: "USCENTRAL"
+          description: "(Chicago, Denver, Dallas)"
+        - name: "Europe East"
+          location: "EUEAST"
+          description: "(Amsterdam, Frankfurt, Stockholm)"
+        - name: "Europe West"
+          location: "EUWEST"
+          description: "(London, Dublin, Paris, Madrid)"
+        - name: "South America"
+          location: "SAMERICA"
+          description: "(Sao Paolo, Colombia, Miami)"
+        - name: "Asia"
+          location: "ASIA"
+          description: "(Tokyo, Taipei, Singapore, Hong Kong, Sydney)"
+        - name: "China"
+          location: "CHINA"
+          description: "(Beijing, Hong Kong) Note: Reliable results only within China"
+        - name: "North America West"
+          location: "USWEST"
+          description: "(Seattle, San Jose, Los Angeles, Phoenix, Vancouver)"
+        - name: "North America East"
+          location: "USEAST"
+          description: "(New York, Washington D.C., Atlanta, Miami, Toronto)"
+

@@ -1,0 +1,52 @@
+type: object
+description: |
+  Probe-specific details for SMTP type probes. Defines the port to connect to
+  and validation criteria.
+properties:
+  port:
+    type: integer
+    description: |
+      Port to connect to for SMTP service.
+      
+      Integer between 1 and 65535. Defaults to 25.
+    minimum: 1
+    maximum: 65535
+    default: 25
+    example: 25
+  limits:
+    $ref: './SmtpLimitInfo.yaml'
+
+additionalProperties: false
+
+examples:
+  minimal:
+    summary: Minimal SMTP probe configuration
+    description: Uses default port
+    value:
+      port: 25
+      limits:
+        connect:
+          fail: 15
+  traffic_controller:
+    summary: SMTP probe for Traffic Controller with all limits
+    description: Complete SMTP configuration for Traffic Controller pools
+    value:
+      port: 25
+      limits:
+        connect:
+          warning: 5
+          critical: 10
+          fail: 15
+        avgConnect:
+          warning: 8
+          critical: 12
+          fail: 20
+        run:
+          warning: 10
+          critical: 20
+          fail: 30
+        avgRun:
+          warning: 15
+          critical: 25
+          fail: 40
+

@@ -180,6 +180,10 @@ paths:
     $ref: './paths/zones-zoneMeta-rrsets-typeMeta-ownerMeta.yaml'
   /zones/{zoneName}/rrsets/A/{ownerName}/alerts:
     $ref: './paths/zones-zoneMeta-rrsets-typeMeta-ownerMeta-alerts.yaml'
+  /zones/{zoneName}/rrsets/A/{ownerName}/probes:
+    $ref: './paths/zones-zoneMeta-rrsets-typeMeta-ownerMeta-probes.yaml'
+  /zones/{zoneName}/rrsets/A/{ownerName}/probes/{guid}:
+    $ref: './paths/zones-zoneMeta-rrsets-typeMeta-ownerMeta-probes-guidMeta.yaml'
 
   # Account Settings endpoints
   /accounts/{accountName}/settings:
@@ -192,6 +196,8 @@ paths:
     $ref: './paths/accounts-accountMeta-telemetryWebhook-test.yaml'
   /accounts/{accountName}/telemetryWebhook/test/{telemetryId}:
     $ref: './paths/accounts-accountMeta-telemetryWebhook-test-telemetryMeta.yaml'
+  /accounts/{accountName}/agents:
+    $ref: './paths/accounts-accountMeta-agents.yaml'
 
   # Directional endpoints
   /accounts/{accountName}/dirgroups/geo:
@@ -223,6 +229,20 @@ components:
       $ref: './components/schemas/ResultInfo.yaml'
     Zone:
       $ref: './components/schemas/Zone.yaml'
+    ZoneProperties:
+      $ref: './components/schemas/ZoneProperties.yaml'
+    RestrictIP:
+      $ref: './components/schemas/RestrictIP.yaml'
+    RegistrarInfo:
+      $ref: './components/schemas/RegistrarInfo.yaml'
+    TSIG:
+      $ref: './components/schemas/TSIG.yaml'
+    NotifyAddress:
+      $ref: './components/schemas/NotifyAddress.yaml'
+    TransferStatusDetails:
+      $ref: './components/schemas/TransferStatusDetails.yaml'
+    NameServerIPList:
+      $ref: './components/schemas/NameServerIPList.yaml'
     ZoneCreate:
       $ref: './components/schemas/ZoneCreate.yaml'
     PrimaryZone:
@@ -235,6 +255,18 @@ components:
       $ref: './components/schemas/ZonesList.yaml'
     RRSet:
       $ref: './components/schemas/RRSet.yaml'
+    RRSetProfile:
+      $ref: './components/schemas/RRSetProfile.yaml'
+    SiteBackerProfile:
+      $ref: './components/schemas/SiteBackerProfile.yaml'
+    SiteBackerRDataInfo:
+      $ref: './components/schemas/SiteBackerRDataInfo.yaml'
+    SiteBackerBackupRecord:
+      $ref: './components/schemas/SiteBackerBackupRecord.yaml'
+    TrafficControllerProfile:
+      $ref: './components/schemas/TrafficControllerProfile.yaml'
+    TLSA:
+      $ref: './components/schemas/TLSA.yaml'
     RRSetsList:
       $ref: './components/schemas/RRSetsList.yaml'
     ServiceBinding:
@@ -245,6 +277,48 @@ components:
       $ref: './components/schemas/TokenResponse.yaml'
     ErrorGeneric:
       $ref: './components/schemas/ErrorGeneric.yaml'
+    DnsLimitInfo:
+      $ref: './components/schemas/DnsLimitInfo.yaml'
+    DnsProbeDetails:
+      $ref: './components/schemas/DnsProbeDetails.yaml'
+    FtpLimitInfo:
+      $ref: './components/schemas/FtpLimitInfo.yaml'
+    FtpProbeDetails:
+      $ref: './components/schemas/FtpProbeDetails.yaml'
+    HttpLimitInfo:
+      $ref: './components/schemas/HttpLimitInfo.yaml'
+    HttpProbeDetails:
+      $ref: './components/schemas/HttpProbeDetails.yaml'
+    HttpTotalLimit:
+      $ref: './components/schemas/HttpTotalLimit.yaml'
+    HttpTransactionInfo:
+      $ref: './components/schemas/HttpTransactionInfo.yaml'
+    PingLimitInfo:
+      $ref: './components/schemas/PingLimitInfo.yaml'
+    PingProbeDetails:
+      $ref: './components/schemas/PingProbeDetails.yaml'
+    ProbeDetails:
+      $ref: './components/schemas/ProbeDetails.yaml'
+    ProbeInfo:
+      $ref: './components/schemas/ProbeInfo.yaml'
+    ProbeInfoList:
+      $ref: './components/schemas/ProbeInfoList.yaml'
+    SiteBackerAgent:
+      $ref: './components/schemas/SiteBackerAgent.yaml'
+    SiteBackerAgentList:
+      $ref: './components/schemas/SiteBackerAgentList.yaml'
+    SmtpLimitInfo:
+      $ref: './components/schemas/SmtpLimitInfo.yaml'
+    SmtpProbeDetails:
+      $ref: './components/schemas/SmtpProbeDetails.yaml'
+    SmtpSendLimitInfo:
+      $ref: './components/schemas/SmtpSendLimitInfo.yaml'
+    SmtpSendProbeDetails:
+      $ref: './components/schemas/SmtpSendProbeDetails.yaml'
+    TcpLimitInfo:
+      $ref: './components/schemas/TcpLimitInfo.yaml'
+    TcpProbeDetails:
+      $ref: './components/schemas/TcpProbeDetails.yaml'
     Task:
       $ref: './components/schemas/Task.yaml'
     TaskList:
@@ -269,6 +343,10 @@ components:
       $ref: './components/schemas/AccountSettingsCatalogItem.yaml'
     AccountSettingsCatalogItemList:
       $ref: './components/schemas/AccountSettingsCatalogItemList.yaml'
+    AlertData:
+      $ref: './components/schemas/AlertData.yaml'
+    AlertDataList:
+      $ref: './components/schemas/AlertDataList.yaml'
     AccountLevelGeoIpGroup:
       $ref: './components/schemas/AccountLevelGeoIpGroup.yaml'
     AccountLevelGeoIpGroupList:

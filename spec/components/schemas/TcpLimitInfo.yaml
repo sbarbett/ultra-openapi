@@ -1,0 +1,60 @@
+type: object
+description: |
+  Limit configuration for TCP probe transactions. Defines timing thresholds for
+  connect time and its averages.
+  
+  All timing values are in seconds. Some limits are only applicable to Traffic Controller pools.
+properties:
+  connect:
+    type: object
+    description: |
+      Maximum time allowed to establish a connection to the resource. Only used
+      for Traffic Controller pools.
+    properties:
+      warning:
+        type: integer
+        description: |
+          How long the probe stays connected to trigger a warning.
+          
+          Maximum 20 seconds. Optional, only used for Traffic Controller Pools.
+        maximum: 20
+        example: 5
+      critical:
+        type: integer
+        description: |
+          How long the probe stays connected to trigger a critical warning.
+          
+          Maximum 20 seconds. Optional, only used for Traffic Controller Pools.
+        maximum: 20
+        example: 10
+      fail:
+        type: integer
+        description: |
+          How long the probe stays connected to trigger a failure.
+          
+          Maximum 20 seconds.
+        maximum: 20
+        example: 15
+    additionalProperties: false
+  avgConnect:
+    type: object
+    description: |
+      Mean connect time over the five most recent probes run on each agent.
+      Only used for Traffic Controller pools.
+    properties:
+      warning:
+        type: integer
+        description: Mean connect time to trigger a warning.
+        example: 8
+      critical:
+        type: integer
+        description: Mean connect time to trigger a critical warning.
+        example: 12
+      fail:
+        type: integer
+        description: Mean connect time to trigger a failure.
+        example: 20
+    additionalProperties: false
+
+additionalProperties: false
+

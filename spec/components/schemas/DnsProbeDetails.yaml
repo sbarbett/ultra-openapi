@@ -1,0 +1,93 @@
+type: object
+description: |
+  Probe-specific details for DNS type probes. Defines the port, protocol, record type,
+  owner name, and validation criteria.
+properties:
+  port:
+    type: integer
+    description: |
+      Port to use for DNS lookup.
+      
+      Integer between 1 and 65535. Defaults to 53.
+    minimum: 1
+    maximum: 65535
+    default: 53
+    example: 53
+  tcpOnly:
+    type: boolean
+    description: |
+      Indicates whether the probe should use TCP only, or first UDP then TCP.
+      
+      Defaults to false.
+    default: false
+    example: false
+  type:
+    type: string
+    description: |
+      Select which kind of record should be checked for.
+      
+      Valid values are NULL, AXFR, or any Resource Record Type.
+      
+      Defaults to NULL.
+    example: "A"
+  ownerName:
+    type: string
+    description: |
+      Selects the name that should be queried.
+      
+      Defaults to blank.
+    example: "www.example.com"
+  limits:
+    $ref: './DnsLimitInfo.yaml'
+
+additionalProperties: false
+
+examples:
+  minimal:
+    summary: Minimal DNS probe configuration
+    description: Uses default port, UDP then TCP, no record type
+    value:
+      port: 53
+      tcpOnly: false
+  with_record_type:
+    summary: DNS probe for A record
+    value:
+      port: 53
+      tcpOnly: false
+      type: A
+      ownerName: "www.example.com"
+      limits:
+        run:
+          fail: 15
+  traffic_controller:
+    summary: DNS probe for Traffic Controller with all limits
+    description: Complete DNS configuration for Traffic Controller pools
+    value:
+      port: 53
+      tcpOnly: false
+      type: A
+      ownerName: "www.example.com"
+      limits:
+        run:
+          warning: 5
+          critical: 10
+          fail: 15
+        avgRun:
+          warning: 8
+          critical: 12
+          fail: 20
+        response:
+          warning: "198.51.100.1"
+          critical: "203.0.113.1"
+          fail: "192.0.2.1"
+  mx_record:
+    summary: DNS probe for MX record
+    value:
+      port: 53
+      tcpOnly: true
+      type: MX
+      ownerName: "example.com"
+      limits:
+        response:
+          fail: "10 mail.example.com."
+

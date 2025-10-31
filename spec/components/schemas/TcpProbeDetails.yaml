@@ -1,0 +1,66 @@
+type: object
+description: |
+  Probe-specific details for TCP type probes. Defines the port to connect to
+  and optionally provides a control IP address.
+properties:
+  port:
+    type: integer
+    description: |
+      Port to connect to for TCP service.
+      
+      Integer between 1 and 65535. Required.
+    minimum: 1
+    maximum: 65535
+    example: 80
+  controlIP:
+    type: string
+    format: ipv4
+    description: |
+      Provides a control mechanism that allows the web administrators to stop
+      the TCP port on the control system.
+      
+      String, IP address. Optional.
+    example: "192.168.1.100"
+  limits:
+    $ref: './TcpLimitInfo.yaml'
+
+required:
+  - port
+
+additionalProperties: false
+
+examples:
+  minimal:
+    summary: Minimal TCP probe configuration
+    description: Only specifies required port
+    value:
+      port: 80
+      limits:
+        connect:
+          fail: 15
+  with_control_ip:
+    summary: TCP probe with control IP
+    value:
+      port: 3306
+      controlIP: "192.168.1.100"
+      limits:
+        connect:
+          fail: 20
+        avgConnect:
+          fail: 40
+  traffic_controller:
+    summary: TCP probe for Traffic Controller with all limits
+    description: Complete TCP configuration for Traffic Controller pools
+    value:
+      port: 443
+      controlIP: "10.0.0.1"
+      limits:
+        connect:
+          warning: 5
+          critical: 10
+          fail: 15
+        avgConnect:
+          warning: 8
+          critical: 12
+          fail: 20
+

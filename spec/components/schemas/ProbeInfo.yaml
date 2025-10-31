@@ -1,0 +1,171 @@
+type: object
+description: |
+  Probe configuration for SiteBacker and Traffic Controller pools. Defines what type of
+  probe to run, how often to run it, from which agent locations, and what threshold is
+  required for state changes.
+  
+  The probe can be configured at two levels:
+  - **Pool-level**: Applies to all records in the pool (poolRecord is omitted)
+  - **Record-level**: Applies to a specific record in the pool (poolRecord is specified)
+properties:
+  id:
+    type: string
+    description: |
+      The internal ID for this probe. Returned by GET operations.
+      
+      NO for POST, PUT, or PATCH calls. Ignored if present.
+    example: "probe-123-456"
+  poolRecord:
+    type: string
+    description: |
+      The pool record associated with this probe.
+      
+      - Returned by GET when returning a record-level probe
+      - Left blank when creating a pool-level probe
+      - Specified when creating a record-level probe
+      
+      Required for POST when creating a record-level probe.
+      NO for PUT or PATCH calls. Ignored if present.
+    example: "1.2.3.4"
+  type:
+    type: string
+    description: Type of the probe.
+    enum:
+      - HTTP
+      - PING
+      - FTP
+      - TCP
+      - SMTP
+      - SMTP_SEND
+      - DNS
+    example: HTTP
+  headers:
+    type: array
+    description: |
+      Custom probe headers when type = HTTP. Headers are provided as key:value pairs.
+      
+      Key is required, but value can be empty.
+      
+      Only used if type = HTTP. Optional.
+    items:
+      type: string
+      example: "User-Agent: Mozilla/5.0"
+    example:
+      - "User-Agent: Mozilla/5.0"
+      - "Accept: */*"
+  interval:
+    type: string
+    description: |
+      Length of time between probes in minutes.
+      
+      If not specified, defaults to FIVE_MINUTES.
+    enum:
+      - HALF_MINUTE
+      - ONE_MINUTE
+      - TWO_MINUTES
+      - FIVE_MINUTES
+      - TEN_MINUTES
+      - FIFTEEN_MINUTES
+    default: FIVE_MINUTES
+    example: FIVE_MINUTES
+  agents:
+    type: array
+    description: |
+      Locations that will be used for probing. One or more values must be specified.
+      
+      Valid values are NEW_YORK, PALO_ALTO, DALLAS, and AMSTERDAM.
+      
+      See ProbeType SiteBacker Agent - Updated Region/Agent Names for the new agent names.
+    items:
+      type: string
+      enum:
+        - NEW_YORK
+        - PALO_ALTO
+        - DALLAS
+        - AMSTERDAM
+    minItems: 1
+    example:
+      - NEW_YORK
+      - DALLAS
+  threshold:
+    type: integer
+    description: |
+      Number of agents that must agree for a probe state to be changed.
+      
+      Must be between 1 and the number of agents specified.
+    minimum: 1
+    example: 1
+  details:
+    $ref: './ProbeDetails.yaml'
+
+additionalProperties: false
+
+examples:
+  pool_level_http:
+    summary: Pool-level HTTP probe
+    description: HTTP probe configuration applied to all records in a pool
+    value:
+      type: HTTP
+      interval: FIVE_MINUTES
+      agents:
+        - NEW_YORK
+        - DALLAS
+      threshold: 1
+      headers:
+        - "User-Agent: Mozilla/5.0"
+        - "Accept: */*"
+      details:
+        transactions:
+          - method: GET
+            url: "https://www.example.com/"
+            followRedirects: true
+            expectedResponse: "2XX"
+  record_level_ping:
+    summary: Record-level PING probe
+    description: PING probe configuration for a specific pool record
+    value:
+      poolRecord: "1.2.3.4"
+      type: PING
+      interval: TWO_MINUTES
+      agents:
+        - NEW_YORK
+        - PALO_ALTO
+        - AMSTERDAM
+      threshold: 2
+      details:
+        packets: 5
+        packetSize: 64
+        limits:
+          lossPercent:
+            fail: 50
+          run:
+            fail: 8
+  pool_level_tcp:
+    summary: Pool-level TCP probe
+    description: TCP probe configuration for all records
+    value:
+      type: TCP
+      interval: ONE_MINUTE
+      agents:
+        - DALLAS
+      threshold: 1
+  record_level_dns:
+    summary: Record-level DNS probe
+    description: DNS probe configuration for a specific record
+    value:
+      poolRecord: "host.example.com."
+      type: DNS
+      interval: FIVE_MINUTES
+      agents:
+        - NEW_YORK
+        - AMSTERDAM
+      threshold: 1
+      details:
+        port: 53
+        tcpOnly: false
+        type: A
+        ownerName: "www.example.com"
+        limits:
+          run:
+            fail: 15
+

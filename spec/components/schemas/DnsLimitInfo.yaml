@@ -1,0 +1,82 @@
+type: object
+description: |
+  Limit configuration for DNS probe transactions. Defines timing thresholds and
+  response validation criteria.
+  
+  All timing values are in seconds. Some limits are only applicable to Traffic Controller pools.
+properties:
+  run:
+    type: object
+    description: |
+      How long the probe should run. Only used for Traffic Controller pools.
+    properties:
+      warning:
+        type: integer
+        description: How long the probe should run to trigger a warning.
+        example: 5
+      critical:
+        type: integer
+        description: How long the probe should run to trigger a critical warning.
+        example: 10
+      fail:
+        type: integer
+        description: How long the probe should run to trigger a failure.
+        example: 15
+    additionalProperties: false
+  avgRun:
+    type: object
+    description: |
+      Mean run time over the five most recent probes run on each agent.
+      Only used for Traffic Controller pools.
+    properties:
+      warning:
+        type: integer
+        description: Mean run time to trigger a warning.
+        example: 8
+      critical:
+        type: integer
+        description: Mean run time to trigger a critical warning.
+        example: 12
+      fail:
+        type: integer
+        description: Mean run time to trigger a failure.
+        example: 20
+    additionalProperties: false
+  response:
+    type: object
+    description: |
+      Expected DNS response values. Used to validate DNS query responses.
+      
+      Matching rules vary by record type:
+      - Single field responses (A, AAAA, CNAME, DNAME, NS, MB, MD, MF, MG, MR, PTR): Match exactly
+      - HINFO records: Match partially without considering case
+      - Multiple field responses: Match partially, join all fields separated by spaces
+      
+      Example: Use "10 mail.example.com." to test an MX record with preference 10
+      and target host mail.example.com.
+    properties:
+      warning:
+        type: string
+        description: |
+          Expected response value to trigger a warning.
+          
+          Optional, only used for Traffic Controller Pools.
+        example: "192.0.2.1"
+      critical:
+        type: string
+        description: |
+          Expected response value to trigger a critical warning.
+          
+          Optional, only used for Traffic Controller Pools.
+        example: "198.51.100.1"
+      fail:
+        type: string
+        description: |
+          Expected response value to trigger a failure.
+          
+          Optional.
+        example: "192.0.2.1"
+    additionalProperties: false
+
+additionalProperties: false
+

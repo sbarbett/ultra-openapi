@@ -1,0 +1,83 @@
+type: object
+description: |
+  Individual HTTP transaction within an HTTP probe. Defines the method, URL,
+  protocol version, and validation criteria for a single HTTP request.
+properties:
+  method:
+    type: string
+    description: HTTP method for the transaction.
+    enum:
+      - GET
+      - POST
+    example: GET
+  protocolVersion:
+    type: string
+    description: |
+      HTTP protocol version to use for the probe.
+      
+      Note: HTTP probes will only correctly work if the indicated server supports
+      the configured HTTP protocol version, otherwise the probe will fail.
+    enum:
+      - HTTP/1.0
+      - HTTP/1.1
+      - HTTP/2
+    example: HTTP/1.1
+  url:
+    type: string
+    description: URL to probe.
+    example: "https://www.example.com/"
+  transmittedData:
+    type: string
+    description: Data to send to the URL. Optional.
+    example: "key1=value1&key2=value2"
+  followRedirects:
+    type: boolean
+    description: |
+      Indicates whether or not to follow redirects.
+      
+      Optional, defaults to false.
+    default: false
+    example: true
+  expectedResponse:
+    type: string
+    description: |
+      The expected response codes for probes to be returned as successful.
+      
+      Valid values:
+      - **2XX**: Probe will pass for any code between 200-299
+      - **3XX**: Probe will pass for any code between 300-399
+      - **2XX|3XX**: Probe will pass for any code between 200-399
+      - Any combination of HTTP codes between 100-599 separated by '|', e.g.:
+        - `201|302`
+        - `301|202|401`
+        - `501|201|404|301`
+      
+      By default, probes will pass for 2XX HTTP codes.
+      
+      Optional.
+    example: "2XX|3XX"
+  limits:
+    $ref: './HttpLimitInfo.yaml'
+
+required:
+  - method
+  - url
+
+additionalProperties: false
+
+examples:
+  get_request_simple:
+    summary: Simple GET request
+    value:
+      method: GET
+      url: "https://www.example.com/"
+  post_request_with_data:
+    summary: POST request with data
+    value:
+      method: POST
+      url: "https://api.example.com/login"
+      protocolVersion: HTTP/1.1
+      transmittedData: "username=admin&password=secret"
+      followRedirects: true
+      expectedResponse: "200|302"
+

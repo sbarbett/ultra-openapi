@@ -1,0 +1,25 @@
+type: object
+description: |
+  SiteBacker Agent configuration. Defines a single agent location that can be used
+  for running probes on SiteBacker and Traffic Controller pools.
+properties:
+  name:
+    type: string
+    description: Name of the agent.
+    example: "North America Central"
+  location:
+    type: string
+    description: SB Agent location.
+    example: "USCENTRAL"
+  description:
+    type: string
+    description: SB Agent description.
+    example: "(Chicago, Denver, Dallas)"
+
+required:
+  - name
+  - location
+  - description
+
+additionalProperties: false
+

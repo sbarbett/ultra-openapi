@@ -1,0 +1,7 @@
+name: guid
+in: path
+required: true
+schema:
+  type: string
+description: GUID identifier for the probe
+

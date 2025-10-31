@@ -1,0 +1,60 @@
+type: object
+description: |
+  Probe-specific details for HTTP type probes. Defines one or more HTTP transactions
+  to execute and their validation criteria.
+properties:
+  transactions:
+    type: array
+    description: |
+      List of HTTP requests sent for a single probe. Each transaction defines a
+      complete HTTP request including method, URL, and expected response validation.
+    items:
+      $ref: './HttpTransactionInfo.yaml'
+    minItems: 1
+  totalLimits:
+    $ref: './HttpTotalLimit.yaml'
+
+required:
+  - transactions
+
+additionalProperties: false
+
+examples:
+  single_get:
+    summary: Single GET transaction
+    value:
+      transactions:
+        - method: GET
+          url: "https://www.example.com/"
+          followRedirects: true
+          expectedResponse: "2XX"
+  multiple_transactions:
+    summary: Multiple transactions with limits
+    value:
+      transactions:
+        - method: POST
+          url: "https://api.example.com/login"
+          protocolVersion: HTTP/1.1
+          transmittedData: "username=test&password=secret"
+          expectedResponse: "200|302"
+          limits:
+            run:
+              fail: 30
+        - method: GET
+          url: "https://api.example.com/dashboard"
+          followRedirects: true
+          expectedResponse: "2XX"
+      totalLimits:
+        warning: 30
+        critical: 60
+        fail: 120
+  with_search_string:
+    summary: Transaction with response body validation
+    value:
+      transactions:
+        - method: GET
+          url: "https://www.example.com/"
+          limits:
+            searchString:
+              fail: "Welcome|Home"
+

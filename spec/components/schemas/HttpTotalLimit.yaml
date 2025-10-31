@@ -1,0 +1,26 @@
+type: object
+description: |
+  Total time limits for all HTTP transactions in a probe sequence.
+  Only used for Traffic Controller pools.
+properties:
+  warning:
+    type: integer
+    description: |
+      Run time for all steps in the sequence of an HTTP transactional probe for
+      a warning to be generated. Optional, only used for Traffic Controller Pools.
+    example: 30
+  critical:
+    type: integer
+    description: |
+      Run time for all steps in the sequence of an HTTP transactional probe for
+      a critical warning to be generated. Optional, only used for Traffic Controller Pools.
+    example: 60
+  fail:
+    type: integer
+    description: |
+      Run time for all steps in the sequence of an HTTP transactional probe for
+      the probe to fail. Optional.
+    example: 120
+
+additionalProperties: false
+

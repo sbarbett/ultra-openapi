@@ -1,0 +1,96 @@
+type: object
+description: |
+  Probe-specific details for SMTP_SEND type probes. Defines the port, email
+  addresses, message, and validation criteria. This probe actually sends an email.
+properties:
+  port:
+    type: integer
+    description: |
+      Port to connect to for SMTP service.
+      
+      Integer between 1 and 65535. Defaults to 25.
+    minimum: 1
+    maximum: 65535
+    default: 25
+    example: 25
+  from:
+    type: string
+    format: email
+    description: |
+      Email address that will send the message.
+      
+      Required.
+    example: "probe@example.com"
+  to:
+    type: string
+    format: email
+    description: |
+      Email address that will receive the message.
+      
+      Required.
+    example: "monitoring@example.com"
+  message:
+    type: string
+    description: |
+      Email message body.
+      
+      Optional.
+    example: "Health check test message"
+  limits:
+    $ref: './SmtpSendLimitInfo.yaml'
+
+required:
+  - from
+  - to
+
+additionalProperties: false
+
+examples:
+  minimal:
+    summary: Minimal SMTP_SEND probe configuration
+    description: Uses default port with required email addresses
+    value:
+      port: 25
+      from: "probe@example.com"
+      to: "monitoring@example.com"
+      limits:
+        connect:
+          fail: 15
+  with_message:
+    summary: SMTP_SEND probe with custom message
+    value:
+      port: 25
+      from: "probe@example.com"
+      to: "monitoring@example.com"
+      message: "Health check test message"
+      limits:
+        connect:
+          fail: 20
+        run:
+          fail: 30
+  traffic_controller:
+    summary: SMTP_SEND probe for Traffic Controller with all limits
+    description: Complete SMTP_SEND configuration for Traffic Controller pools
+    value:
+      port: 25
+      from: "probe@example.com"
+      to: "monitoring@example.com"
+      message: "Automated health check"
+      limits:
+        connect:
+          warning: 5
+          critical: 10
+          fail: 15
+        avgConnect:
+          warning: 8
+          critical: 12
+          fail: 20
+        run:
+          warning: 10
+          critical: 20
+          fail: 30
+        avgRun:
+          warning: 15
+          critical: 25
+          fail: 40
+

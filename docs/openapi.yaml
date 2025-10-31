@@ -3139,6 +3139,656 @@ paths:
           $ref: '#/components/responses/Error404'
         5XX:
           $ref: '#/components/responses/Error5xx'
+  /zones/{zoneName}/rrsets/A/{ownerName}/probes:
+    get:
+      tags:
+        - SiteBacker & Traffic Controller
+      summary: List Probes
+      description: |
+        Lists all probes for a SiteBacker or Traffic Controller pool.
+
+        Returns both pool-level probes (applies to all records) and record-level probes
+        (applies to specific records).
+
+        **Note:** This endpoint only supports A-type records. The zone must contain a
+        SiteBacker or Traffic Controller pool.
+      operationId: listProbes
+      parameters:
+        - $ref: '#/components/parameters/ZoneName'
+        - $ref: '#/components/parameters/OwnerName'
+        - $ref: '#/components/parameters/QueryParams'
+          description: |
+            The query used to construct the list. Query operators are:
+
+            - **type**: Valid values are RECORD, POOL, or ALL. Default value is ALL, unless
+              poolRecord is specified.
+            - **poolRecord**: If you only want to get probes for a single pool record,
+              specify either the IPv4, IPv6, or CNAME as a FQDN for the pool record. If not
+              specified, type of RECORD is assumed.
+
+            Example:
+            - q="type:ALL"
+            - q="type:POOL"
+            - q="type:RECORD"
+            - q="poolRecord:1.2.3.4"
+            - q="poolRecord:host.example.com."
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Reverse'
+      responses:
+        '200':
+          description: List of probes retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProbeInfoList'
+              examples:
+                Multiple Probes:
+                  summary: List of multiple probes
+                  description: |
+                    Returns a list containing both pool-level and record-level probes.
+                  value:
+                    probes:
+                      - id: probe-123-456
+                        type: HTTP
+                        interval: ONE_MINUTE
+                        agents:
+                          - DALLAS
+                          - AMSTERDAM
+                          - PALO_ALTO
+                          - NEW_YORK
+                        threshold: 2
+                        headers:
+                          - 'Accept-Language: en-US'
+                          - 'User-Agent: Mozilla/5.0'
+                        details:
+                          transactions:
+                            - method: GET
+                              protocolVersion: HTTP/1.0
+                              url: http://www.google1.com/
+                              transmittedData: ''
+                              limits:
+                                connect:
+                                  fail: 20
+                                run:
+                                  fail: 60
+                              followRedirects: true
+                      - id: probe-789-012
+                        poolRecord: 1.2.3.4
+                        type: PING
+                        interval: TWO_MINUTES
+                        agents:
+                          - NEW_YORK
+                        threshold: 1
+                        details:
+                          packets: 5
+                          packetSize: 64
+                          limits:
+                            lossPercent:
+                              fail: 50
+                            run:
+                              fail: 8
+                    queryInfo:
+                      sort: ''
+                      reverse: false
+                      limit: 100
+                    resultInfo:
+                      totalCount: 2
+                      offset: 0
+                      returnedCount: 2
+                Empty List:
+                  summary: Empty list of probes
+                  description: No probes configured for this pool
+                  value:
+                    probes: []
+                    queryInfo:
+                      sort: ''
+                      reverse: false
+                      limit: 100
+                    resultInfo:
+                      totalCount: 0
+                      offset: 0
+                      returnedCount: 0
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+    post:
+      tags:
+        - SiteBacker & Traffic Controller
+      summary: Create a Probe
+      description: |
+        Creates a new probe for a SiteBacker or Traffic Controller pool. The probe can be
+        configured at the pool level (applies to all records) or record level (applies to
+        a specific record).
+
+        **Pool-level probes:** Leave `poolRecord` empty or omit it. The probe applies to
+        all records in the pool.
+
+        **Record-level probes:** Specify `poolRecord` in the request body. The probe
+        applies only to that specific record.
+
+        **Note:** This endpoint only supports A-type records. The zone must contain a
+        SiteBacker or Traffic Controller pool. The pool cannot contain both A and AAAA
+        record types.
+      operationId: createProbe
+      parameters:
+        - $ref: '#/components/parameters/ZoneName'
+        - $ref: '#/components/parameters/OwnerName'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProbeInfo'
+            examples:
+              Pool-Level HTTP Probe:
+                summary: Create a pool-level HTTP probe
+                description: |
+                  Creates an HTTP probe that applies to all records in the pool.
+                  Demonstrates custom headers, multiple transactions, and timing limits.
+                value:
+                  type: HTTP
+                  interval: ONE_MINUTE
+                  agents:
+                    - PALO_ALTO
+                    - NEW_YORK
+                  threshold: 2
+                  headers:
+                    - 'Accept-Language: en-US'
+                    - 'User-Agent: Mozilla/5.0'
+                  details:
+                    transactions:
+                      - method: GET
+                        protocolVersion: HTTP/1.0
+                        url: http://www.google1.com/
+                        transmittedData: ''
+                        followRedirects: true
+                        limits:
+                          connect:
+                            warning: 20
+                            critical: 20
+                            fail: 20
+                          run:
+                            warning: 60
+                            critical: 60
+                            fail: 60
+              Record-Level PING Probe:
+                summary: Create a record-level PING probe
+                description: |
+                  Creates a PING probe for a specific pool record.
+                  Specifies the poolRecord to target the probe.
+                value:
+                  poolRecord: 1.2.3.4
+                  type: PING
+                  interval: TWO_MINUTES
+                  agents:
+                    - NEW_YORK
+                    - DALLAS
+                  threshold: 1
+                  details:
+                    packets: 5
+                    packetSize: 64
+                    limits:
+                      lossPercent:
+                        fail: 50
+                      run:
+                        fail: 8
+              Pool-Level TCP Probe:
+                summary: Create a pool-level TCP probe
+                description: |
+                  Creates a TCP probe with control IP for pool-level monitoring.
+                value:
+                  type: TCP
+                  interval: FIVE_MINUTES
+                  agents:
+                    - NEW_YORK
+                  threshold: 1
+                  details:
+                    port: 443
+                    controlIP: 192.168.1.100
+                    limits:
+                      connect:
+                        fail: 20
+              Record-Level DNS Probe:
+                summary: Create a record-level DNS probe
+                description: |
+                  Creates a DNS probe for a specific pool record with response validation.
+                value:
+                  poolRecord: host.example.com.
+                  type: DNS
+                  interval: TEN_MINUTES
+                  agents:
+                    - PALO_ALTO
+                    - AMSTERDAM
+                  threshold: 1
+                  details:
+                    port: 53
+                    tcpOnly: false
+                    type: A
+                    ownerName: www.example.com
+                    limits:
+                      run:
+                        fail: 15
+      responses:
+        '201':
+          description: Probe created successfully
+          headers:
+            Location:
+              description: URI of the created probe
+              schema:
+                type: string
+                example: /zones/example.com./rrsets/A/www.example.com./probes/probe-123-456
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Successful
+                  guid:
+                    type: string
+                    description: GUID of the created probe
+                    example: probe-123-456
+              examples:
+                Created:
+                  summary: Probe created synchronously
+                  value:
+                    message: Successful
+                    guid: probe-123-456
+        '202':
+          $ref: '#/components/responses/AcceptedGeneric'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+  /zones/{zoneName}/rrsets/A/{ownerName}/probes/{guid}:
+    get:
+      tags:
+        - SiteBacker & Traffic Controller
+      summary: Get a Probe
+      description: |
+        Retrieves a specific probe for a SiteBacker or Traffic Controller pool.
+
+        The probe can be a pool-level probe (applies to all records) or a record-level
+        probe (applies to a specific record).
+
+        **Note:** This endpoint only supports A-type records. The zone must contain a
+        SiteBacker or Traffic Controller pool.
+      operationId: getProbe
+      parameters:
+        - $ref: '#/components/parameters/ZoneName'
+        - $ref: '#/components/parameters/OwnerName'
+        - $ref: '#/components/parameters/ProbeId'
+      responses:
+        '200':
+          description: Probe retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProbeInfo'
+              examples:
+                Pool-Level HTTP Probe:
+                  summary: Get a pool-level HTTP probe
+                  description: Pool-level HTTP probe with custom headers
+                  value:
+                    id: 060844D2F8B23F19
+                    type: HTTP
+                    interval: ONE_MINUTE
+                    agents:
+                      - DALLAS
+                      - AMSTERDAM
+                      - PALO_ALTO
+                      - NEW_YORK
+                    threshold: 2
+                    headers:
+                      - 'Accept-Language: en-US'
+                      - 'User-Agent: Mozilla/5.0'
+                    details:
+                      transactions:
+                        - method: GET
+                          protocolVersion: HTTP/1.0
+                          url: http://www.google1.com/
+                          transmittedData: ''
+                          limits:
+                            connect:
+                              fail: 20
+                            run:
+                              fail: 60
+                          followRedirects: true
+                Record-Level PING Probe:
+                  summary: Get a record-level PING probe
+                  description: Record-level PING probe with custom configuration
+                  value:
+                    id: probe-456-789
+                    poolRecord: 1.2.3.4
+                    type: PING
+                    interval: TWO_MINUTES
+                    agents:
+                      - NEW_YORK
+                      - DALLAS
+                    threshold: 1
+                    details:
+                      packets: 5
+                      packetSize: 64
+                      limits:
+                        lossPercent:
+                          fail: 50
+                        run:
+                          fail: 8
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+    put:
+      tags:
+        - SiteBacker & Traffic Controller
+      summary: Update a Probe
+      description: |
+        Updates an existing probe for a SiteBacker or Traffic Controller pool. The probe
+        configuration can be updated at the pool level or record level.
+
+        **Full Update:** A PUT request requires the complete Probe Info DTO. Omitted fields
+        will be removed or reset to defaults.
+
+        **Note:** This endpoint only supports A-type records. The zone must contain a
+        SiteBacker or Traffic Controller pool.
+      operationId: updateProbe
+      parameters:
+        - $ref: '#/components/parameters/ZoneName'
+        - $ref: '#/components/parameters/OwnerName'
+        - $ref: '#/components/parameters/ProbeId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProbeInfo'
+            examples:
+              Update Pool-Level HTTP Probe:
+                summary: Update a pool-level HTTP probe
+                description: |
+                  Full update of an HTTP probe with modified agents and headers.
+                value:
+                  type: HTTP
+                  interval: FIVE_MINUTES
+                  agents:
+                    - NEW_YORK
+                    - DALLAS
+                    - AMSTERDAM
+                  threshold: 2
+                  headers:
+                    - 'Accept-Language: en-US,fr-FR'
+                    - 'User-Agent: Mozilla/5.0'
+                  details:
+                    transactions:
+                      - method: GET
+                        protocolVersion: HTTP/1.1
+                        url: https://www.example.com/
+                        followRedirects: true
+                        expectedResponse: 2XX|3XX
+                        limits:
+                          connect:
+                            warning: 10
+                            critical: 15
+                            fail: 20
+                          run:
+                            warning: 30
+                            critical: 45
+                            fail: 60
+              Update Record-Level PING Probe:
+                summary: Update a record-level PING probe
+                description: |
+                  Full update of a PING probe with modified timing and packet configuration.
+                value:
+                  poolRecord: 1.2.3.4
+                  type: PING
+                  interval: ONE_MINUTE
+                  agents:
+                    - NEW_YORK
+                  threshold: 1
+                  details:
+                    packets: 10
+                    packetSize: 128
+                    limits:
+                      lossPercent:
+                        warning: 5
+                        critical: 10
+                        fail: 20
+                      run:
+                        warning: 5
+                        critical: 10
+                        fail: 15
+      responses:
+        '200':
+          description: Probe updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Successful
+              examples:
+                Updated:
+                  summary: Probe updated synchronously
+                  value:
+                    message: Successful
+        '202':
+          $ref: '#/components/responses/AcceptedGeneric'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+    patch:
+      tags:
+        - SiteBacker & Traffic Controller
+      summary: Partially Update a Probe
+      description: |
+        Partially updates an existing probe for a SiteBacker or Traffic Controller pool.
+        This differs from a full update (PUT) in that you can modify only specific fields
+        without affecting the rest of the probe configuration.
+
+        **Two Update Methods Supported:**
+        1. **Regular PATCH**: Send a Probe Info DTO with Content-Type: application/json
+        2. **JSON PATCH**: Send JSON Patch DTOs with Content-Type: application/json-patch+json
+
+        **Note:** This endpoint only supports A-type records. The zone must contain a
+        SiteBacker or Traffic Controller pool. The pool cannot contain both A and AAAA
+        record types.
+      operationId: partiallyUpdateProbe
+      parameters:
+        - $ref: '#/components/parameters/ZoneName'
+        - $ref: '#/components/parameters/OwnerName'
+        - $ref: '#/components/parameters/ProbeId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            description: |
+              Regular PATCH request using Probe Info DTO. Use this for simple partial updates.
+
+              **Behavior:**
+              - Omitted fields will be preserved
+              - Specified fields will be updated
+            schema:
+              $ref: '#/components/schemas/ProbeInfo'
+            examples:
+              Update Agents Only:
+                summary: Update only the agents list
+                description: |
+                  Partially update a probe by only changing the agents while preserving
+                  all other configuration.
+                value:
+                  agents:
+                    - DALLAS
+                    - AMSTERDAM
+                    - PALO_ALTO
+                    - NEW_YORK
+                  threshold: 2
+              Update Interval Only:
+                summary: Update only the interval
+                value:
+                  interval: TEN_MINUTES
+              Partial Update HTTP Probe:
+                summary: Partially update HTTP probe with new agents
+                description: |
+                  Demonstrates updating agents to include both old and new region names.
+                value:
+                  agents:
+                    - DALLAS
+                    - AMSTERDAM
+                    - PALO_ALTO
+                    - NEW_YORK
+                  threshold: 2
+                  details:
+                    transactions:
+                      - method: GET
+                        protocolVersion: HTTP/1.0
+                        url: http://www.google1.com/
+                        limits:
+                          connect:
+                            fail: 20
+                          run:
+                            fail: 60
+          application/json-patch+json:
+            description: |
+              JSON PATCH request using RFC 6902 compliant JSON Patch DTOs. Use this for
+              complex partial updates with multiple operations.
+
+              **Features:**
+              - Support for add, replace, remove, and move operations
+              - Can update specific values within probe details
+              - Can perform multiple operations in a single request
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/JSONPatch'
+            examples:
+              Update Probe Interval:
+                summary: Update probe interval using JSON Patch
+                value:
+                  - op: replace
+                    path: /interval
+                    value: TEN_MINUTES
+              Update Agents and Threshold:
+                summary: Update multiple probe fields
+                value:
+                  - op: replace
+                    path: /agents
+                    value:
+                      - NEW_YORK
+                      - DALLAS
+                      - AMSTERDAM
+                  - op: replace
+                    path: /threshold
+                    value: 3
+              Update HTTP Transaction URL:
+                summary: Update HTTP transaction URL
+                value:
+                  - op: replace
+                    path: /details/transactions/0/url
+                    value: https://www.example.com/
+              Add Search String to HTTP Transaction:
+                summary: Add response validation to HTTP transaction
+                value:
+                  - op: add
+                    path: /details/transactions/0/limits/searchString
+                    value:
+                      fail: Error|Not Found
+              Update PING Packet Configuration:
+                summary: Update PING probe packet count and size
+                value:
+                  - op: replace
+                    path: /details/packets
+                    value: 10
+                  - op: replace
+                    path: /details/packetSize
+                    value: 128
+      responses:
+        '200':
+          description: Probe partially updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Successful
+              examples:
+                Updated:
+                  summary: Probe partially updated synchronously
+                  value:
+                    message: Successful
+        '202':
+          $ref: '#/components/responses/AcceptedGeneric'
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+    delete:
+      tags:
+        - SiteBacker & Traffic Controller
+      summary: Delete a Probe
+      description: |
+        Deletes an existing probe for a SiteBacker or Traffic Controller pool.
+
+        The probe can be a pool-level probe (applies to all records) or a record-level
+        probe (applies to a specific record).
+
+        **Note:** This endpoint only supports A-type records. The zone must contain a
+        SiteBacker or Traffic Controller pool.
+      operationId: deleteProbe
+      parameters:
+        - $ref: '#/components/parameters/ZoneName'
+        - $ref: '#/components/parameters/OwnerName'
+        - $ref: '#/components/parameters/ProbeId'
+      responses:
+        '202':
+          $ref: '#/components/responses/AcceptedGeneric'
+        '204':
+          $ref: '#/components/responses/NoContentGeneric'
+          description: Probe deleted successfully
+        '400':
+          $ref: '#/components/responses/Error400'
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
+        '404':
+          $ref: '#/components/responses/Error404'
+        5XX:
+          $ref: '#/components/responses/Error5xx'
   /accounts/{accountName}/settings:
     get:
       tags:
@@ -3847,6 +4497,61 @@ paths:
           $ref: '#/components/responses/Error404'
           description: |
             Not Found - The telemetryId does not exist or the endpoint URL could not be reached
+        5XX:
+          $ref: '#/components/responses/Error5xx'
+  /accounts/{accountName}/agents:
+    get:
+      tags:
+        - SiteBacker & Traffic Controller
+      summary: Get SiteBacker Agents for Account
+      description: |
+        Retrieves the list of supported SiteBacker agents for the specified account.
+
+        These agents can be used when configuring probes for SiteBacker and Traffic Controller
+        pools. Agent locations are organized by geographic regions.
+      operationId: getSiteBackerAgents
+      parameters:
+        - $ref: '#/components/parameters/AccountName'
+      responses:
+        '200':
+          description: SiteBacker agents retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteBackerAgentList'
+              examples:
+                All Agents:
+                  summary: All supported SiteBacker agents
+                  value:
+                    agents:
+                      - name: North America Central
+                        location: USCENTRAL
+                        description: (Chicago, Denver, Dallas)
+                      - name: Europe East
+                        location: EUEAST
+                        description: (Amsterdam, Frankfurt, Stockholm)
+                      - name: Europe West
+                        location: EUWEST
+                        description: (London, Dublin, Paris, Madrid)
+                      - name: South America
+                        location: SAMERICA
+                        description: (Sao Paolo, Colombia, Miami)
+                      - name: Asia
+                        location: ASIA
+                        description: (Tokyo, Taipei, Singapore, Hong Kong, Sydney)
+                      - name: China
+                        location: CHINA
+                        description: '(Beijing, Hong Kong) Note: Reliable results only within China'
+                      - name: North America West
+                        location: USWEST
+                        description: (Seattle, San Jose, Los Angeles, Phoenix, Vancouver)
+                      - name: North America East
+                        location: USEAST
+                        description: (New York, Washington D.C., Atlanta, Miami, Toronto)
+        '401':
+          $ref: '#/components/responses/Error401'
+        '403':
+          $ref: '#/components/responses/Error403'
         5XX:
           $ref: '#/components/responses/Error5xx'
   /accounts/{accountName}/dirgroups/geo:
@@ -4686,6 +5391,341 @@ components:
         transferStatusDetails:
           $ref: '#/components/schemas/TransferStatusDetails'
           description: The zone transfer status details
+    ZoneProperties:
+      type: object
+      description: The Zone Properties DTO holds the common metadata across all types of zones
+      properties:
+        name:
+          type: string
+          description: Name of the zone, with trailing periods (....). Must be a valid domain name. Required for zone creation. Ignored if present on update.
+          example: 0-0-0-0-0sample.com.
+        accountName:
+          type: string
+          description: Name of the account. Required for zone creation. Ignored if present on update.
+          example: testaccount
+        type:
+          type: string
+          description: Type of zone. Valid values are PRIMARY, SECONDARY or ALIAS. Required for zone creation. Ignored if present on update.
+          enum:
+            - PRIMARY
+            - SECONDARY
+            - ALIAS
+          example: PRIMARY
+        dnssecStatus:
+          type: string
+          description: Whether or not the zone is signed with DNSSEC. Valid values are SIGNED or UNSIGNED. Returned in GET responses for zone information. Ignored if present on create or update.
+          enum:
+            - SIGNED
+            - UNSIGNED
+          example: UNSIGNED
+        digicertEnabled:
+          type: boolean
+          description: Indicates whether the zone is visible to DigiCert CertCentral, allowing them to automatically manage Domain Validations. True = enabled, False = disabled (default). Not available for Alias, Secondary, or Suspended zones. This field will only be displayed if the digicert_enabled feature is enabled and active.
+          example: true
+        owner:
+          type: string
+          description: Name of the user that created the zone. Returned in GET responses for zone information. Ignored if present on create or update.
+          example: team
+        recordCount:
+          type: integer
+          description: Number of records in the zone. Returned in GET responses for zone information. Ignored if present on create or update.
+          example: 15
+        lastModifiedDateTime:
+          type: string
+          format: date-time
+          description: The last date and time the zone was modified, represented in ISO8601 format. Returned in GET responses for zone information. Ignored if present on create or update.
+          example: '2025-02-20T08:40:00Z'
+        ultra2:
+          type: boolean
+          description: Only applicable to accounts that have enabled the UltraDNS2 service. Indicates if the zone has UltraDNS2 enabled or not. Valid values are false and true. Returned in GET responses for zone information.
+          example: true
+    RestrictIP:
+      type: object
+      description: Each Restrict IP DTO holds the IP addresses that are allowed to transfer Primary Zones out using the Zone Transfer protocol (AXFR/IXFR). Only one format should be specified in the DTO at a time (range, CIDR or single IP).
+      properties:
+        startIP:
+          type: string
+          description: The start of the IP range that is allowed to transfer this primary zone out using zone transfer protocol. IPv4 or IPv6 address.
+          format: ipv4
+          example: 192.168.1.1
+        endIP:
+          type: string
+          description: The end of the IP range that is allowed to transfer this primary zone out using zone transfer protocol. IPv4 or IPv6 address.
+          format: ipv4
+          example: 192.168.1.254
+        cidr:
+          type: string
+          description: The IP ranges specified in CIDR (e.g. 1.1.1.1/30, ::10/126)
+          pattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$|^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}(\/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))$
+          example: 192.168.1.0/24
+        singleIP:
+          type: string
+          description: The IP that is allowed to transfer this primary zone out using zone transfer protocol. IPv4 or IPv6 address.
+          format: ipv4
+          example: 192.168.1.100
+        comment:
+          type: string
+          description: A description of this range of IP addresses. Optional.
+          example: Office network range
+      anyOf:
+        - required:
+            - startIP
+            - endIP
+        - required:
+            - cidr
+        - required:
+            - singleIP
+      not:
+        allOf:
+          - required:
+              - startIP
+              - endIP
+          - required:
+              - cidr
+          - required:
+              - singleIP
+    RegistrarInfo:
+      type: object
+      description: The Registrar Info DTO holds the domain name registry information for a Primary Zone
+      properties:
+        registrar:
+          type: string
+          description: The name of the domain registrar
+          example: GoDaddy
+        whoisExpiration:
+          type: string
+          format: date
+          description: The date when the domain name registration expires
+          example: '2025-12-31'
+        nameServers:
+          type: object
+          description: Name server configuration status for this domain
+          properties:
+            ok:
+              type: array
+              items:
+                type: string
+              description: List of UltraDNS name servers that are configured for this domain
+              example:
+                - pdns1.ultradns.net.
+                - pdns2.ultradns.net.
+                - pdns3.ultradns.org.
+            unknown:
+              type: array
+              items:
+                type: string
+              description: List of name servers that are configured for this domain, but are not UltraDNS-managed name servers
+              example:
+                - ns1.example.com.
+                - ns2.example.com.
+            missing:
+              type: array
+              items:
+                type: string
+              description: List of UltraDNS name servers that should be configured for this domain, but are not
+              example:
+                - pdns4.ultradns.org.
+                - pdns5.ultradns.info.
+                - pdns6.ultradns.co.uk.
+            incorrect:
+              type: array
+              items:
+                type: string
+              description: List of any obsolete UltraDNS name servers that are still configured for this zone
+              example:
+                - obsolete1.ultradns.net.
+                - obsolete2.ultradns.net.
+          example:
+            ok:
+              - pdns1.ultradns.net.
+              - pdns2.ultradns.net.
+              - pdns3.ultradns.org.
+            missing:
+              - pdns4.ultradns.org.
+              - pdns5.ultradns.info.
+              - pdns6.ultradns.co.uk.
+    TSIG:
+      type: object
+      description: The TSIG DTO holds TSIG information for the Primary Zone
+      properties:
+        tsigKeyName:
+          type: string
+          description: The name of the TSIG key for the zone. REQUIRED.
+          example: zone-tsig-key
+        tsigKeyValue:
+          type: string
+          description: The value of the TSIG key for the zone. REQUIRED.
+          example: base64-encoded-tsig-secret
+        description:
+          type: string
+          description: A description of this key. Optional.
+          example: TSIG key for zone transfers
+        tsigAlgorithm:
+          type: string
+          description: The hash algorithm used to generate the TSIG key. REQUIRED.
+          enum:
+            - hmac-md5
+            - hmac-sha1
+            - hmac-sha224
+            - hmac-sha256
+            - hmac-sha384
+            - hmac-sha512
+          example: hmac-sha256
+      required:
+        - tsigKeyName
+        - tsigKeyValue
+        - tsigAlgorithm
+    NotifyAddress:
+      type: object
+      description: Each Notify Address DTO defines an address that gets notified when there are updates to a Primary Zone
+      properties:
+        notifyAddress:
+          type: string
+          description: The IP address that is notified when the primary zone is updated. IPv4 address. REQUIRED.
+          format: ipv4
+          example: 192.168.1.100
+        description:
+          type: string
+          description: A description of this address. Optional.
+          example: Primary DNS server notification address
+      required:
+        - notifyAddress
+    TransferStatusDetails:
+      type: object
+      description: The Transfer Status Details contains the Zone Transfer Status Details
+      properties:
+        lastRefresh:
+          type: string
+          format: date-time
+          description: Displays when the last transfer attempt or refresh was. Date/Time formatted in ISO 8601 format, UTC offset based on customer-specified time zone
+          example: '2025-02-20T08:40:00Z'
+        nextRefresh:
+          type: string
+          format: date-time
+          description: Displays when the next transfer attempt or refresh is. Date/Time formatted in ISO 8601 format, UTC offset based on customer-specified time zone
+          example: '2025-02-20T09:40:00Z'
+        lastRefreshStatus:
+          type: string
+          description: Displays the status of the last transfer that was attempted
+          enum:
+            - IN_PROGRESS
+            - FAILED
+            - SUCCESSFUL
+          example: SUCCESSFUL
+        lastRefreshStatusMessage:
+          type: string
+          description: Displays the last transfer's status message. This is currently shown as failure reason.
+          example: Transfer completed successfully
+    NameServerIPList:
+      type: object
+      description: The Name Server IP List DTO lists the Primary Name Servers for a Secondary Zone
+      properties:
+        nameServerIpList:
+          type: object
+          description: List of name server IPs with their TSIG configurations
+          properties:
+            nameServerIP1:
+              type: object
+              description: The primary name server for the source zone
+              properties:
+                ip:
+                  type: string
+                  description: The IP address of the primary name server for the source zone. IPv4 or IPv6 address. Required for creation or update of a secondary zone.
+                  format: ipv4
+                  example: 192.168.1.10
+                tsigKey:
+                  type: string
+                  description: If TSIG is enabled for this name server, the name of the TSIG key. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+                  example: tsig-key-1
+                tsigKeyValue:
+                  type: string
+                  description: If TSIG is enabled for this name server, the TSIG key's value. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+                  example: base64-encoded-secret-1
+                tsigAlgorithm:
+                  type: string
+                  description: The hash algorithm used to generate the TSIG key. Default is hmac-md5. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+                  enum:
+                    - hmac-md5
+                    - hmac-sha1
+                    - hmac-sha224
+                    - hmac-sha256
+                    - hmac-sha384
+                    - hmac-sha512
+                  default: hmac-md5
+                  example: hmac-sha256
+              required:
+                - ip
+            nameServerIP2:
+              type: object
+              description: The first backup name server for the source zone
+              properties:
+                ip:
+                  type: string
+                  description: The IP address of the first backup name server for the source zone. IPv4 or IPv6 address. Optional for creation or update of a secondary zone.
+                  format: ipv4
+                  example: 192.168.1.11
+                tsigKey:
+                  type: string
+                  description: If TSIG is enabled for this name server, the name of the TSIG key. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+                  example: tsig-key-2
+                tsigKeyValue:
+                  type: string
+                  description: If TSIG is enabled for this name server, the TSIG key's value. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+                  example: base64-encoded-secret-2
+                tsigAlgorithm:
+                  type: string
+                  description: The hash algorithm used to generate the TSIG key. Default is hmac-md5. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+                  enum:
+                    - hmac-md5
+                    - hmac-sha1
+                    - hmac-sha224
+                    - hmac-sha256
+                    - hmac-sha384
+                    - hmac-sha512
+                  default: hmac-md5
+                  example: hmac-sha256
+            nameServerIP3:
+              type: object
+              description: The second backup name server for the source zone
+              properties:
+                ip:
+                  type: string
+                  description: The IP address of the second backup name server for the source zone. IPv4 or IPv6 address. Optional for creation or update of a secondary zone.
+                  format: ipv4
+                  example: 192.168.1.12
+                tsigKey:
+                  type: string
+                  description: If TSIG is enabled for this name server, the name of the TSIG key. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+                  example: tsig-key-3
+                tsigKeyValue:
+                  type: string
+                  description: If TSIG is enabled for this name server, the TSIG key's value. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+                  example: base64-encoded-secret-3
+                tsigAlgorithm:
+                  type: string
+                  description: The hash algorithm used to generate the TSIG key. Default is hmac-md5. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
+                  enum:
+                    - hmac-md5
+                    - hmac-sha1
+                    - hmac-sha224
+                    - hmac-sha256
+                    - hmac-sha384
+                    - hmac-sha512
+                  default: hmac-md5
+                  example: hmac-sha256
+          required:
+            - nameServerIP1
+          example:
+            nameServerIP1:
+              ip: 192.168.1.10
+              tsigKey: primary-tsig-key
+              tsigKeyValue: base64-encoded-secret
+              tsigAlgorithm: hmac-sha256
+            nameServerIP2:
+              ip: 192.168.1.11
+              tsigKey: backup-tsig-key
+              tsigKeyValue: base64-encoded-backup-secret
+              tsigAlgorithm: hmac-sha256
     ZoneCreate:
       type: object
       description: The Zone Create DTO is the data structure required for creating a zone in UltraDNS
@@ -5046,6 +6086,510 @@ components:
             rdata:
               - 0 issue "ca.example.net"
               - 0 iodef "mailto:security@example.com"
+    RRSetProfile:
+      type: object
+      description: |
+        Profile object for UltraDNS pool configurations. Contains pool-specific attributes that define
+        how DNS records should be handled and returned.
+
+        Different types of profiles have different object layouts and attributes. The profile type is 
+        identified by the "@context" field.
+
+        **For RD Pool profiles**, the following structure is used:
+        - **@context**: Must be "http://schemas.ultradns.com/RDPool.jsonschema"
+        - **order**: One of FIXED, RANDOM, or ROUND_ROBIN
+        - **description**: Optional description (max 255 characters)
+
+        **RD Pool Ordering Options:**
+        - **FIXED**: Records appear in the same order all the time
+        - **RANDOM**: Order of the records is random on each request  
+        - **ROUND_ROBIN**: The order of the records changes on each request, in order
+
+        **Important Constraints for RD Pools:**
+        - RD Pools can only be defined for RRSets of type A (1) or AAAA (28)
+        - Multiple A or AAAA records for a single owner can only be defined if the owner is a pool
+        - It is legal to define an RD Pool with zero or one Rdata records
+      properties:
+        '@context':
+          type: string
+          description: URI that uniquely identifies the type of the pool
+          example: http://schemas.ultradns.com/RDPool.jsonschema
+        order:
+          type: string
+          description: The order the records will be returned in (for RD Pools)
+          enum:
+            - FIXED
+            - RANDOM
+            - ROUND_ROBIN
+          example: ROUND_ROBIN
+        description:
+          type: string
+          maxLength: 255
+          description: |
+            An optional description of the pool.
+
+            If not specified for RD Pools, the owner name for the RRSet will be used.
+          example: Load balancing pool for web servers
+      additionalProperties: true
+      examples:
+        rd_pool_fixed:
+          summary: RD Pool with Fixed Ordering
+          description: RD Pool that returns records in the same order every time
+          value:
+            '@context': http://schemas.ultradns.com/RDPool.jsonschema
+            order: FIXED
+            description: Fixed order pool for consistent routing
+        rd_pool_random:
+          summary: RD Pool with Random Ordering
+          description: RD Pool that returns records in random order on each request
+          value:
+            '@context': http://schemas.ultradns.com/RDPool.jsonschema
+            order: RANDOM
+            description: Random distribution for load balancing
+        rd_pool_round_robin:
+          summary: RD Pool with Round Robin Ordering
+          description: RD Pool that cycles through records in order on each request
+          value:
+            '@context': http://schemas.ultradns.com/RDPool.jsonschema
+            order: ROUND_ROBIN
+            description: Round robin distribution pool
+        minimal_rd_pool:
+          summary: Minimal RD Pool Configuration
+          description: RD Pool with only required fields specified
+          value:
+            '@context': http://schemas.ultradns.com/RDPool.jsonschema
+            order: RANDOM
+    SiteBackerProfile:
+      type: object
+      description: |
+        SiteBacker Pool profile attached to an `RRSet.profile` when using SiteBacker.
+        Defines behavior for probing, serving order, max active/served limits, failure
+        threshold semantics, and optional backup records.
+
+        Identified by `@context: "http://schemas.ultradns.com/SBPool.jsonschema"`.
+      properties:
+        '@context':
+          type: string
+          description: URI that uniquely identifies the type of the pool (SiteBacker)
+          example: http://schemas.ultradns.com/SBPool.jsonschema
+        description:
+          type: string
+          maxLength: 255
+          description: An optional description of the SiteBacker pool.
+          example: Primary SB pool for www
+        runProbes:
+          type: boolean
+          description: Indicates whether or not the probes are run for this pool.
+          default: true
+        actOnProbes:
+          type: boolean
+          description: |
+            Indicates whether or not pool records will be enabled (true) or disabled (false)
+            when probes are run.
+          default: true
+        order:
+          type: string
+          description: |
+            Indicates the order of the records returned by the resolver for the SiteBacker pool.
+          enum:
+            - FIXED
+            - RANDOM
+            - ROUND_ROBIN
+          default: ROUND_ROBIN
+          example: ROUND_ROBIN
+        maxActive:
+          type: integer
+          minimum: 1
+          description: |
+            Specifies the maximum number of active servers in a pool and determines when
+            SiteBacker takes backup servers offline. If not specified, defaults to 1.
+          example: 1
+        failureThreshold:
+          type: integer
+          nullable: true
+          minimum: 0
+          description: |
+            The minimum number of priority records that must fail for a pool to be labeled
+            "FAILED". If 0 or null, the failure-threshold logic is disabled.
+          example: 4
+        maxServed:
+          type: integer
+          minimum: 1
+          description: |
+            Determines the number of record answers for each query. Value from 1 to maxActive.
+            If not specified, defaults to maxActive.
+          example: 1
+        status:
+          type: string
+          description: |
+            Returned for SiteBacker GET calls. One of OK, WARNING, CRITICAL, FAILED.
+          enum:
+            - OK
+            - WARNING
+            - CRITICAL
+            - FAILED
+          readOnly: true
+        rdataInfo:
+          type: array
+          description: |
+            One entry for each entry in `rdata`. Metadata for each record in the same list order.
+          items:
+            $ref: '#/components/schemas/SiteBackerRDataInfo'
+        backupRecords:
+          type: array
+          description: |
+            List of backup records served if all other records fail. One or more A records or a
+            single CNAME record.
+          items:
+            $ref: '#/components/schemas/SiteBackerBackupRecord'
+      additionalProperties: false
+      examples:
+        minimal:
+          summary: Minimal SiteBacker profile
+          value:
+            '@context': http://schemas.ultradns.com/SBPool.jsonschema
+            order: ROUND_ROBIN
+        full:
+          summary: Full SiteBacker profile with rdataInfo and backupRecords
+          value:
+            '@context': http://schemas.ultradns.com/SBPool.jsonschema
+            description: testsb.dollytest6.com.
+            runProbes: true
+            actOnProbes: true
+            order: ROUND_ROBIN
+            maxActive: 1
+            maxServed: 1
+            status: OK
+            rdataInfo:
+              - state: NORMAL
+                runProbes: true
+                priority: 1
+                failoverDelay: 0
+                restorationDelay: 0
+                threshold: 1
+                availableToServe: false
+                type: A
+              - state: NORMAL
+                runProbes: true
+                priority: 1
+                failoverDelay: 0
+                restorationDelay: 0
+                threshold: 1
+                availableToServe: false
+                type: CNAME
+            backupRecords:
+              - rdata: 4.4.4.4
+                failoverDelay: 0
+                restorationDelay: 0
+                availableToServe: false
+    SiteBackerRDataInfo:
+      type: object
+      description: |
+        Per-record metadata for entries in `RRSet.rdata` when using a SiteBacker pool.
+        Items appear in the same order as the corresponding rdata strings.
+      properties:
+        state:
+          type: string
+          description: The current state of the pool record.
+          enum:
+            - NORMAL
+            - ACTIVE
+            - INACTIVE
+          default: NORMAL
+        runProbes:
+          type: boolean
+          description: Indicates whether or not probes are run for this pool record.
+          default: true
+        priority:
+          type: integer
+          description: Indicates the serving preference for this pool record.
+          example: 1
+        failoverDelay:
+          type: integer
+          minimum: 0
+          maximum: 30
+          description: |
+            Minutes to wait after detecting failure before activating secondary records.
+            Defaults to 0 (immediate activation).
+          default: 0
+        restorationDelay:
+          type: integer
+          nullable: true
+          minimum: 0
+          maximum: 30
+          description: |
+            Minutes to wait before failing back once the previously failed record is healthy.
+            If omitted, inherits the `failoverDelay` value.
+        threshold:
+          type: integer
+          description: Number of probes that must agree before the record state changes.
+          example: 1
+        weight:
+          type: integer
+          minimum: 2
+          maximum: 100
+          description: |
+            Determines traffic share for Traffic Controller pools. Even integers 2–100.
+            Ignored if present in SiteBacker POST/PUT/PATCH.
+        availableToServe:
+          type: boolean
+          description: Indicates if the record is active and available to serve.
+          default: true
+          readOnly: true
+        status:
+          type: string
+          description: Returned for SiteBacker/Traffic Controller GET calls.
+          enum:
+            - OK
+            - WARNING
+            - CRITICAL
+            - FAILED
+          readOnly: true
+        type:
+          type: string
+          description: Abbreviated record/pool type for the record entry.
+          example: A
+      additionalProperties: false
+      examples:
+        example_a:
+          summary: A record metadata
+          value:
+            state: NORMAL
+            runProbes: true
+            priority: 1
+            failoverDelay: 0
+            restorationDelay: 0
+            threshold: 1
+            availableToServe: true
+            type: A
+    SiteBackerBackupRecord:
+      type: object
+      description: |
+        Backup record definition for SiteBacker pools. Served when all primary records fail.
+      properties:
+        rdata:
+          type: string
+          description: The IPv4 address or CNAME for the backup record.
+          example: 4.4.4.4
+        failoverDelay:
+          type: integer
+          minimum: 0
+          maximum: 30
+          description: Minutes to wait after failure before activating backup records.
+          default: 0
+        restorationDelay:
+          type: integer
+          nullable: true
+          minimum: 0
+          maximum: 30
+          description: |
+            Minutes to wait before failing back to primaries once healthy. If omitted,
+            inherits the value of `failoverDelay`.
+        availableToServe:
+          type: boolean
+          description: Indicates whether the backup record is available to serve.
+          default: true
+      additionalProperties: false
+      examples:
+        a_backup:
+          summary: A backup record
+          value:
+            rdata: 4.4.4.4
+            failoverDelay: 0
+            restorationDelay: 0
+            availableToServe: false
+    TrafficControllerProfile:
+      type: object
+      description: |
+        Traffic Controller Pool profile attached to an `RRSet.profile` when using Traffic Controller.
+        Similar to SiteBacker but always serves a single record at a time and supports weighted
+        load balancing via per-record `weight` on `rdataInfo`.
+
+        Identified by `@context: "http://schemas.ultradns.com/TCPool.jsonschema"`.
+      properties:
+        '@context':
+          type: string
+          description: URI that uniquely identifies the type of the pool (Traffic Controller)
+          example: http://schemas.ultradns.com/TCPool.jsonschema
+        description:
+          type: string
+          maxLength: 255
+          description: An optional description of the Traffic Controller pool.
+          example: TC pool for api
+        runProbes:
+          type: boolean
+          description: Indicates whether or not the probes are run for this pool.
+          default: true
+        actOnProbes:
+          type: boolean
+          description: |
+            Indicates whether or not pool records will be enabled (true) or disabled (false)
+            when probes are run.
+          default: true
+        maxToLB:
+          type: integer
+          minimum: 0
+          description: |
+            Maximum number of pool records to include in load balancing. Maximum value is the
+            number of pool records. If not specified, defaults to 0.
+          example: 3
+        failureThreshold:
+          type: integer
+          nullable: true
+          minimum: 0
+          description: |
+            The minimum number of priority records that must fail for the pool to be labeled
+            "FAILED". If 0 or null, the failure-threshold logic is disabled.
+          example: 0
+        status:
+          type: string
+          description: |
+            Returned for Traffic Controller GET calls. One of OK, WARNING, CRITICAL, FAILED.
+          enum:
+            - OK
+            - WARNING
+            - CRITICAL
+            - FAILED
+          readOnly: true
+        rdataInfo:
+          type: array
+          description: |
+            One entry for each entry in `rdata`. Metadata for each record in the same list order.
+            For Traffic Controller pools, `weight` controls traffic share and must be an even
+            integer from 2–100.
+          items:
+            $ref: '#/components/schemas/SiteBackerRDataInfo'
+        backupRecord:
+          description: |
+            Single backup record served if all other records fail. Optional.
+          allOf:
+            - $ref: '#/components/schemas/SiteBackerBackupRecord'
+      additionalProperties: false
+      examples:
+        full:
+          summary: Traffic Controller profile with rdataInfo and backupRecord
+          value:
+            '@context': http://schemas.ultradns.com/TCPool.jsonschema
+            description: STRING
+            runProbes: true
+            actOnProbes: true
+            maxToLB: 3
+            failureThreshold: 0
+            rdataInfo:
+              - state: NORMAL
+                runProbes: true
+                priority: 1
+                failoverDelay: 0
+                restorationDelay: 0
+                threshold: 1
+                weight: 2
+                availableToServe: true
+                type: RD
+              - state: NORMAL
+                runProbes: true
+                priority: 2
+                failoverDelay: 0
+                restorationDelay: 0
+                threshold: 1
+                weight: 2
+                availableToServe: true
+                type: A
+              - state: NORMAL
+                runProbes: true
+                priority: 3
+                failoverDelay: 0
+                restorationDelay: 0
+                threshold: 1
+                weight: 2
+                availableToServe: true
+                type: SF
+              - state: NORMAL
+                runProbes: true
+                priority: 4
+                failoverDelay: 0
+                restorationDelay: 0
+                threshold: 1
+                weight: 2
+                availableToServe: true
+                type: SLB
+            backupRecord:
+              rdata: 9.8.7.6
+    TLSA:
+      type: object
+      description: |
+        TLSA (Transport Layer Security Authentication) DTO for DNS-based authentication of TLS certificates.
+
+        The TLSA record provides a way to authenticate TLS certificates using DNS, allowing domain owners to specify which certificates are valid for their domain.
+
+        The TLSA record contains three integer fields (Certification Usage, Field-Selector, Matching Type) followed by the Certificate Association Data.
+      properties:
+        certificationUsage:
+          type: integer
+          minimum: 0
+          maximum: 3
+          description: |
+            The first integer displayed. Describes the type of Certificate to be used.
+
+            Valid values are:
+            - 0 - Specify CA certificate/public key for certificate to certify end server. Certificate might not have the basic Constraints extension present.
+            - 1 - Specify CA certificate/public key for certificate to certify end server. Service certificate constraint.
+            - 2 - Specify CA certificate/public key for certificate to certify end server. Trust anchor assertion.
+            - 3 - Domain-issued certificate (same as 1, with no PKIX validation is tested).
+          example: 3
+        fieldSelector:
+          type: integer
+          minimum: 0
+          maximum: 1
+          description: |
+            The second integer displayed. Describes the type of selector to be used.
+
+            Valid values are:
+            - 0 - Full certificate of the Certificate Binary structure.
+            - 1 - SubjectPublicKeyInfo
+          example: 1
+        matchingType:
+          type: integer
+          minimum: 0
+          maximum: 2
+          description: |
+            The third integer displayed. Describes the type of matching to be used.
+
+            Valid values are:
+            - 0 - Exact match on selected content.
+            - 1 - SHA-256 hash of selected content.
+            - 2 - SHA-512 hash of selected content.
+          example: 1
+        certificateAssociationData:
+          type: string
+          pattern: ^[0-9a-fA-F\s]+$
+          description: |
+            The string of hexadecimal characters that describes certificate associated data.
+
+            The certificate-association-data must be represented as a string of hexadecimal characters. 
+            Whitespace is allowed within the string of hexadecimal characters.
+          example: d2abde240d7cd3ee6b4b28c54df034b97983a1d16e8a410e4561cb106618e971
+      required:
+        - certificationUsage
+        - fieldSelector
+        - matchingType
+        - certificateAssociationData
+      examples:
+        tlsa_ca_certificate:
+          summary: TLSA CA Certificate Example
+          description: Example of a TLSA record for CA certificate authentication
+          value:
+            certificationUsage: 0
+            fieldSelector: 0
+            matchingType: 1
+            certificateAssociationData: d2abde240d7cd3ee6b4b28c54df034b97983a1d16e8a410e4561cb106618e971
+        tlsa_public_key:
+          summary: TLSA Public Key Example
+          description: Example of a TLSA record for public key authentication
+          value:
+            certificationUsage: 3
+            fieldSelector: 1
+            matchingType: 2
+            certificateAssociationData: a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890
     RRSetsList:
       type: object
       description: |
@@ -5250,6 +6794,1694 @@ components:
         error_description:
           type: string
           description: Detailed error description with error code
+    DnsLimitInfo:
+      type: object
+      description: |
+        Limit configuration for DNS probe transactions. Defines timing thresholds and
+        response validation criteria.
+
+        All timing values are in seconds. Some limits are only applicable to Traffic Controller pools.
+      properties:
+        run:
+          type: object
+          description: |
+            How long the probe should run. Only used for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: How long the probe should run to trigger a warning.
+              example: 5
+            critical:
+              type: integer
+              description: How long the probe should run to trigger a critical warning.
+              example: 10
+            fail:
+              type: integer
+              description: How long the probe should run to trigger a failure.
+              example: 15
+          additionalProperties: false
+        avgRun:
+          type: object
+          description: |
+            Mean run time over the five most recent probes run on each agent.
+            Only used for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: Mean run time to trigger a warning.
+              example: 8
+            critical:
+              type: integer
+              description: Mean run time to trigger a critical warning.
+              example: 12
+            fail:
+              type: integer
+              description: Mean run time to trigger a failure.
+              example: 20
+          additionalProperties: false
+        response:
+          type: object
+          description: |
+            Expected DNS response values. Used to validate DNS query responses.
+
+            Matching rules vary by record type:
+            - Single field responses (A, AAAA, CNAME, DNAME, NS, MB, MD, MF, MG, MR, PTR): Match exactly
+            - HINFO records: Match partially without considering case
+            - Multiple field responses: Match partially, join all fields separated by spaces
+
+            Example: Use "10 mail.example.com." to test an MX record with preference 10
+            and target host mail.example.com.
+          properties:
+            warning:
+              type: string
+              description: |
+                Expected response value to trigger a warning.
+
+                Optional, only used for Traffic Controller Pools.
+              example: 192.0.2.1
+            critical:
+              type: string
+              description: |
+                Expected response value to trigger a critical warning.
+
+                Optional, only used for Traffic Controller Pools.
+              example: 198.51.100.1
+            fail:
+              type: string
+              description: |
+                Expected response value to trigger a failure.
+
+                Optional.
+              example: 192.0.2.1
+          additionalProperties: false
+      additionalProperties: false
+    DnsProbeDetails:
+      type: object
+      description: |
+        Probe-specific details for DNS type probes. Defines the port, protocol, record type,
+        owner name, and validation criteria.
+      properties:
+        port:
+          type: integer
+          description: |
+            Port to use for DNS lookup.
+
+            Integer between 1 and 65535. Defaults to 53.
+          minimum: 1
+          maximum: 65535
+          default: 53
+          example: 53
+        tcpOnly:
+          type: boolean
+          description: |
+            Indicates whether the probe should use TCP only, or first UDP then TCP.
+
+            Defaults to false.
+          default: false
+          example: false
+        type:
+          type: string
+          description: |
+            Select which kind of record should be checked for.
+
+            Valid values are NULL, AXFR, or any Resource Record Type.
+
+            Defaults to NULL.
+          example: A
+        ownerName:
+          type: string
+          description: |
+            Selects the name that should be queried.
+
+            Defaults to blank.
+          example: www.example.com
+        limits:
+          $ref: '#/components/schemas/DnsLimitInfo'
+      additionalProperties: false
+      examples:
+        minimal:
+          summary: Minimal DNS probe configuration
+          description: Uses default port, UDP then TCP, no record type
+          value:
+            port: 53
+            tcpOnly: false
+        with_record_type:
+          summary: DNS probe for A record
+          value:
+            port: 53
+            tcpOnly: false
+            type: A
+            ownerName: www.example.com
+            limits:
+              run:
+                fail: 15
+        traffic_controller:
+          summary: DNS probe for Traffic Controller with all limits
+          description: Complete DNS configuration for Traffic Controller pools
+          value:
+            port: 53
+            tcpOnly: false
+            type: A
+            ownerName: www.example.com
+            limits:
+              run:
+                warning: 5
+                critical: 10
+                fail: 15
+              avgRun:
+                warning: 8
+                critical: 12
+                fail: 20
+              response:
+                warning: 198.51.100.1
+                critical: 203.0.113.1
+                fail: 192.0.2.1
+        mx_record:
+          summary: DNS probe for MX record
+          value:
+            port: 53
+            tcpOnly: true
+            type: MX
+            ownerName: example.com
+            limits:
+              response:
+                fail: 10 mail.example.com.
+    FtpLimitInfo:
+      type: object
+      description: |
+        Limit configuration for FTP probe transactions. Defines timing thresholds for
+        connect time, run time, and their averages, as well as response validation
+        criteria.
+
+        All timing values are in seconds. Some limits are only applicable to Traffic Controller pools.
+      properties:
+        connect:
+          type: object
+          description: |
+            Maximum time allowed to establish a connection to the resource. Only used
+            for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: |
+                How long the probe stays connected to trigger a warning.
+
+                Maximum 20 seconds. Optional, only used for Traffic Controller Pools.
+              maximum: 20
+              example: 5
+            critical:
+              type: integer
+              description: |
+                How long the probe stays connected to trigger a critical warning.
+
+                Maximum 20 seconds. Optional, only used for Traffic Controller Pools.
+              maximum: 20
+              example: 10
+            fail:
+              type: integer
+              description: |
+                How long the probe stays connected to trigger a failure.
+
+                Maximum 20 seconds.
+              maximum: 20
+              example: 15
+          additionalProperties: false
+        avgConnect:
+          type: object
+          description: |
+            Mean connect time over the five most recent probes run on each agent.
+            Only used for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: Mean connect time to trigger a warning.
+              example: 8
+            critical:
+              type: integer
+              description: Mean connect time to trigger a critical warning.
+              example: 12
+            fail:
+              type: integer
+              description: Mean connect time to trigger a failure.
+              example: 20
+          additionalProperties: false
+        run:
+          type: object
+          description: |
+            Maximum run time for the probe. Only used for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: How long the probe should run to trigger a warning.
+              example: 10
+            critical:
+              type: integer
+              description: How long the probe should run to trigger a critical warning.
+              example: 20
+            fail:
+              type: integer
+              description: How long the probe should run to trigger a failure.
+              example: 30
+          additionalProperties: false
+        avgRun:
+          type: object
+          description: |
+            Mean run time over the five most recent probes run on each agent.
+            Only used for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: Mean run time to trigger a warning.
+              example: 15
+            critical:
+              type: integer
+              description: Mean run time to trigger a critical warning.
+              example: 25
+            fail:
+              type: integer
+              description: Mean run time to trigger a failure.
+              example: 40
+          additionalProperties: false
+        searchString:
+          type: object
+          description: |
+            String or regex pattern to search for in the FTP response.
+
+            If left blank, the FTP probe verifies that the server responds with a
+            successful response.
+
+            If specified, the probe searches the response's body. If the probe does not
+            find the string within the response, the probe attempts to match it as a
+            regular expression.
+          properties:
+            warning:
+              type: string
+              description: String pattern to search for to trigger a warning. Optional, only used for Traffic Controller Pools.
+              example: 220 Welcome
+            critical:
+              type: string
+              description: String pattern to search for to trigger a critical warning. Optional, only used for Traffic Controller Pools.
+              example: 421 Service not available
+            fail:
+              type: string
+              description: |
+                String pattern to search for to trigger a failure.
+
+                Optional. If specified, probe searches response body; otherwise verifies
+                successful FTP response.
+              example: 530 Login incorrect|550 Failed
+          additionalProperties: false
+      additionalProperties: false
+    FtpProbeDetails:
+      type: object
+      description: |
+        Probe-specific details for FTP type probes. Defines the port, connection mode,
+        authentication, and path to check.
+      properties:
+        port:
+          type: integer
+          description: |
+            Port to connect to for FTP service.
+
+            Integer between 1 and 65535. Defaults to 21.
+          minimum: 1
+          maximum: 65535
+          default: 21
+          example: 21
+        passiveMode:
+          type: boolean
+          description: |
+            Whether or not to use FTP Passive mode.
+
+            Defaults to false.
+          default: false
+          example: true
+        username:
+          type: string
+          description: |
+            Username for FTP service.
+
+            Optional.
+          example: ftpuser
+        password:
+          type: string
+          description: |
+            Password for FTP service.
+
+            Optional.
+          example: secret123
+        path:
+          type: string
+          description: Path to check for a file.
+          example: /pub/uploads/
+        limits:
+          $ref: '#/components/schemas/FtpLimitInfo'
+      required:
+        - path
+      additionalProperties: false
+      examples:
+        minimal:
+          summary: Minimal FTP probe configuration
+          description: Uses default port and active mode
+          value:
+            path: /pub/
+            limits:
+              run:
+                fail: 30
+        with_auth:
+          summary: FTP probe with authentication
+          value:
+            port: 21
+            passiveMode: true
+            username: ftpuser
+            password: secret123
+            path: /uploads/
+            limits:
+              connect:
+                fail: 15
+              run:
+                fail: 30
+        traffic_controller:
+          summary: FTP probe for Traffic Controller with all limits
+          description: Complete FTP configuration for Traffic Controller pools
+          value:
+            port: 21
+            passiveMode: true
+            username: ftpuser
+            password: secret123
+            path: /pub/uploads/
+            limits:
+              connect:
+                warning: 5
+                critical: 10
+                fail: 15
+              avgConnect:
+                warning: 8
+                critical: 12
+                fail: 20
+              run:
+                warning: 10
+                critical: 20
+                fail: 30
+              avgRun:
+                warning: 15
+                critical: 25
+                fail: 40
+              searchString:
+                warning: 220 Welcome
+                critical: 421 Service not available
+                fail: 530 Login incorrect
+    HttpLimitInfo:
+      type: object
+      description: |
+        Limit configuration for HTTP probe transactions. Defines timing thresholds for
+        connect time, run time, and their averages, as well as response validation
+        criteria.
+
+        All timing values are in seconds. Some limits are only applicable to Traffic Controller pools.
+      properties:
+        connect:
+          type: object
+          description: |
+            Maximum time allowed to establish a connection to the resource. Only used
+            for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: |
+                How long the probe stays connected to trigger a warning.
+
+                Maximum 20 seconds. Optional, only used for Traffic Controller Pools.
+              maximum: 20
+              example: 5
+            critical:
+              type: integer
+              description: |
+                How long the probe stays connected to trigger a critical warning.
+
+                Maximum 20 seconds. Optional, only used for Traffic Controller Pools.
+              maximum: 20
+              example: 10
+            fail:
+              type: integer
+              description: |
+                How long the probe stays connected to trigger a fail.
+
+                Maximum 20 seconds.
+              maximum: 20
+              example: 15
+          additionalProperties: false
+        avgConnect:
+          type: object
+          description: |
+            Mean connect time over the five most recent probes run on each agent.
+            Only used for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: Mean connect time to trigger a warning.
+              example: 8
+            critical:
+              type: integer
+              description: Mean connect time to trigger a critical warning.
+              example: 12
+            fail:
+              type: integer
+              description: Mean connect time to trigger a fail.
+              example: 20
+          additionalProperties: false
+        run:
+          type: object
+          description: |
+            Maximum run time for the probe. Only used for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: How long the probe should run to trigger a warning.
+              example: 10
+            critical:
+              type: integer
+              description: How long the probe should run to trigger a critical warning.
+              example: 20
+            fail:
+              type: integer
+              description: How long the probe should run to trigger a fail.
+              example: 30
+          additionalProperties: false
+        avgRun:
+          type: object
+          description: |
+            Mean run time over the five most recent probes run on each agent.
+            Only used for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: Mean run time to trigger a warning.
+              example: 15
+            critical:
+              type: integer
+              description: Mean run time to trigger a critical warning.
+              example: 25
+            fail:
+              type: integer
+              description: Mean run time to trigger a fail.
+              example: 40
+          additionalProperties: false
+        searchString:
+          type: object
+          description: |
+            String or regex pattern to search for in the HTTP response body.
+
+            If left blank, the HTTP probe verifies that the server responds with a
+            successful HTTP response (normally Status Code 200).
+
+            If specified, the probe searches the response's body only; it does not
+            search the status line and headers. If the probe does not find the string
+            within the response, the probe attempts to match it as a regular expression.
+          properties:
+            warning:
+              type: string
+              description: String pattern to search for to trigger a warning. Optional, only used for Traffic Controller Pools.
+              example: Powered by
+            critical:
+              type: string
+              description: String pattern to search for to trigger a critical warning. Optional, only used for Traffic Controller Pools.
+              example: Maintenance
+            fail:
+              type: string
+              description: |
+                String pattern to search for to trigger a fail.
+
+                Optional. If specified, probe searches response body; otherwise verifies
+                successful HTTP response.
+              example: Error|Not Found
+          additionalProperties: false
+      additionalProperties: false
+    HttpProbeDetails:
+      type: object
+      description: |
+        Probe-specific details for HTTP type probes. Defines one or more HTTP transactions
+        to execute and their validation criteria.
+      properties:
+        transactions:
+          type: array
+          description: |
+            List of HTTP requests sent for a single probe. Each transaction defines a
+            complete HTTP request including method, URL, and expected response validation.
+          items:
+            $ref: '#/components/schemas/HttpTransactionInfo'
+          minItems: 1
+        totalLimits:
+          $ref: '#/components/schemas/HttpTotalLimit'
+      required:
+        - transactions
+      additionalProperties: false
+      examples:
+        single_get:
+          summary: Single GET transaction
+          value:
+            transactions:
+              - method: GET
+                url: https://www.example.com/
+                followRedirects: true
+                expectedResponse: 2XX
+        multiple_transactions:
+          summary: Multiple transactions with limits
+          value:
+            transactions:
+              - method: POST
+                url: https://api.example.com/login
+                protocolVersion: HTTP/1.1
+                transmittedData: username=test&password=secret
+                expectedResponse: 200|302
+                limits:
+                  run:
+                    fail: 30
+              - method: GET
+                url: https://api.example.com/dashboard
+                followRedirects: true
+                expectedResponse: 2XX
+            totalLimits:
+              warning: 30
+              critical: 60
+              fail: 120
+        with_search_string:
+          summary: Transaction with response body validation
+          value:
+            transactions:
+              - method: GET
+                url: https://www.example.com/
+                limits:
+                  searchString:
+                    fail: Welcome|Home
+    HttpTotalLimit:
+      type: object
+      description: |
+        Total time limits for all HTTP transactions in a probe sequence.
+        Only used for Traffic Controller pools.
+      properties:
+        warning:
+          type: integer
+          description: |
+            Run time for all steps in the sequence of an HTTP transactional probe for
+            a warning to be generated. Optional, only used for Traffic Controller Pools.
+          example: 30
+        critical:
+          type: integer
+          description: |
+            Run time for all steps in the sequence of an HTTP transactional probe for
+            a critical warning to be generated. Optional, only used for Traffic Controller Pools.
+          example: 60
+        fail:
+          type: integer
+          description: |
+            Run time for all steps in the sequence of an HTTP transactional probe for
+            the probe to fail. Optional.
+          example: 120
+      additionalProperties: false
+    HttpTransactionInfo:
+      type: object
+      description: |
+        Individual HTTP transaction within an HTTP probe. Defines the method, URL,
+        protocol version, and validation criteria for a single HTTP request.
+      properties:
+        method:
+          type: string
+          description: HTTP method for the transaction.
+          enum:
+            - GET
+            - POST
+          example: GET
+        protocolVersion:
+          type: string
+          description: |
+            HTTP protocol version to use for the probe.
+
+            Note: HTTP probes will only correctly work if the indicated server supports
+            the configured HTTP protocol version, otherwise the probe will fail.
+          enum:
+            - HTTP/1.0
+            - HTTP/1.1
+            - HTTP/2
+          example: HTTP/1.1
+        url:
+          type: string
+          description: URL to probe.
+          example: https://www.example.com/
+        transmittedData:
+          type: string
+          description: Data to send to the URL. Optional.
+          example: key1=value1&key2=value2
+        followRedirects:
+          type: boolean
+          description: |
+            Indicates whether or not to follow redirects.
+
+            Optional, defaults to false.
+          default: false
+          example: true
+        expectedResponse:
+          type: string
+          description: |
+            The expected response codes for probes to be returned as successful.
+
+            Valid values:
+            - **2XX**: Probe will pass for any code between 200-299
+            - **3XX**: Probe will pass for any code between 300-399
+            - **2XX|3XX**: Probe will pass for any code between 200-399
+            - Any combination of HTTP codes between 100-599 separated by '|', e.g.:
+              - `201|302`
+              - `301|202|401`
+              - `501|201|404|301`
+
+            By default, probes will pass for 2XX HTTP codes.
+
+            Optional.
+          example: 2XX|3XX
+        limits:
+          $ref: '#/components/schemas/HttpLimitInfo'
+      required:
+        - method
+        - url
+      additionalProperties: false
+      examples:
+        get_request_simple:
+          summary: Simple GET request
+          value:
+            method: GET
+            url: https://www.example.com/
+        post_request_with_data:
+          summary: POST request with data
+          value:
+            method: POST
+            url: https://api.example.com/login
+            protocolVersion: HTTP/1.1
+            transmittedData: username=admin&password=secret
+            followRedirects: true
+            expectedResponse: 200|302
+    PingLimitInfo:
+      type: object
+      description: |
+        Limit configuration for PING probe transactions. Defines thresholds for packet loss,
+        timing limits, and their averages.
+
+        All timing values are in seconds. Some limits are only applicable to Traffic Controller pools.
+      properties:
+        lossPercent:
+          type: object
+          description: |
+            Packet loss percentage thresholds. Values represent the percentage of packets
+            lost that would trigger the event.
+
+            For example, 5 means packet loss > 5% triggers the event.
+            0 always fails the probe; 100 ensures the probe succeeds.
+          properties:
+            warning:
+              type: integer
+              description: |
+                Percentage of packets lost to trigger a warning.
+
+                Optional, only used for Traffic Controller Pools.
+              example: 10
+            critical:
+              type: integer
+              description: |
+                Percentage of packets lost to trigger a critical warning.
+
+                Optional, only used for Traffic Controller Pools.
+              example: 20
+            fail:
+              type: integer
+              description: |
+                Percentage of packets lost to trigger a failure.
+
+                Optional.
+              example: 50
+          additionalProperties: false
+        total:
+          type: object
+          description: |
+            Total run time for all pings to complete. Only used for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: Run time for all pings to complete for a warning to be generated.
+              example: 5
+            critical:
+              type: integer
+              description: Run time for all pings to complete for a critical warning to be generated.
+              example: 10
+            fail:
+              type: integer
+              description: Run time for all pings to complete for a failure to be generated.
+              example: 15
+          additionalProperties: false
+        average:
+          type: object
+          description: |
+            Mean response time over the five most recent probes run on each agent.
+            Only used for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: Mean connect time to trigger a warning.
+              example: 100
+            critical:
+              type: integer
+              description: Mean connect time to trigger a critical warning.
+              example: 200
+            fail:
+              type: integer
+              description: Mean connect time to trigger a failure.
+              example: 500
+          additionalProperties: false
+        run:
+          type: object
+          description: |
+            How long the probe should run. Only used for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: How long the probe should run to trigger a warning.
+              example: 2
+            critical:
+              type: integer
+              description: How long the probe should run to trigger a critical warning.
+              example: 4
+            fail:
+              type: integer
+              description: How long the probe should run to trigger a failure.
+              example: 8
+          additionalProperties: false
+        avgRun:
+          type: object
+          description: |
+            Mean run time over the five most recent probes run on each agent.
+            Only used for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: Mean run time to trigger a warning.
+              example: 3
+            critical:
+              type: integer
+              description: Mean run time to trigger a critical warning.
+              example: 6
+            fail:
+              type: integer
+              description: Mean run time to trigger a failure.
+              example: 10
+          additionalProperties: false
+      additionalProperties: false
+    PingProbeDetails:
+      type: object
+      description: |
+        Probe-specific details for PING type probes. Defines the number and size of ICMP
+        packets to send and validation criteria.
+      properties:
+        packets:
+          type: integer
+          description: |
+            Number of ICMP packets to send.
+
+            Defaults to 3.
+          default: 3
+          example: 5
+        packetSize:
+          type: integer
+          description: |
+            Size of packets in bytes.
+
+            Defaults to 56.
+          default: 56
+          example: 64
+        limits:
+          $ref: '#/components/schemas/PingLimitInfo'
+      additionalProperties: false
+      examples:
+        minimal:
+          summary: Minimal PING probe configuration
+          description: Uses default packet count and size
+          value:
+            packets: 3
+            packetSize: 56
+        with_limits:
+          summary: PING probe with custom limits
+          value:
+            packets: 5
+            packetSize: 64
+            limits:
+              lossPercent:
+                fail: 50
+              run:
+                fail: 8
+        traffic_controller:
+          summary: PING probe for Traffic Controller with all limits
+          description: Complete PING configuration for Traffic Controller pools
+          value:
+            packets: 5
+            packetSize: 64
+            limits:
+              lossPercent:
+                warning: 10
+                critical: 20
+                fail: 50
+              total:
+                warning: 5
+                critical: 10
+                fail: 15
+              average:
+                warning: 100
+                critical: 200
+                fail: 500
+              run:
+                warning: 2
+                critical: 4
+                fail: 8
+              avgRun:
+                warning: 3
+                critical: 6
+                fail: 10
+    ProbeDetails:
+      oneOf:
+        - $ref: '#/components/schemas/HttpProbeDetails'
+        - $ref: '#/components/schemas/PingProbeDetails'
+        - $ref: '#/components/schemas/FtpProbeDetails'
+        - $ref: '#/components/schemas/TcpProbeDetails'
+        - $ref: '#/components/schemas/SmtpProbeDetails'
+        - $ref: '#/components/schemas/SmtpSendProbeDetails'
+        - $ref: '#/components/schemas/DnsProbeDetails'
+      description: |
+        Probe type-specific details. The structure varies based on the probe type:
+
+        - **HTTP**: Multiple transactions with HTTP methods, URLs, and response validation
+        - **PING**: ICMP packet configuration with packet count, size, and timing limits
+        - **FTP**: FTP connection with port, passive mode, authentication, and path validation
+        - **TCP**: TCP connection with port and optional control IP
+        - **SMTP**: SMTP connection with port and timing limits
+        - **SMTP_SEND**: SMTP email send with port, from/to addresses, message, and timing limits
+        - **DNS**: DNS query with port, TCP/UDP protocol, record type, owner name, and response validation
+
+        This is a polymorphic schema where the actual fields depend on the probe `type`
+        specified in the parent `ProbeInfo` object.
+    ProbeInfo:
+      type: object
+      description: |
+        Probe configuration for SiteBacker and Traffic Controller pools. Defines what type of
+        probe to run, how often to run it, from which agent locations, and what threshold is
+        required for state changes.
+
+        The probe can be configured at two levels:
+        - **Pool-level**: Applies to all records in the pool (poolRecord is omitted)
+        - **Record-level**: Applies to a specific record in the pool (poolRecord is specified)
+      properties:
+        id:
+          type: string
+          description: |
+            The internal ID for this probe. Returned by GET operations.
+
+            NO for POST, PUT, or PATCH calls. Ignored if present.
+          example: probe-123-456
+        poolRecord:
+          type: string
+          description: |
+            The pool record associated with this probe.
+
+            - Returned by GET when returning a record-level probe
+            - Left blank when creating a pool-level probe
+            - Specified when creating a record-level probe
+
+            Required for POST when creating a record-level probe.
+            NO for PUT or PATCH calls. Ignored if present.
+          example: 1.2.3.4
+        type:
+          type: string
+          description: Type of the probe.
+          enum:
+            - HTTP
+            - PING
+            - FTP
+            - TCP
+            - SMTP
+            - SMTP_SEND
+            - DNS
+          example: HTTP
+        headers:
+          type: array
+          description: |
+            Custom probe headers when type = HTTP. Headers are provided as key:value pairs.
+
+            Key is required, but value can be empty.
+
+            Only used if type = HTTP. Optional.
+          items:
+            type: string
+            example: 'User-Agent: Mozilla/5.0'
+          example:
+            - 'User-Agent: Mozilla/5.0'
+            - 'Accept: */*'
+        interval:
+          type: string
+          description: |
+            Length of time between probes in minutes.
+
+            If not specified, defaults to FIVE_MINUTES.
+          enum:
+            - HALF_MINUTE
+            - ONE_MINUTE
+            - TWO_MINUTES
+            - FIVE_MINUTES
+            - TEN_MINUTES
+            - FIFTEEN_MINUTES
+          default: FIVE_MINUTES
+          example: FIVE_MINUTES
+        agents:
+          type: array
+          description: |
+            Locations that will be used for probing. One or more values must be specified.
+
+            Valid values are NEW_YORK, PALO_ALTO, DALLAS, and AMSTERDAM.
+
+            See ProbeType SiteBacker Agent - Updated Region/Agent Names for the new agent names.
+          items:
+            type: string
+            enum:
+              - NEW_YORK
+              - PALO_ALTO
+              - DALLAS
+              - AMSTERDAM
+          minItems: 1
+          example:
+            - NEW_YORK
+            - DALLAS
+        threshold:
+          type: integer
+          description: |
+            Number of agents that must agree for a probe state to be changed.
+
+            Must be between 1 and the number of agents specified.
+          minimum: 1
+          example: 1
+        details:
+          $ref: '#/components/schemas/ProbeDetails'
+      additionalProperties: false
+      examples:
+        pool_level_http:
+          summary: Pool-level HTTP probe
+          description: HTTP probe configuration applied to all records in a pool
+          value:
+            type: HTTP
+            interval: FIVE_MINUTES
+            agents:
+              - NEW_YORK
+              - DALLAS
+            threshold: 1
+            headers:
+              - 'User-Agent: Mozilla/5.0'
+              - 'Accept: */*'
+            details:
+              transactions:
+                - method: GET
+                  url: https://www.example.com/
+                  followRedirects: true
+                  expectedResponse: 2XX
+        record_level_ping:
+          summary: Record-level PING probe
+          description: PING probe configuration for a specific pool record
+          value:
+            poolRecord: 1.2.3.4
+            type: PING
+            interval: TWO_MINUTES
+            agents:
+              - NEW_YORK
+              - PALO_ALTO
+              - AMSTERDAM
+            threshold: 2
+            details:
+              packets: 5
+              packetSize: 64
+              limits:
+                lossPercent:
+                  fail: 50
+                run:
+                  fail: 8
+        pool_level_tcp:
+          summary: Pool-level TCP probe
+          description: TCP probe configuration for all records
+          value:
+            type: TCP
+            interval: ONE_MINUTE
+            agents:
+              - DALLAS
+            threshold: 1
+        record_level_dns:
+          summary: Record-level DNS probe
+          description: DNS probe configuration for a specific record
+          value:
+            poolRecord: host.example.com.
+            type: DNS
+            interval: FIVE_MINUTES
+            agents:
+              - NEW_YORK
+              - AMSTERDAM
+            threshold: 1
+            details:
+              port: 53
+              tcpOnly: false
+              type: A
+              ownerName: www.example.com
+              limits:
+                run:
+                  fail: 15
+    ProbeInfoList:
+      type: object
+      description: |
+        Container for a list of Probe Info DTOs. Used to return a list of probes
+        for a pool or pool record.
+      properties:
+        probes:
+          type: array
+          description: The list of all probes.
+          items:
+            $ref: '#/components/schemas/ProbeInfo'
+        queryInfo:
+          $ref: '#/components/schemas/QueryInfo'
+        resultInfo:
+          $ref: '#/components/schemas/ResultInfo'
+      required:
+        - probes
+        - queryInfo
+        - resultInfo
+      additionalProperties: false
+      examples:
+        two_tcp_probes:
+          summary: Two TCP probes
+          value:
+            probes:
+              - id: probe-001
+                type: TCP
+                interval: FIVE_MINUTES
+                agents:
+                  - NEW_YORK
+                  - DALLAS
+                threshold: 1
+                details:
+                  port: 1024
+                  controlIP: 1.2.3.4
+                  limits:
+                    connect:
+                      warning: 20
+                      critical: 20
+                      fail: 20
+                    avgConnect:
+                      warning: 20
+                      critical: 20
+                      fail: 20
+              - id: probe-002
+                type: TCP
+                interval: FIVE_MINUTES
+                agents:
+                  - NEW_YORK
+                  - DALLAS
+                threshold: 1
+                details:
+                  port: 2048
+                  controlIP: 1.2.3.4
+                  limits:
+                    connect:
+                      warning: 20
+                      critical: 20
+                      fail: 20
+                    avgConnect:
+                      warning: 20
+                      critical: 20
+                      fail: 20
+            queryInfo:
+              q: ''
+              sort: type
+              reverse: false
+              limit: 100
+            resultInfo:
+              totalCount: 2
+              offset: 0
+              returnedCount: 2
+        pool_and_record_probes:
+          summary: Mix of pool-level and record-level probes
+          value:
+            probes:
+              - id: probe-pool-001
+                type: HTTP
+                interval: FIVE_MINUTES
+                agents:
+                  - NEW_YORK
+                threshold: 1
+                details:
+                  transactions:
+                    - method: GET
+                      url: https://www.example.com/
+                      followRedirects: true
+              - id: probe-record-001
+                poolRecord: 1.2.3.4
+                type: PING
+                interval: TWO_MINUTES
+                agents:
+                  - DALLAS
+                threshold: 1
+                details:
+                  packets: 5
+                  packetSize: 64
+            queryInfo:
+              q: ''
+              sort: interval
+              reverse: false
+              limit: 100
+            resultInfo:
+              totalCount: 2
+              offset: 0
+              returnedCount: 2
+    SiteBackerAgent:
+      type: object
+      description: |
+        SiteBacker Agent configuration. Defines a single agent location that can be used
+        for running probes on SiteBacker and Traffic Controller pools.
+      properties:
+        name:
+          type: string
+          description: Name of the agent.
+          example: North America Central
+        location:
+          type: string
+          description: SB Agent location.
+          example: USCENTRAL
+        description:
+          type: string
+          description: SB Agent description.
+          example: (Chicago, Denver, Dallas)
+      required:
+        - name
+        - location
+        - description
+      additionalProperties: false
+    SiteBackerAgentList:
+      type: object
+      description: |
+        Container for a list of SiteBacker Agents. Used to return all supported agents
+        for an account.
+      properties:
+        agents:
+          type: array
+          description: List of all the supported SiteBacker Agents.
+          items:
+            $ref: '#/components/schemas/SiteBackerAgent'
+      required:
+        - agents
+      additionalProperties: false
+      examples:
+        all_agents:
+          summary: All supported SiteBacker agents
+          value:
+            agents:
+              - name: North America Central
+                location: USCENTRAL
+                description: (Chicago, Denver, Dallas)
+              - name: Europe East
+                location: EUEAST
+                description: (Amsterdam, Frankfurt, Stockholm)
+              - name: Europe West
+                location: EUWEST
+                description: (London, Dublin, Paris, Madrid)
+              - name: South America
+                location: SAMERICA
+                description: (Sao Paolo, Colombia, Miami)
+              - name: Asia
+                location: ASIA
+                description: (Tokyo, Taipei, Singapore, Hong Kong, Sydney)
+              - name: China
+                location: CHINA
+                description: '(Beijing, Hong Kong) Note: Reliable results only within China'
+              - name: North America West
+                location: USWEST
+                description: (Seattle, San Jose, Los Angeles, Phoenix, Vancouver)
+              - name: North America East
+                location: USEAST
+                description: (New York, Washington D.C., Atlanta, Miami, Toronto)
+    SmtpLimitInfo:
+      type: object
+      description: |
+        Limit configuration for SMTP probe transactions. Defines timing thresholds for
+        connect time, run time, and their averages.
+
+        All timing values are in seconds. Some limits are only applicable to Traffic Controller pools.
+      properties:
+        connect:
+          type: object
+          description: |
+            Maximum time allowed to establish a connection to the resource. Only used
+            for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: |
+                How long the probe stays connected to trigger a warning.
+
+                Maximum 20 seconds. Optional, only used for Traffic Controller Pools.
+              maximum: 20
+              example: 5
+            critical:
+              type: integer
+              description: |
+                How long the probe stays connected to trigger a critical warning.
+
+                Maximum 20 seconds. Optional, only used for Traffic Controller Pools.
+              maximum: 20
+              example: 10
+            fail:
+              type: integer
+              description: |
+                How long the probe stays connected to trigger a failure.
+
+                Maximum 20 seconds.
+              maximum: 20
+              example: 15
+          additionalProperties: false
+        avgConnect:
+          type: object
+          description: |
+            Mean connect time over the five most recent probes run on each agent.
+            Only used for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: Mean connect time to trigger a warning.
+              example: 8
+            critical:
+              type: integer
+              description: Mean connect time to trigger a critical warning.
+              example: 12
+            fail:
+              type: integer
+              description: Mean connect time to trigger a failure.
+              example: 20
+          additionalProperties: false
+        run:
+          type: object
+          description: |
+            Maximum run time for the probe. Only used for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: How long the probe should run to trigger a warning.
+              example: 10
+            critical:
+              type: integer
+              description: How long the probe should run to trigger a critical warning.
+              example: 20
+            fail:
+              type: integer
+              description: How long the probe should run to trigger a failure.
+              example: 30
+          additionalProperties: false
+        avgRun:
+          type: object
+          description: |
+            Mean run time over the five most recent probes run on each agent.
+            Only used for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: Mean run time to trigger a warning.
+              example: 15
+            critical:
+              type: integer
+              description: Mean run time to trigger a critical warning.
+              example: 25
+            fail:
+              type: integer
+              description: Mean run time to trigger a failure.
+              example: 40
+          additionalProperties: false
+      additionalProperties: false
+    SmtpProbeDetails:
+      type: object
+      description: |
+        Probe-specific details for SMTP type probes. Defines the port to connect to
+        and validation criteria.
+      properties:
+        port:
+          type: integer
+          description: |
+            Port to connect to for SMTP service.
+
+            Integer between 1 and 65535. Defaults to 25.
+          minimum: 1
+          maximum: 65535
+          default: 25
+          example: 25
+        limits:
+          $ref: '#/components/schemas/SmtpLimitInfo'
+      additionalProperties: false
+      examples:
+        minimal:
+          summary: Minimal SMTP probe configuration
+          description: Uses default port
+          value:
+            port: 25
+            limits:
+              connect:
+                fail: 15
+        traffic_controller:
+          summary: SMTP probe for Traffic Controller with all limits
+          description: Complete SMTP configuration for Traffic Controller pools
+          value:
+            port: 25
+            limits:
+              connect:
+                warning: 5
+                critical: 10
+                fail: 15
+              avgConnect:
+                warning: 8
+                critical: 12
+                fail: 20
+              run:
+                warning: 10
+                critical: 20
+                fail: 30
+              avgRun:
+                warning: 15
+                critical: 25
+                fail: 40
+    SmtpSendLimitInfo:
+      type: object
+      description: |
+        Limit configuration for SMTP_SEND probe transactions. Defines timing thresholds for
+        connect time, run time, and their averages.
+
+        All timing values are in seconds. Some limits are only applicable to Traffic Controller pools.
+      properties:
+        connect:
+          type: object
+          description: |
+            Maximum time allowed to establish a connection to the resource. Only used
+            for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: |
+                How long the probe stays connected to trigger a warning.
+
+                Maximum 20 seconds. Optional, only used for Traffic Controller Pools.
+              maximum: 20
+              example: 5
+            critical:
+              type: integer
+              description: |
+                How long the probe stays connected to trigger a critical warning.
+
+                Maximum 20 seconds. Optional, only used for Traffic Controller Pools.
+              maximum: 20
+              example: 10
+            fail:
+              type: integer
+              description: |
+                How long the probe stays connected to trigger a failure.
+
+                Maximum 20 seconds.
+              maximum: 20
+              example: 15
+          additionalProperties: false
+        avgConnect:
+          type: object
+          description: |
+            Mean connect time over the five most recent probes run on each agent.
+            Only used for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: Mean connect time to trigger a warning.
+              example: 8
+            critical:
+              type: integer
+              description: Mean connect time to trigger a critical warning.
+              example: 12
+            fail:
+              type: integer
+              description: Mean connect time to trigger a failure.
+              example: 20
+          additionalProperties: false
+        run:
+          type: object
+          description: |
+            Maximum run time for the probe. Only used for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: How long the probe should run to trigger a warning.
+              example: 10
+            critical:
+              type: integer
+              description: How long the probe should run to trigger a critical warning.
+              example: 20
+            fail:
+              type: integer
+              description: How long the probe should run to trigger a failure.
+              example: 30
+          additionalProperties: false
+        avgRun:
+          type: object
+          description: |
+            Mean run time over the five most recent probes run on each agent.
+            Only used for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: Mean run time to trigger a warning.
+              example: 15
+            critical:
+              type: integer
+              description: Mean run time to trigger a critical warning.
+              example: 25
+            fail:
+              type: integer
+              description: Mean run time to trigger a failure.
+              example: 40
+          additionalProperties: false
+      additionalProperties: false
+    SmtpSendProbeDetails:
+      type: object
+      description: |
+        Probe-specific details for SMTP_SEND type probes. Defines the port, email
+        addresses, message, and validation criteria. This probe actually sends an email.
+      properties:
+        port:
+          type: integer
+          description: |
+            Port to connect to for SMTP service.
+
+            Integer between 1 and 65535. Defaults to 25.
+          minimum: 1
+          maximum: 65535
+          default: 25
+          example: 25
+        from:
+          type: string
+          format: email
+          description: |
+            Email address that will send the message.
+
+            Required.
+          example: probe@example.com
+        to:
+          type: string
+          format: email
+          description: |
+            Email address that will receive the message.
+
+            Required.
+          example: monitoring@example.com
+        message:
+          type: string
+          description: |
+            Email message body.
+
+            Optional.
+          example: Health check test message
+        limits:
+          $ref: '#/components/schemas/SmtpSendLimitInfo'
+      required:
+        - from
+        - to
+      additionalProperties: false
+      examples:
+        minimal:
+          summary: Minimal SMTP_SEND probe configuration
+          description: Uses default port with required email addresses
+          value:
+            port: 25
+            from: probe@example.com
+            to: monitoring@example.com
+            limits:
+              connect:
+                fail: 15
+        with_message:
+          summary: SMTP_SEND probe with custom message
+          value:
+            port: 25
+            from: probe@example.com
+            to: monitoring@example.com
+            message: Health check test message
+            limits:
+              connect:
+                fail: 20
+              run:
+                fail: 30
+        traffic_controller:
+          summary: SMTP_SEND probe for Traffic Controller with all limits
+          description: Complete SMTP_SEND configuration for Traffic Controller pools
+          value:
+            port: 25
+            from: probe@example.com
+            to: monitoring@example.com
+            message: Automated health check
+            limits:
+              connect:
+                warning: 5
+                critical: 10
+                fail: 15
+              avgConnect:
+                warning: 8
+                critical: 12
+                fail: 20
+              run:
+                warning: 10
+                critical: 20
+                fail: 30
+              avgRun:
+                warning: 15
+                critical: 25
+                fail: 40
+    TcpLimitInfo:
+      type: object
+      description: |
+        Limit configuration for TCP probe transactions. Defines timing thresholds for
+        connect time and its averages.
+
+        All timing values are in seconds. Some limits are only applicable to Traffic Controller pools.
+      properties:
+        connect:
+          type: object
+          description: |
+            Maximum time allowed to establish a connection to the resource. Only used
+            for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: |
+                How long the probe stays connected to trigger a warning.
+
+                Maximum 20 seconds. Optional, only used for Traffic Controller Pools.
+              maximum: 20
+              example: 5
+            critical:
+              type: integer
+              description: |
+                How long the probe stays connected to trigger a critical warning.
+
+                Maximum 20 seconds. Optional, only used for Traffic Controller Pools.
+              maximum: 20
+              example: 10
+            fail:
+              type: integer
+              description: |
+                How long the probe stays connected to trigger a failure.
+
+                Maximum 20 seconds.
+              maximum: 20
+              example: 15
+          additionalProperties: false
+        avgConnect:
+          type: object
+          description: |
+            Mean connect time over the five most recent probes run on each agent.
+            Only used for Traffic Controller pools.
+          properties:
+            warning:
+              type: integer
+              description: Mean connect time to trigger a warning.
+              example: 8
+            critical:
+              type: integer
+              description: Mean connect time to trigger a critical warning.
+              example: 12
+            fail:
+              type: integer
+              description: Mean connect time to trigger a failure.
+              example: 20
+          additionalProperties: false
+      additionalProperties: false
+    TcpProbeDetails:
+      type: object
+      description: |
+        Probe-specific details for TCP type probes. Defines the port to connect to
+        and optionally provides a control IP address.
+      properties:
+        port:
+          type: integer
+          description: |
+            Port to connect to for TCP service.
+
+            Integer between 1 and 65535. Required.
+          minimum: 1
+          maximum: 65535
+          example: 80
+        controlIP:
+          type: string
+          format: ipv4
+          description: |
+            Provides a control mechanism that allows the web administrators to stop
+            the TCP port on the control system.
+
+            String, IP address. Optional.
+          example: 192.168.1.100
+        limits:
+          $ref: '#/components/schemas/TcpLimitInfo'
+      required:
+        - port
+      additionalProperties: false
+      examples:
+        minimal:
+          summary: Minimal TCP probe configuration
+          description: Only specifies required port
+          value:
+            port: 80
+            limits:
+              connect:
+                fail: 15
+        with_control_ip:
+          summary: TCP probe with control IP
+          value:
+            port: 3306
+            controlIP: 192.168.1.100
+            limits:
+              connect:
+                fail: 20
+              avgConnect:
+                fail: 40
+        traffic_controller:
+          summary: TCP probe for Traffic Controller with all limits
+          description: Complete TCP configuration for Traffic Controller pools
+          value:
+            port: 443
+            controlIP: 10.0.0.1
+            limits:
+              connect:
+                warning: 5
+                critical: 10
+                fail: 15
+              avgConnect:
+                warning: 8
+                critical: 12
+                fail: 20
     Task:
       type: object
       description: The Task DTO is used to describe the current state of a task.
@@ -5801,6 +9033,108 @@ components:
               uri: /account/{accountName}/settings/DNS_SECURITY
       required:
         - accountSettingsCatalogItems
+    AlertData:
+      type: object
+      description: |
+        Alert Data DTO returned by the /alerts API. Represents a probing error/alert
+        for a specific pool record and owner.
+      properties:
+        poolRecord:
+          type: string
+          description: The pool record that triggered the alert.
+          example: 1.2.3.4
+        probeType:
+          type: string
+          description: The name of the probe type.
+          example: HTTP
+        probeStatus:
+          type: string
+          description: Status determined by the probe.
+          enum:
+            - OK
+            - WARNING
+            - CRITICAL
+            - FAILED
+          example: OK
+        alertDate:
+          type: string
+          format: date-time
+          description: The date the alert occurred (ISO 8601 format).
+          example: '2025-01-15T13:45:30Z'
+        failoverOccurred:
+          type: boolean
+          description: Flag to indicate if failover occurred.
+          example: true
+        ownerName:
+          type: string
+          description: The ownerName of the pool that alerted.
+          example: www.example.com.
+        status:
+          type: string
+          description: Status of the probe.
+          enum:
+            - Active
+            - Inactive
+          example: Active
+      additionalProperties: false
+      examples:
+        http_failover:
+          summary: HTTP probe failure with failover
+          value:
+            poolRecord: 1.2.3.4
+            probeType: HTTP
+            probeStatus: CRITICAL
+            alertDate: '2025-01-15T13:45:30Z'
+            failoverOccurred: true
+            ownerName: www.example.com.
+            status: Active
+    AlertDataList:
+      type: object
+      description: |
+        Container for a list of Alert Data DTOs returned by the /alerts API.
+      properties:
+        alerts:
+          type: array
+          description: List of alert entries for the current user.
+          items:
+            $ref: '#/components/schemas/AlertData'
+        queryInfo:
+          $ref: '#/components/schemas/QueryInfo'
+        resultInfo:
+          $ref: '#/components/schemas/ResultInfo'
+      required:
+        - alerts
+        - queryInfo
+        - resultInfo
+      additionalProperties: false
+      examples:
+        sample:
+          summary: Example alert list
+          value:
+            alerts:
+              - status: Active
+                ownerName: host1.example-zone.com.
+                poolRecord: 172.16.8.1
+                alertDate: '2014-04-01T08:05:42Z'
+                probeStatus: FAILED
+                probeType: DNS
+                failoverOccurred: true
+              - status: Active
+                ownerName: h.testzone.com.
+                poolRecord: 1.2.3.4
+                alertDate: '2014-04-01T17:24:33Z'
+                probeStatus: FAILED
+                probeType: HTTP
+                failoverOccurred: true
+            queryInfo:
+              q: ''
+              sort: alertDate
+              reverse: false
+              limit: 100
+            resultInfo:
+              totalCount: 2
+              offset: 0
+              returnedCount: 2
     AccountLevelGeoIpGroup:
       type: object
       description: Account-level GeoIP grouping configuration and associated location codes
@@ -6343,516 +9677,6 @@ components:
               displayOrder: 2
       required:
         - availableChannels
-    ZoneProperties:
-      type: object
-      description: The Zone Properties DTO holds the common metadata across all types of zones
-      properties:
-        name:
-          type: string
-          description: Name of the zone, with trailing periods (....). Must be a valid domain name. Required for zone creation. Ignored if present on update.
-          example: 0-0-0-0-0sample.com.
-        accountName:
-          type: string
-          description: Name of the account. Required for zone creation. Ignored if present on update.
-          example: testaccount
-        type:
-          type: string
-          description: Type of zone. Valid values are PRIMARY, SECONDARY or ALIAS. Required for zone creation. Ignored if present on update.
-          enum:
-            - PRIMARY
-            - SECONDARY
-            - ALIAS
-          example: PRIMARY
-        dnssecStatus:
-          type: string
-          description: Whether or not the zone is signed with DNSSEC. Valid values are SIGNED or UNSIGNED. Returned in GET responses for zone information. Ignored if present on create or update.
-          enum:
-            - SIGNED
-            - UNSIGNED
-          example: UNSIGNED
-        digicertEnabled:
-          type: boolean
-          description: Indicates whether the zone is visible to DigiCert CertCentral, allowing them to automatically manage Domain Validations. True = enabled, False = disabled (default). Not available for Alias, Secondary, or Suspended zones. This field will only be displayed if the digicert_enabled feature is enabled and active.
-          example: true
-        owner:
-          type: string
-          description: Name of the user that created the zone. Returned in GET responses for zone information. Ignored if present on create or update.
-          example: team
-        recordCount:
-          type: integer
-          description: Number of records in the zone. Returned in GET responses for zone information. Ignored if present on create or update.
-          example: 15
-        lastModifiedDateTime:
-          type: string
-          format: date-time
-          description: The last date and time the zone was modified, represented in ISO8601 format. Returned in GET responses for zone information. Ignored if present on create or update.
-          example: '2025-02-20T08:40:00Z'
-        ultra2:
-          type: boolean
-          description: Only applicable to accounts that have enabled the UltraDNS2 service. Indicates if the zone has UltraDNS2 enabled or not. Valid values are false and true. Returned in GET responses for zone information.
-          example: true
-    RestrictIP:
-      type: object
-      description: Each Restrict IP DTO holds the IP addresses that are allowed to transfer Primary Zones out using the Zone Transfer protocol (AXFR/IXFR). Only one format should be specified in the DTO at a time (range, CIDR or single IP).
-      properties:
-        startIP:
-          type: string
-          description: The start of the IP range that is allowed to transfer this primary zone out using zone transfer protocol. IPv4 or IPv6 address.
-          format: ipv4
-          example: 192.168.1.1
-        endIP:
-          type: string
-          description: The end of the IP range that is allowed to transfer this primary zone out using zone transfer protocol. IPv4 or IPv6 address.
-          format: ipv4
-          example: 192.168.1.254
-        cidr:
-          type: string
-          description: The IP ranges specified in CIDR (e.g. 1.1.1.1/30, ::10/126)
-          pattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$|^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}(\/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))$
-          example: 192.168.1.0/24
-        singleIP:
-          type: string
-          description: The IP that is allowed to transfer this primary zone out using zone transfer protocol. IPv4 or IPv6 address.
-          format: ipv4
-          example: 192.168.1.100
-        comment:
-          type: string
-          description: A description of this range of IP addresses. Optional.
-          example: Office network range
-      anyOf:
-        - required:
-            - startIP
-            - endIP
-        - required:
-            - cidr
-        - required:
-            - singleIP
-      not:
-        allOf:
-          - required:
-              - startIP
-              - endIP
-          - required:
-              - cidr
-          - required:
-              - singleIP
-    NameServerIPList:
-      type: object
-      description: The Name Server IP List DTO lists the Primary Name Servers for a Secondary Zone
-      properties:
-        nameServerIpList:
-          type: object
-          description: List of name server IPs with their TSIG configurations
-          properties:
-            nameServerIP1:
-              type: object
-              description: The primary name server for the source zone
-              properties:
-                ip:
-                  type: string
-                  description: The IP address of the primary name server for the source zone. IPv4 or IPv6 address. Required for creation or update of a secondary zone.
-                  format: ipv4
-                  example: 192.168.1.10
-                tsigKey:
-                  type: string
-                  description: If TSIG is enabled for this name server, the name of the TSIG key. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
-                  example: tsig-key-1
-                tsigKeyValue:
-                  type: string
-                  description: If TSIG is enabled for this name server, the TSIG key's value. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
-                  example: base64-encoded-secret-1
-                tsigAlgorithm:
-                  type: string
-                  description: The hash algorithm used to generate the TSIG key. Default is hmac-md5. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
-                  enum:
-                    - hmac-md5
-                    - hmac-sha1
-                    - hmac-sha224
-                    - hmac-sha256
-                    - hmac-sha384
-                    - hmac-sha512
-                  default: hmac-md5
-                  example: hmac-sha256
-              required:
-                - ip
-            nameServerIP2:
-              type: object
-              description: The first backup name server for the source zone
-              properties:
-                ip:
-                  type: string
-                  description: The IP address of the first backup name server for the source zone. IPv4 or IPv6 address. Optional for creation or update of a secondary zone.
-                  format: ipv4
-                  example: 192.168.1.11
-                tsigKey:
-                  type: string
-                  description: If TSIG is enabled for this name server, the name of the TSIG key. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
-                  example: tsig-key-2
-                tsigKeyValue:
-                  type: string
-                  description: If TSIG is enabled for this name server, the TSIG key's value. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
-                  example: base64-encoded-secret-2
-                tsigAlgorithm:
-                  type: string
-                  description: The hash algorithm used to generate the TSIG key. Default is hmac-md5. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
-                  enum:
-                    - hmac-md5
-                    - hmac-sha1
-                    - hmac-sha224
-                    - hmac-sha256
-                    - hmac-sha384
-                    - hmac-sha512
-                  default: hmac-md5
-                  example: hmac-sha256
-            nameServerIP3:
-              type: object
-              description: The second backup name server for the source zone
-              properties:
-                ip:
-                  type: string
-                  description: The IP address of the second backup name server for the source zone. IPv4 or IPv6 address. Optional for creation or update of a secondary zone.
-                  format: ipv4
-                  example: 192.168.1.12
-                tsigKey:
-                  type: string
-                  description: If TSIG is enabled for this name server, the name of the TSIG key. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
-                  example: tsig-key-3
-                tsigKeyValue:
-                  type: string
-                  description: If TSIG is enabled for this name server, the TSIG key's value. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
-                  example: base64-encoded-secret-3
-                tsigAlgorithm:
-                  type: string
-                  description: The hash algorithm used to generate the TSIG key. Default is hmac-md5. Required for creation or update of a secondary zone if TSIG is enabled for this name server.
-                  enum:
-                    - hmac-md5
-                    - hmac-sha1
-                    - hmac-sha224
-                    - hmac-sha256
-                    - hmac-sha384
-                    - hmac-sha512
-                  default: hmac-md5
-                  example: hmac-sha256
-          required:
-            - nameServerIP1
-          example:
-            nameServerIP1:
-              ip: 192.168.1.10
-              tsigKey: primary-tsig-key
-              tsigKeyValue: base64-encoded-secret
-              tsigAlgorithm: hmac-sha256
-            nameServerIP2:
-              ip: 192.168.1.11
-              tsigKey: backup-tsig-key
-              tsigKeyValue: base64-encoded-backup-secret
-              tsigAlgorithm: hmac-sha256
-    RegistrarInfo:
-      type: object
-      description: The Registrar Info DTO holds the domain name registry information for a Primary Zone
-      properties:
-        registrar:
-          type: string
-          description: The name of the domain registrar
-          example: GoDaddy
-        whoisExpiration:
-          type: string
-          format: date
-          description: The date when the domain name registration expires
-          example: '2025-12-31'
-        nameServers:
-          type: object
-          description: Name server configuration status for this domain
-          properties:
-            ok:
-              type: array
-              items:
-                type: string
-              description: List of UltraDNS name servers that are configured for this domain
-              example:
-                - pdns1.ultradns.net.
-                - pdns2.ultradns.net.
-                - pdns3.ultradns.org.
-            unknown:
-              type: array
-              items:
-                type: string
-              description: List of name servers that are configured for this domain, but are not UltraDNS-managed name servers
-              example:
-                - ns1.example.com.
-                - ns2.example.com.
-            missing:
-              type: array
-              items:
-                type: string
-              description: List of UltraDNS name servers that should be configured for this domain, but are not
-              example:
-                - pdns4.ultradns.org.
-                - pdns5.ultradns.info.
-                - pdns6.ultradns.co.uk.
-            incorrect:
-              type: array
-              items:
-                type: string
-              description: List of any obsolete UltraDNS name servers that are still configured for this zone
-              example:
-                - obsolete1.ultradns.net.
-                - obsolete2.ultradns.net.
-          example:
-            ok:
-              - pdns1.ultradns.net.
-              - pdns2.ultradns.net.
-              - pdns3.ultradns.org.
-            missing:
-              - pdns4.ultradns.org.
-              - pdns5.ultradns.info.
-              - pdns6.ultradns.co.uk.
-    TSIG:
-      type: object
-      description: The TSIG DTO holds TSIG information for the Primary Zone
-      properties:
-        tsigKeyName:
-          type: string
-          description: The name of the TSIG key for the zone. REQUIRED.
-          example: zone-tsig-key
-        tsigKeyValue:
-          type: string
-          description: The value of the TSIG key for the zone. REQUIRED.
-          example: base64-encoded-tsig-secret
-        description:
-          type: string
-          description: A description of this key. Optional.
-          example: TSIG key for zone transfers
-        tsigAlgorithm:
-          type: string
-          description: The hash algorithm used to generate the TSIG key. REQUIRED.
-          enum:
-            - hmac-md5
-            - hmac-sha1
-            - hmac-sha224
-            - hmac-sha256
-            - hmac-sha384
-            - hmac-sha512
-          example: hmac-sha256
-      required:
-        - tsigKeyName
-        - tsigKeyValue
-        - tsigAlgorithm
-    NotifyAddress:
-      type: object
-      description: Each Notify Address DTO defines an address that gets notified when there are updates to a Primary Zone
-      properties:
-        notifyAddress:
-          type: string
-          description: The IP address that is notified when the primary zone is updated. IPv4 address. REQUIRED.
-          format: ipv4
-          example: 192.168.1.100
-        description:
-          type: string
-          description: A description of this address. Optional.
-          example: Primary DNS server notification address
-      required:
-        - notifyAddress
-    TransferStatusDetails:
-      type: object
-      description: The Transfer Status Details contains the Zone Transfer Status Details
-      properties:
-        lastRefresh:
-          type: string
-          format: date-time
-          description: Displays when the last transfer attempt or refresh was. Date/Time formatted in ISO 8601 format, UTC offset based on customer-specified time zone
-          example: '2025-02-20T08:40:00Z'
-        nextRefresh:
-          type: string
-          format: date-time
-          description: Displays when the next transfer attempt or refresh is. Date/Time formatted in ISO 8601 format, UTC offset based on customer-specified time zone
-          example: '2025-02-20T09:40:00Z'
-        lastRefreshStatus:
-          type: string
-          description: Displays the status of the last transfer that was attempted
-          enum:
-            - IN_PROGRESS
-            - FAILED
-            - SUCCESSFUL
-          example: SUCCESSFUL
-        lastRefreshStatusMessage:
-          type: string
-          description: Displays the last transfer's status message. This is currently shown as failure reason.
-          example: Transfer completed successfully
-    RRSetProfile:
-      type: object
-      description: |
-        Profile object for UltraDNS pool configurations. Contains pool-specific attributes that define
-        how DNS records should be handled and returned.
-
-        Different types of profiles have different object layouts and attributes. The profile type is 
-        identified by the "@context" field.
-
-        **For RD Pool profiles**, the following structure is used:
-        - **@context**: Must be "http://schemas.ultradns.com/RDPool.jsonschema"
-        - **order**: One of FIXED, RANDOM, or ROUND_ROBIN
-        - **description**: Optional description (max 255 characters)
-
-        **RD Pool Ordering Options:**
-        - **FIXED**: Records appear in the same order all the time
-        - **RANDOM**: Order of the records is random on each request  
-        - **ROUND_ROBIN**: The order of the records changes on each request, in order
-
-        **Important Constraints for RD Pools:**
-        - RD Pools can only be defined for RRSets of type A (1) or AAAA (28)
-        - Multiple A or AAAA records for a single owner can only be defined if the owner is a pool
-        - It is legal to define an RD Pool with zero or one Rdata records
-      properties:
-        '@context':
-          type: string
-          description: URI that uniquely identifies the type of the pool
-          example: http://schemas.ultradns.com/RDPool.jsonschema
-        order:
-          type: string
-          description: The order the records will be returned in (for RD Pools)
-          enum:
-            - FIXED
-            - RANDOM
-            - ROUND_ROBIN
-          example: ROUND_ROBIN
-        description:
-          type: string
-          maxLength: 255
-          description: |
-            An optional description of the pool.
-
-            If not specified for RD Pools, the owner name for the RRSet will be used.
-          example: Load balancing pool for web servers
-      additionalProperties: true
-      examples:
-        rd_pool_fixed:
-          summary: RD Pool with Fixed Ordering
-          description: RD Pool that returns records in the same order every time
-          value:
-            '@context': http://schemas.ultradns.com/RDPool.jsonschema
-            order: FIXED
-            description: Fixed order pool for consistent routing
-        rd_pool_random:
-          summary: RD Pool with Random Ordering
-          description: RD Pool that returns records in random order on each request
-          value:
-            '@context': http://schemas.ultradns.com/RDPool.jsonschema
-            order: RANDOM
-            description: Random distribution for load balancing
-        rd_pool_round_robin:
-          summary: RD Pool with Round Robin Ordering
-          description: RD Pool that cycles through records in order on each request
-          value:
-            '@context': http://schemas.ultradns.com/RDPool.jsonschema
-            order: ROUND_ROBIN
-            description: Round robin distribution pool
-        minimal_rd_pool:
-          summary: Minimal RD Pool Configuration
-          description: RD Pool with only required fields specified
-          value:
-            '@context': http://schemas.ultradns.com/RDPool.jsonschema
-            order: RANDOM
-    AlertData:
-      type: object
-      description: |
-        Alert Data DTO returned by the /alerts API. Represents a probing error/alert
-        for a specific pool record and owner.
-      properties:
-        poolRecord:
-          type: string
-          description: The pool record that triggered the alert.
-          example: 1.2.3.4
-        probeType:
-          type: string
-          description: The name of the probe type.
-          example: HTTP
-        probeStatus:
-          type: string
-          description: Status determined by the probe.
-          enum:
-            - OK
-            - WARNING
-            - CRITICAL
-            - FAILED
-          example: OK
-        alertDate:
-          type: string
-          format: date-time
-          description: The date the alert occurred (ISO 8601 format).
-          example: '2025-01-15T13:45:30Z'
-        failoverOccurred:
-          type: boolean
-          description: Flag to indicate if failover occurred.
-          example: true
-        ownerName:
-          type: string
-          description: The ownerName of the pool that alerted.
-          example: www.example.com.
-        status:
-          type: string
-          description: Status of the probe.
-          enum:
-            - Active
-            - Inactive
-          example: Active
-      additionalProperties: false
-      examples:
-        http_failover:
-          summary: HTTP probe failure with failover
-          value:
-            poolRecord: 1.2.3.4
-            probeType: HTTP
-            probeStatus: CRITICAL
-            alertDate: '2025-01-15T13:45:30Z'
-            failoverOccurred: true
-            ownerName: www.example.com.
-            status: Active
-    AlertDataList:
-      type: object
-      description: |
-        Container for a list of Alert Data DTOs returned by the /alerts API.
-      properties:
-        alerts:
-          type: array
-          description: List of alert entries for the current user.
-          items:
-            $ref: '#/components/schemas/AlertData'
-        queryInfo:
-          $ref: '#/components/schemas/QueryInfo'
-        resultInfo:
-          $ref: '#/components/schemas/ResultInfo'
-      required:
-        - alerts
-        - queryInfo
-        - resultInfo
-      additionalProperties: false
-      examples:
-        sample:
-          summary: Example alert list
-          value:
-            alerts:
-              - status: Active
-                ownerName: host1.example-zone.com.
-                poolRecord: 172.16.8.1
-                alertDate: '2014-04-01T08:05:42Z'
-                probeStatus: FAILED
-                probeType: DNS
-                failoverOccurred: true
-              - status: Active
-                ownerName: h.testzone.com.
-                poolRecord: 1.2.3.4
-                alertDate: '2014-04-01T17:24:33Z'
-                probeStatus: FAILED
-                probeType: HTTP
-                failoverOccurred: true
-            queryInfo:
-              q: ''
-              sort: alertDate
-              reverse: false
-              limit: 100
-            resultInfo:
-              totalCount: 2
-              offset: 0
-              returnedCount: 2
   responses:
     Error401:
       description: Unauthorized
@@ -7062,6 +9886,13 @@ components:
         - `www` - Relative name (will match `www.domain.com.`)
         - `mail.domain.com.` - FQDN (absolute name)
       example: test
+    ProbeId:
+      name: guid
+      in: path
+      required: true
+      schema:
+        type: string
+      description: GUID identifier for the probe
     AccountName:
       name: accountName
       in: path

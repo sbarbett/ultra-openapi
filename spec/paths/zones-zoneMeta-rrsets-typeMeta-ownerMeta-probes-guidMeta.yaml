@@ -1,0 +1,377 @@
+get:
+  tags:
+    - SiteBacker & Traffic Controller
+  summary: Get a Probe
+  description: |
+    Retrieves a specific probe for a SiteBacker or Traffic Controller pool.
+    
+    The probe can be a pool-level probe (applies to all records) or a record-level
+    probe (applies to a specific record).
+    
+    **Note:** This endpoint only supports A-type records. The zone must contain a
+    SiteBacker or Traffic Controller pool.
+  operationId: getProbe
+  parameters:
+    - $ref: '../components/parameters/ZoneName.yaml'
+    - $ref: '../components/parameters/OwnerName.yaml'
+    - $ref: '../components/parameters/ProbeId.yaml'
+  responses:
+    '200':
+      description: Probe retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ProbeInfo.yaml'
+          examples:
+            Pool-Level HTTP Probe:
+              summary: Get a pool-level HTTP probe
+              description: Pool-level HTTP probe with custom headers
+              value:
+                id: "060844D2F8B23F19"
+                type: HTTP
+                interval: ONE_MINUTE
+                agents:
+                  - DALLAS
+                  - AMSTERDAM
+                  - PALO_ALTO
+                  - NEW_YORK
+                threshold: 2
+                headers:
+                  - "Accept-Language: en-US"
+                  - "User-Agent: Mozilla/5.0"
+                details:
+                  transactions:
+                    - method: GET
+                      protocolVersion: HTTP/1.0
+                      url: "http://www.google1.com/"
+                      transmittedData: ""
+                      limits:
+                        connect:
+                          fail: 20
+                        run:
+                          fail: 60
+                      followRedirects: true
+            Record-Level PING Probe:
+              summary: Get a record-level PING probe
+              description: Record-level PING probe with custom configuration
+              value:
+                id: "probe-456-789"
+                poolRecord: "1.2.3.4"
+                type: PING
+                interval: TWO_MINUTES
+                agents:
+                  - NEW_YORK
+                  - DALLAS
+                threshold: 1
+                details:
+                  packets: 5
+                  packetSize: 64
+                  limits:
+                    lossPercent:
+                      fail: 50
+                    run:
+                      fail: 8
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+
+put:
+  tags:
+    - SiteBacker & Traffic Controller
+  summary: Update a Probe
+  description: |
+    Updates an existing probe for a SiteBacker or Traffic Controller pool. The probe
+    configuration can be updated at the pool level or record level.
+    
+    **Full Update:** A PUT request requires the complete Probe Info DTO. Omitted fields
+    will be removed or reset to defaults.
+    
+    **Note:** This endpoint only supports A-type records. The zone must contain a
+    SiteBacker or Traffic Controller pool.
+  operationId: updateProbe
+  parameters:
+    - $ref: '../components/parameters/ZoneName.yaml'
+    - $ref: '../components/parameters/OwnerName.yaml'
+    - $ref: '../components/parameters/ProbeId.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/ProbeInfo.yaml'
+        examples:
+          Update Pool-Level HTTP Probe:
+            summary: Update a pool-level HTTP probe
+            description: |
+              Full update of an HTTP probe with modified agents and headers.
+            value:
+              type: HTTP
+              interval: FIVE_MINUTES
+              agents:
+                - NEW_YORK
+                - DALLAS
+                - AMSTERDAM
+              threshold: 2
+              headers:
+                - "Accept-Language: en-US,fr-FR"
+                - "User-Agent: Mozilla/5.0"
+              details:
+                transactions:
+                  - method: GET
+                    protocolVersion: HTTP/1.1
+                    url: "https://www.example.com/"
+                    followRedirects: true
+                    expectedResponse: "2XX|3XX"
+                    limits:
+                      connect:
+                        warning: 10
+                        critical: 15
+                        fail: 20
+                      run:
+                        warning: 30
+                        critical: 45
+                        fail: 60
+          Update Record-Level PING Probe:
+            summary: Update a record-level PING probe
+            description: |
+              Full update of a PING probe with modified timing and packet configuration.
+            value:
+              poolRecord: "1.2.3.4"
+              type: PING
+              interval: ONE_MINUTE
+              agents:
+                - NEW_YORK
+              threshold: 1
+              details:
+                packets: 10
+                packetSize: 128
+                limits:
+                  lossPercent:
+                    warning: 5
+                    critical: 10
+                    fail: 20
+                  run:
+                    warning: 5
+                    critical: 10
+                    fail: 15
+  responses:
+    '200':
+      description: Probe updated successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Successful"
+          examples:
+            Updated:
+              summary: Probe updated synchronously
+              value:
+                message: "Successful"
+    '202':
+      $ref: '../components/responses/AcceptedGeneric.yaml'
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+
+patch:
+  tags:
+    - SiteBacker & Traffic Controller
+  summary: Partially Update a Probe
+  description: |
+    Partially updates an existing probe for a SiteBacker or Traffic Controller pool.
+    This differs from a full update (PUT) in that you can modify only specific fields
+    without affecting the rest of the probe configuration.
+    
+    **Two Update Methods Supported:**
+    1. **Regular PATCH**: Send a Probe Info DTO with Content-Type: application/json
+    2. **JSON PATCH**: Send JSON Patch DTOs with Content-Type: application/json-patch+json
+    
+    **Note:** This endpoint only supports A-type records. The zone must contain a
+    SiteBacker or Traffic Controller pool. The pool cannot contain both A and AAAA
+    record types.
+  operationId: partiallyUpdateProbe
+  parameters:
+    - $ref: '../components/parameters/ZoneName.yaml'
+    - $ref: '../components/parameters/OwnerName.yaml'
+    - $ref: '../components/parameters/ProbeId.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        description: |
+          Regular PATCH request using Probe Info DTO. Use this for simple partial updates.
+          
+          **Behavior:**
+          - Omitted fields will be preserved
+          - Specified fields will be updated
+        schema:
+          $ref: '../components/schemas/ProbeInfo.yaml'
+        examples:
+          Update Agents Only:
+            summary: Update only the agents list
+            description: |
+              Partially update a probe by only changing the agents while preserving
+              all other configuration.
+            value:
+              agents:
+                - DALLAS
+                - AMSTERDAM
+                - PALO_ALTO
+                - NEW_YORK
+              threshold: 2
+          Update Interval Only:
+            summary: Update only the interval
+            value:
+              interval: TEN_MINUTES
+          Partial Update HTTP Probe:
+            summary: Partially update HTTP probe with new agents
+            description: |
+              Demonstrates updating agents to include both old and new region names.
+            value:
+              agents:
+                - DALLAS
+                - AMSTERDAM
+                - PALO_ALTO
+                - NEW_YORK
+              threshold: 2
+              details:
+                transactions:
+                  - method: GET
+                    protocolVersion: HTTP/1.0
+                    url: "http://www.google1.com/"
+                    limits:
+                      connect:
+                        fail: 20
+                      run:
+                        fail: 60
+      application/json-patch+json:
+        description: |
+          JSON PATCH request using RFC 6902 compliant JSON Patch DTOs. Use this for
+          complex partial updates with multiple operations.
+          
+          **Features:**
+          - Support for add, replace, remove, and move operations
+          - Can update specific values within probe details
+          - Can perform multiple operations in a single request
+        schema:
+          type: array
+          items:
+            $ref: '../components/schemas/JSONPatch.yaml'
+        examples:
+          Update Probe Interval:
+            summary: Update probe interval using JSON Patch
+            value:
+              - op: "replace"
+                path: "/interval"
+                value: "TEN_MINUTES"
+          Update Agents and Threshold:
+            summary: Update multiple probe fields
+            value:
+              - op: "replace"
+                path: "/agents"
+                value:
+                  - NEW_YORK
+                  - DALLAS
+                  - AMSTERDAM
+              - op: "replace"
+                path: "/threshold"
+                value: 3
+          Update HTTP Transaction URL:
+            summary: Update HTTP transaction URL
+            value:
+              - op: "replace"
+                path: "/details/transactions/0/url"
+                value: "https://www.example.com/"
+          Add Search String to HTTP Transaction:
+            summary: Add response validation to HTTP transaction
+            value:
+              - op: "add"
+                path: "/details/transactions/0/limits/searchString"
+                value:
+                  fail: "Error|Not Found"
+          Update PING Packet Configuration:
+            summary: Update PING probe packet count and size
+            value:
+              - op: "replace"
+                path: "/details/packets"
+                value: 10
+              - op: "replace"
+                path: "/details/packetSize"
+                value: 128
+  responses:
+    '200':
+      description: Probe partially updated successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Successful"
+          examples:
+            Updated:
+              summary: Probe partially updated synchronously
+              value:
+                message: "Successful"
+    '202':
+      $ref: '../components/responses/AcceptedGeneric.yaml'
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+
+delete:
+  tags:
+    - SiteBacker & Traffic Controller
+  summary: Delete a Probe
+  description: |
+    Deletes an existing probe for a SiteBacker or Traffic Controller pool.
+    
+    The probe can be a pool-level probe (applies to all records) or a record-level
+    probe (applies to a specific record).
+    
+    **Note:** This endpoint only supports A-type records. The zone must contain a
+    SiteBacker or Traffic Controller pool.
+  operationId: deleteProbe
+  parameters:
+    - $ref: '../components/parameters/ZoneName.yaml'
+    - $ref: '../components/parameters/OwnerName.yaml'
+    - $ref: '../components/parameters/ProbeId.yaml'
+  responses:
+    '204':
+      $ref: '../components/responses/NoContentGeneric.yaml'
+      description: Probe deleted successfully
+    '202':
+      $ref: '../components/responses/AcceptedGeneric.yaml'
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

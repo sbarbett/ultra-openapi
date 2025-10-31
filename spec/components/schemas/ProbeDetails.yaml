@@ -1,0 +1,23 @@
+oneOf:
+  - $ref: './HttpProbeDetails.yaml'
+  - $ref: './PingProbeDetails.yaml'
+  - $ref: './FtpProbeDetails.yaml'
+  - $ref: './TcpProbeDetails.yaml'
+  - $ref: './SmtpProbeDetails.yaml'
+  - $ref: './SmtpSendProbeDetails.yaml'
+  - $ref: './DnsProbeDetails.yaml'
+
+description: |
+  Probe type-specific details. The structure varies based on the probe type:
+  
+  - **HTTP**: Multiple transactions with HTTP methods, URLs, and response validation
+  - **PING**: ICMP packet configuration with packet count, size, and timing limits
+  - **FTP**: FTP connection with port, passive mode, authentication, and path validation
+  - **TCP**: TCP connection with port and optional control IP
+  - **SMTP**: SMTP connection with port and timing limits
+  - **SMTP_SEND**: SMTP email send with port, from/to addresses, message, and timing limits
+  - **DNS**: DNS query with port, TCP/UDP protocol, record type, owner name, and response validation
+  
+  This is a polymorphic schema where the actual fields depend on the probe `type`
+  specified in the parent `ProbeInfo` object.
+

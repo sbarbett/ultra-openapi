@@ -1,0 +1,115 @@
+type: object
+description: |
+  Limit configuration for PING probe transactions. Defines thresholds for packet loss,
+  timing limits, and their averages.
+  
+  All timing values are in seconds. Some limits are only applicable to Traffic Controller pools.
+properties:
+  lossPercent:
+    type: object
+    description: |
+      Packet loss percentage thresholds. Values represent the percentage of packets
+      lost that would trigger the event.
+      
+      For example, 5 means packet loss > 5% triggers the event.
+      0 always fails the probe; 100 ensures the probe succeeds.
+    properties:
+      warning:
+        type: integer
+        description: |
+          Percentage of packets lost to trigger a warning.
+          
+          Optional, only used for Traffic Controller Pools.
+        example: 10
+      critical:
+        type: integer
+        description: |
+          Percentage of packets lost to trigger a critical warning.
+          
+          Optional, only used for Traffic Controller Pools.
+        example: 20
+      fail:
+        type: integer
+        description: |
+          Percentage of packets lost to trigger a failure.
+          
+          Optional.
+        example: 50
+    additionalProperties: false
+  total:
+    type: object
+    description: |
+      Total run time for all pings to complete. Only used for Traffic Controller pools.
+    properties:
+      warning:
+        type: integer
+        description: Run time for all pings to complete for a warning to be generated.
+        example: 5
+      critical:
+        type: integer
+        description: Run time for all pings to complete for a critical warning to be generated.
+        example: 10
+      fail:
+        type: integer
+        description: Run time for all pings to complete for a failure to be generated.
+        example: 15
+    additionalProperties: false
+  average:
+    type: object
+    description: |
+      Mean response time over the five most recent probes run on each agent.
+      Only used for Traffic Controller pools.
+    properties:
+      warning:
+        type: integer
+        description: Mean connect time to trigger a warning.
+        example: 100
+      critical:
+        type: integer
+        description: Mean connect time to trigger a critical warning.
+        example: 200
+      fail:
+        type: integer
+        description: Mean connect time to trigger a failure.
+        example: 500
+    additionalProperties: false
+  run:
+    type: object
+    description: |
+      How long the probe should run. Only used for Traffic Controller pools.
+    properties:
+      warning:
+        type: integer
+        description: How long the probe should run to trigger a warning.
+        example: 2
+      critical:
+        type: integer
+        description: How long the probe should run to trigger a critical warning.
+        example: 4
+      fail:
+        type: integer
+        description: How long the probe should run to trigger a failure.
+        example: 8
+    additionalProperties: false
+  avgRun:
+    type: object
+    description: |
+      Mean run time over the five most recent probes run on each agent.
+      Only used for Traffic Controller pools.
+    properties:
+      warning:
+        type: integer
+        description: Mean run time to trigger a warning.
+        example: 3
+      critical:
+        type: integer
+        description: Mean run time to trigger a critical warning.
+        example: 6
+      fail:
+        type: integer
+        description: Mean run time to trigger a failure.
+        example: 10
+    additionalProperties: false
+
+additionalProperties: false
+

@@ -1,0 +1,71 @@
+type: object
+description: |
+  Probe-specific details for PING type probes. Defines the number and size of ICMP
+  packets to send and validation criteria.
+properties:
+  packets:
+    type: integer
+    description: |
+      Number of ICMP packets to send.
+      
+      Defaults to 3.
+    default: 3
+    example: 5
+  packetSize:
+    type: integer
+    description: |
+      Size of packets in bytes.
+      
+      Defaults to 56.
+    default: 56
+    example: 64
+  limits:
+    $ref: './PingLimitInfo.yaml'
+
+additionalProperties: false
+
+examples:
+  minimal:
+    summary: Minimal PING probe configuration
+    description: Uses default packet count and size
+    value:
+      packets: 3
+      packetSize: 56
+  with_limits:
+    summary: PING probe with custom limits
+    value:
+      packets: 5
+      packetSize: 64
+      limits:
+        lossPercent:
+          fail: 50
+        run:
+          fail: 8
+  traffic_controller:
+    summary: PING probe for Traffic Controller with all limits
+    description: Complete PING configuration for Traffic Controller pools
+    value:
+      packets: 5
+      packetSize: 64
+      limits:
+        lossPercent:
+          warning: 10
+          critical: 20
+          fail: 50
+        total:
+          warning: 5
+          critical: 10
+          fail: 15
+        average:
+          warning: 100
+          critical: 200
+          fail: 500
+        run:
+          warning: 2
+          critical: 4
+          fail: 8
+        avgRun:
+          warning: 3
+          critical: 6
+          fail: 10
+

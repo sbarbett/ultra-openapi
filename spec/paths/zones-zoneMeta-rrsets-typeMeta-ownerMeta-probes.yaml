@@ -1,0 +1,275 @@
+get:
+  tags:
+    - SiteBacker & Traffic Controller
+  summary: List Probes
+  description: |
+    Lists all probes for a SiteBacker or Traffic Controller pool.
+    
+    Returns both pool-level probes (applies to all records) and record-level probes
+    (applies to specific records).
+    
+    **Note:** This endpoint only supports A-type records. The zone must contain a
+    SiteBacker or Traffic Controller pool.
+  operationId: listProbes
+  parameters:
+    - $ref: '../components/parameters/ZoneName.yaml'
+    - $ref: '../components/parameters/OwnerName.yaml'
+    - $ref: '../components/parameters/QueryParams.yaml'
+      description: |
+        The query used to construct the list. Query operators are:
+        
+        - **type**: Valid values are RECORD, POOL, or ALL. Default value is ALL, unless
+          poolRecord is specified.
+        - **poolRecord**: If you only want to get probes for a single pool record,
+          specify either the IPv4, IPv6, or CNAME as a FQDN for the pool record. If not
+          specified, type of RECORD is assumed.
+        
+        Example:
+        - q="type:ALL"
+        - q="type:POOL"
+        - q="type:RECORD"
+        - q="poolRecord:1.2.3.4"
+        - q="poolRecord:host.example.com."
+    - $ref: '../components/parameters/Offset.yaml'
+    - $ref: '../components/parameters/Limit.yaml'
+    - $ref: '../components/parameters/Sort.yaml'
+    - $ref: '../components/parameters/Reverse.yaml'
+  responses:
+    '200':
+      description: List of probes retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/ProbeInfoList.yaml'
+          examples:
+            Multiple Probes:
+              summary: List of multiple probes
+              description: |
+                Returns a list containing both pool-level and record-level probes.
+              value:
+                probes:
+                  - id: "probe-123-456"
+                    type: HTTP
+                    interval: ONE_MINUTE
+                    agents:
+                      - DALLAS
+                      - AMSTERDAM
+                      - PALO_ALTO
+                      - NEW_YORK
+                    threshold: 2
+                    headers:
+                      - "Accept-Language: en-US"
+                      - "User-Agent: Mozilla/5.0"
+                    details:
+                      transactions:
+                        - method: GET
+                          protocolVersion: HTTP/1.0
+                          url: "http://www.google1.com/"
+                          transmittedData: ""
+                          limits:
+                            connect:
+                              fail: 20
+                            run:
+                              fail: 60
+                          followRedirects: true
+                  - id: "probe-789-012"
+                    poolRecord: "1.2.3.4"
+                    type: PING
+                    interval: TWO_MINUTES
+                    agents:
+                      - NEW_YORK
+                    threshold: 1
+                    details:
+                      packets: 5
+                      packetSize: 64
+                      limits:
+                        lossPercent:
+                          fail: 50
+                        run:
+                          fail: 8
+                queryInfo:
+                  sort: ""
+                  reverse: false
+                  limit: 100
+                resultInfo:
+                  totalCount: 2
+                  offset: 0
+                  returnedCount: 2
+            Empty List:
+              summary: Empty list of probes
+              description: No probes configured for this pool
+              value:
+                probes: []
+                queryInfo:
+                  sort: ""
+                  reverse: false
+                  limit: 100
+                resultInfo:
+                  totalCount: 0
+                  offset: 0
+                  returnedCount: 0
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+
+post:
+  tags:
+    - SiteBacker & Traffic Controller
+  summary: Create a Probe
+  description: |
+    Creates a new probe for a SiteBacker or Traffic Controller pool. The probe can be
+    configured at the pool level (applies to all records) or record level (applies to
+    a specific record).
+    
+    **Pool-level probes:** Leave `poolRecord` empty or omit it. The probe applies to
+    all records in the pool.
+    
+    **Record-level probes:** Specify `poolRecord` in the request body. The probe
+    applies only to that specific record.
+    
+    **Note:** This endpoint only supports A-type records. The zone must contain a
+    SiteBacker or Traffic Controller pool. The pool cannot contain both A and AAAA
+    record types.
+  operationId: createProbe
+  parameters:
+    - $ref: '../components/parameters/ZoneName.yaml'
+    - $ref: '../components/parameters/OwnerName.yaml'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/ProbeInfo.yaml'
+        examples:
+          Pool-Level HTTP Probe:
+            summary: Create a pool-level HTTP probe
+            description: |
+              Creates an HTTP probe that applies to all records in the pool.
+              Demonstrates custom headers, multiple transactions, and timing limits.
+            value:
+              type: HTTP
+              interval: ONE_MINUTE
+              agents:
+                - PALO_ALTO
+                - NEW_YORK
+              threshold: 2
+              headers:
+                - "Accept-Language: en-US"
+                - "User-Agent: Mozilla/5.0"
+              details:
+                transactions:
+                  - method: GET
+                    protocolVersion: HTTP/1.0
+                    url: "http://www.google1.com/"
+                    transmittedData: ""
+                    followRedirects: true
+                    limits:
+                      connect:
+                        warning: 20
+                        critical: 20
+                        fail: 20
+                      run:
+                        warning: 60
+                        critical: 60
+                        fail: 60
+          Record-Level PING Probe:
+            summary: Create a record-level PING probe
+            description: |
+              Creates a PING probe for a specific pool record.
+              Specifies the poolRecord to target the probe.
+            value:
+              poolRecord: "1.2.3.4"
+              type: PING
+              interval: TWO_MINUTES
+              agents:
+                - NEW_YORK
+                - DALLAS
+              threshold: 1
+              details:
+                packets: 5
+                packetSize: 64
+                limits:
+                  lossPercent:
+                    fail: 50
+                  run:
+                    fail: 8
+          Pool-Level TCP Probe:
+            summary: Create a pool-level TCP probe
+            description: |
+              Creates a TCP probe with control IP for pool-level monitoring.
+            value:
+              type: TCP
+              interval: FIVE_MINUTES
+              agents:
+                - NEW_YORK
+              threshold: 1
+              details:
+                port: 443
+                controlIP: "192.168.1.100"
+                limits:
+                  connect:
+                    fail: 20
+          Record-Level DNS Probe:
+            summary: Create a record-level DNS probe
+            description: |
+              Creates a DNS probe for a specific pool record with response validation.
+            value:
+              poolRecord: "host.example.com."
+              type: DNS
+              interval: TEN_MINUTES
+              agents:
+                - PALO_ALTO
+                - AMSTERDAM
+              threshold: 1
+              details:
+                port: 53
+                tcpOnly: false
+                type: A
+                ownerName: "www.example.com"
+                limits:
+                  run:
+                    fail: 15
+  responses:
+    '201':
+      description: Probe created successfully
+      headers:
+        Location:
+          description: URI of the created probe
+          schema:
+            type: string
+            example: "/zones/example.com./rrsets/A/www.example.com./probes/probe-123-456"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Successful"
+              guid:
+                type: string
+                description: GUID of the created probe
+                example: "probe-123-456"
+          examples:
+            Created:
+              summary: Probe created synchronously
+              value:
+                message: "Successful"
+                guid: "probe-123-456"
+    '202':
+      $ref: '../components/responses/AcceptedGeneric.yaml'
+    '400':
+      $ref: '../components/responses/Error400.yaml'
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '404':
+      $ref: '../components/responses/Error404.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'

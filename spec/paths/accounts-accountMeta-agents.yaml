@@ -1,0 +1,55 @@
+get:
+  tags:
+    - SiteBacker & Traffic Controller
+  summary: Get SiteBacker Agents for Account
+  description: |
+    Retrieves the list of supported SiteBacker agents for the specified account.
+    
+    These agents can be used when configuring probes for SiteBacker and Traffic Controller
+    pools. Agent locations are organized by geographic regions.
+  operationId: getSiteBackerAgents
+  parameters:
+    - $ref: '../components/parameters/AccountName.yaml'
+  responses:
+    '200':
+      description: SiteBacker agents retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/SiteBackerAgentList.yaml'
+          examples:
+            All Agents:
+              summary: All supported SiteBacker agents
+              value:
+                agents:
+                  - name: "North America Central"
+                    location: "USCENTRAL"
+                    description: "(Chicago, Denver, Dallas)"
+                  - name: "Europe East"
+                    location: "EUEAST"
+                    description: "(Amsterdam, Frankfurt, Stockholm)"
+                  - name: "Europe West"
+                    location: "EUWEST"
+                    description: "(London, Dublin, Paris, Madrid)"
+                  - name: "South America"
+                    location: "SAMERICA"
+                    description: "(Sao Paolo, Colombia, Miami)"
+                  - name: "Asia"
+                    location: "ASIA"
+                    description: "(Tokyo, Taipei, Singapore, Hong Kong, Sydney)"
+                  - name: "China"
+                    location: "CHINA"
+                    description: "(Beijing, Hong Kong) Note: Reliable results only within China"
+                  - name: "North America West"
+                    location: "USWEST"
+                    description: "(Seattle, San Jose, Los Angeles, Phoenix, Vancouver)"
+                  - name: "North America East"
+                    location: "USEAST"
+                    description: "(New York, Washington D.C., Atlanta, Miami, Toronto)"
+    '401':
+      $ref: '../components/responses/Error401.yaml'
+    '403':
+      $ref: '../components/responses/Error403.yaml'
+    '5XX':
+      $ref: '../components/responses/Error5xx.yaml'
+

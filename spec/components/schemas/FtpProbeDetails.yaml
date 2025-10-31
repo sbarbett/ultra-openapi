@@ -1,0 +1,102 @@
+type: object
+description: |
+  Probe-specific details for FTP type probes. Defines the port, connection mode,
+  authentication, and path to check.
+properties:
+  port:
+    type: integer
+    description: |
+      Port to connect to for FTP service.
+      
+      Integer between 1 and 65535. Defaults to 21.
+    minimum: 1
+    maximum: 65535
+    default: 21
+    example: 21
+  passiveMode:
+    type: boolean
+    description: |
+      Whether or not to use FTP Passive mode.
+      
+      Defaults to false.
+    default: false
+    example: true
+  username:
+    type: string
+    description: |
+      Username for FTP service.
+      
+      Optional.
+    example: "ftpuser"
+  password:
+    type: string
+    description: |
+      Password for FTP service.
+      
+      Optional.
+    example: "secret123"
+  path:
+    type: string
+    description: Path to check for a file.
+    example: "/pub/uploads/"
+  limits:
+    $ref: './FtpLimitInfo.yaml'
+
+required:
+  - path
+
+additionalProperties: false
+
+examples:
+  minimal:
+    summary: Minimal FTP probe configuration
+    description: Uses default port and active mode
+    value:
+      path: "/pub/"
+      limits:
+        run:
+          fail: 30
+  with_auth:
+    summary: FTP probe with authentication
+    value:
+      port: 21
+      passiveMode: true
+      username: "ftpuser"
+      password: "secret123"
+      path: "/uploads/"
+      limits:
+        connect:
+          fail: 15
+        run:
+          fail: 30
+  traffic_controller:
+    summary: FTP probe for Traffic Controller with all limits
+    description: Complete FTP configuration for Traffic Controller pools
+    value:
+      port: 21
+      passiveMode: true
+      username: "ftpuser"
+      password: "secret123"
+      path: "/pub/uploads/"
+      limits:
+        connect:
+          warning: 5
+          critical: 10
+          fail: 15
+        avgConnect:
+          warning: 8
+          critical: 12
+          fail: 20
+        run:
+          warning: 10
+          critical: 20
+          fail: 30
+        avgRun:
+          warning: 15
+          critical: 25
+          fail: 40
+        searchString:
+          warning: "220 Welcome"
+          critical: "421 Service not available"
+          fail: "530 Login incorrect"
+

@@ -1,0 +1,109 @@
+type: object
+description: |
+  Container for a list of Probe Info DTOs. Used to return a list of probes
+  for a pool or pool record.
+properties:
+  probes:
+    type: array
+    description: The list of all probes.
+    items:
+      $ref: './ProbeInfo.yaml'
+  queryInfo:
+    $ref: './QueryInfo.yaml'
+  resultInfo:
+    $ref: './ResultInfo.yaml'
+
+required:
+  - probes
+  - queryInfo
+  - resultInfo
+
+additionalProperties: false
+
+examples:
+  two_tcp_probes:
+    summary: Two TCP probes
+    value:
+      probes:
+        - id: "probe-001"
+          type: TCP
+          interval: FIVE_MINUTES
+          agents:
+            - NEW_YORK
+            - DALLAS
+          threshold: 1
+          details:
+            port: 1024
+            controlIP: "1.2.3.4"
+            limits:
+              connect:
+                warning: 20
+                critical: 20
+                fail: 20
+              avgConnect:
+                warning: 20
+                critical: 20
+                fail: 20
+        - id: "probe-002"
+          type: TCP
+          interval: FIVE_MINUTES
+          agents:
+            - NEW_YORK
+            - DALLAS
+          threshold: 1
+          details:
+            port: 2048
+            controlIP: "1.2.3.4"
+            limits:
+              connect:
+                warning: 20
+                critical: 20
+                fail: 20
+              avgConnect:
+                warning: 20
+                critical: 20
+                fail: 20
+      queryInfo:
+        q: ""
+        sort: "type"
+        reverse: false
+        limit: 100
+      resultInfo:
+        totalCount: 2
+        offset: 0
+        returnedCount: 2
+  pool_and_record_probes:
+    summary: Mix of pool-level and record-level probes
+    value:
+      probes:
+        - id: "probe-pool-001"
+          type: HTTP
+          interval: FIVE_MINUTES
+          agents:
+            - NEW_YORK
+          threshold: 1
+          details:
+            transactions:
+              - method: GET
+                url: "https://www.example.com/"
+                followRedirects: true
+        - id: "probe-record-001"
+          poolRecord: "1.2.3.4"
+          type: PING
+          interval: TWO_MINUTES
+          agents:
+            - DALLAS
+          threshold: 1
+          details:
+            packets: 5
+            packetSize: 64
+      queryInfo:
+        q: ""
+        sort: "interval"
+        reverse: false
+        limit: 100
+      resultInfo:
+        totalCount: 2
+        offset: 0
+        returnedCount: 2
+

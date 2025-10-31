@@ -1,0 +1,127 @@
+type: object
+description: |
+  Limit configuration for FTP probe transactions. Defines timing thresholds for
+  connect time, run time, and their averages, as well as response validation
+  criteria.
+  
+  All timing values are in seconds. Some limits are only applicable to Traffic Controller pools.
+properties:
+  connect:
+    type: object
+    description: |
+      Maximum time allowed to establish a connection to the resource. Only used
+      for Traffic Controller pools.
+    properties:
+      warning:
+        type: integer
+        description: |
+          How long the probe stays connected to trigger a warning.
+          
+          Maximum 20 seconds. Optional, only used for Traffic Controller Pools.
+        maximum: 20
+        example: 5
+      critical:
+        type: integer
+        description: |
+          How long the probe stays connected to trigger a critical warning.
+          
+          Maximum 20 seconds. Optional, only used for Traffic Controller Pools.
+        maximum: 20
+        example: 10
+      fail:
+        type: integer
+        description: |
+          How long the probe stays connected to trigger a failure.
+          
+          Maximum 20 seconds.
+        maximum: 20
+        example: 15
+    additionalProperties: false
+  avgConnect:
+    type: object
+    description: |
+      Mean connect time over the five most recent probes run on each agent.
+      Only used for Traffic Controller pools.
+    properties:
+      warning:
+        type: integer
+        description: Mean connect time to trigger a warning.
+        example: 8
+      critical:
+        type: integer
+        description: Mean connect time to trigger a critical warning.
+        example: 12
+      fail:
+        type: integer
+        description: Mean connect time to trigger a failure.
+        example: 20
+    additionalProperties: false
+  run:
+    type: object
+    description: |
+      Maximum run time for the probe. Only used for Traffic Controller pools.
+    properties:
+      warning:
+        type: integer
+        description: How long the probe should run to trigger a warning.
+        example: 10
+      critical:
+        type: integer
+        description: How long the probe should run to trigger a critical warning.
+        example: 20
+      fail:
+        type: integer
+        description: How long the probe should run to trigger a failure.
+        example: 30
+    additionalProperties: false
+  avgRun:
+    type: object
+    description: |
+      Mean run time over the five most recent probes run on each agent.
+      Only used for Traffic Controller pools.
+    properties:
+      warning:
+        type: integer
+        description: Mean run time to trigger a warning.
+        example: 15
+      critical:
+        type: integer
+        description: Mean run time to trigger a critical warning.
+        example: 25
+      fail:
+        type: integer
+        description: Mean run time to trigger a failure.
+        example: 40
+    additionalProperties: false
+  searchString:
+    type: object
+    description: |
+      String or regex pattern to search for in the FTP response.
+      
+      If left blank, the FTP probe verifies that the server responds with a
+      successful response.
+      
+      If specified, the probe searches the response's body. If the probe does not
+      find the string within the response, the probe attempts to match it as a
+      regular expression.
+    properties:
+      warning:
+        type: string
+        description: String pattern to search for to trigger a warning. Optional, only used for Traffic Controller Pools.
+        example: "220 Welcome"
+      critical:
+        type: string
+        description: String pattern to search for to trigger a critical warning. Optional, only used for Traffic Controller Pools.
+        example: "421 Service not available"
+      fail:
+        type: string
+        description: |
+          String pattern to search for to trigger a failure.
+          
+          Optional. If specified, probe searches response body; otherwise verifies
+          successful FTP response.
+        example: "530 Login incorrect|550 Failed"
+    additionalProperties: false
+
+additionalProperties: false
+
